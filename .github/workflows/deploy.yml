@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     permissions:
       contents: read
@@ -35,7 +35,7 @@ jobs:
         run: |
           eval $(opam env)
           npm run build
-          
+
           mkdir -p dist
           cp _build/ dist/ -fr
           cp index.html dist/
