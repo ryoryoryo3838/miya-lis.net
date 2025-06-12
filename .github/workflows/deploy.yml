@@ -19,6 +19,7 @@ jobs:
       - name: Install Opam & Deps
         run: |
           sudo apt-get install opam -y
+          opam init --no-switch
           opam install . --deps-only
 
       - name: Instaa Node.js
