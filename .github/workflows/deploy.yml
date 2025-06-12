@@ -1,0 +1,42 @@
+name: Deploy ReasonReact to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up OCaml + Melange
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 5.1.1  # 適宜変更
+          dune-cache: true
+
+      - name: Install dependencies
+        run: |
+          opam install . --deps-only -y
+          opam install melange dune -y
+
+      - name: Build ReasonReact app
+        run: |
+          eval $(opam env)
+          dune build
+          mkdir -p dist
+          cp _build/default/src/Main/Main.bs.js dist/
+          cp index.html dist/
+          cp styles.css dist/
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: your-project-name
+          directory: ./dist
+          branch: main
