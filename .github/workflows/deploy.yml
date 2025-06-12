@@ -20,23 +20,22 @@ jobs:
 
       - name: Install dependencies
         run: |
-          opam install . --deps-only -y
-          opam install melange dune -y
+          npm run init
 
       - name: Build ReasonReact app
         run: |
           eval $(opam env)
           dune build
           mkdir -p dist
-          cp _build/default/src/Main/Main.bs.js dist/
+          cp _build/ dist/ -fr
           cp index.html dist/
           cp styles.css dist/
 
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: your-project-name
-          directory: ./dist
-          branch: main
+      # - name: Publish to Cloudflare Pages
+      #   uses: cloudflare/pages-action@v1
+      #   with:
+      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     projectName: your-project-name
+      #     directory: ./dist
+      #     branch: main
