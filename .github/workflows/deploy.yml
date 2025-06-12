@@ -18,7 +18,7 @@ jobs:
 
       - name: Install Opam & Deps
         run: |
-          bash -c "sh <(curl -fsSL https://opam.ocaml.org/install.sh)"
+          apt-get install opam
           opam install . --deps-only
 
       - name: Instaa Node.js
