@@ -16,8 +16,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up OCaml + Melange
-      - run: |
+      - name: Install Opam & Deps
+        run: |
           bash -c "sh <(curl -fsSL https://opam.ocaml.org/install.sh)"
           opam install . --deps-only
 
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: 20
     
-      - name: Install dependencies
+      - name: Node Deps
         run: |
           npm run init
 
