@@ -17,15 +17,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up OCaml + Melange
-        uses: ocaml/setup-ocaml@v3
-        with: 
-          ocaml-compiler: 5.1.1
+      - run: |
+          bash -c "sh <(curl -fsSL https://opam.ocaml.org/install.sh)"
+          opam install . --deps-only
 
       - name: Instaa Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-        
+    
       - name: Install dependencies
         run: |
           npm run init
@@ -33,6 +33,7 @@ jobs:
       - name: Build ReasonReact app
         run: |
           eval $(opam env)
+          npm run insatll:npm-opam
           npm run build
 
           mkdir -p dist
