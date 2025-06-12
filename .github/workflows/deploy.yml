@@ -29,12 +29,11 @@ jobs:
     
       - name: Node Deps
         run: |
-          npm run init
+          npm install
 
       - name: Build ReasonReact app
         run: |
           eval $(opam env)
-          npm run insatll:npm-opam
           npm run build
 
           mkdir -p dist
