@@ -1,7 +1,7 @@
 module Index = {
   [@react.component]
   let make = () => {
-    <h1> {React.string("ReasonReact + Melange + Vite!!!")} </h1>;
+    <h1> {R.s @@ "ReasonReact + Melange + Vite!!!"} </h1>;
   };
 };
 
