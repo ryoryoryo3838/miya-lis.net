@@ -1,13 +1,17 @@
 [@react.component]
 let make = () => {
-  <>
-    <h1> {R.s @@ "This is /miya-lis.net/"} </h1>
-    <h2> {R.s @@ "Created with ReasonReact + Melange + Vite!!!"} </h2>
-    <h3>
+  <div className="font-serif">
+    <Header />
+    <HomeAbout />
+    //<h2> {R.s @@ "Created with ReasonReact + Melange + Vite!!!"} </h2>
+    <h3 className="text-4xl pb-5 font-black">
       <a href="https://astro.miya-lis.net/">
-        {R.s @@ {j|旧サイトはこちら|j}}
+        {R.s @@ {j|→→→サイトはこちら←←←|j}}
       </a>
     </h3>
-    <DirListing />
-  </>;
+    // <DirListing />
+    <h1 className="text-4xl">
+      {R.s @@ {j|※※※ THIS WEB SITE IS UNDER CONSTRUCTION ※※※|j}}
+    </h1>
+  </div>;
 };

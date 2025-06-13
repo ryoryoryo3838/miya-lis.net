@@ -1,10 +1,3 @@
-// module Index = {
-//   [@react.component]
-//   let make = () => {
-//     <h1> {R.s @@ "ReasonReact + Melange + Vite!!!"} </h1>;
-//   };
-// };
-
 module Error = {
   [@react.component]
   let make = () => {
@@ -18,6 +11,7 @@ module Router = {
     let route = ReasonReactRouter.useUrl();
     switch (route.path) {
     | [] => <Home />
+    | ["aboutme"] => <AboutMe />
     | _ => <Error />
     };
   };

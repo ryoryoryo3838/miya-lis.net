@@ -1,1 +1,1 @@
-src/bin/components/Home.re.pp.ml: DirListing Js R React ReactDOM
+src/bin/components/Home.re.pp.ml: Header HomeAbout Js R React ReactDOM
