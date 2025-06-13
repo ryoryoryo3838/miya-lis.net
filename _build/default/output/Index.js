@@ -31,7 +31,7 @@ function Index$App(Props) {
   if (match) {
     let exit = 0;
     switch (match.hd) {
-      case "" :
+      case "/" :
       case "hello" :
         exit = 2;
         break;
