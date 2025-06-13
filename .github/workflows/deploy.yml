@@ -16,25 +16,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Opam & Deps
-        run: |
-          sudo apt-get install opam -y
-          opam init 
-          opam install . --deps-only -y
+      # - name: Install Opam & Deps
+      #   run: |
+      #     sudo apt-get install opam -y
+      #     opam init 
+      #     opam install . --deps-only -y
 
-      - name: Instaa Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      # - name: Instaa Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 20
     
-      - name: Node Deps
-        run: |
-          npm install -y
+      # - name: Node Deps
+      #   run: |
+      #     npm install -y
 
       - name: Build ReasonReact app
         run: |
-          eval $(opam env)
-          npm run build
+          # eval $(opam env)
+          # npm run build
 
           mkdir -p dist/_build/default/output
           cp _build/default/output dist/_build/default/output -fr
