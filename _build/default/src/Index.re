@@ -1,9 +1,9 @@
-module Index = {
-  [@react.component]
-  let make = () => {
-    <h1> {React.string("ReasonReact + Melange + Vite!!!")} </h1>;
-  };
-};
+// module Index = {
+//   [@react.component]
+//   let make = () => {
+//     <h1> {R.s @@ "ReasonReact + Melange + Vite!!!"} </h1>;
+//   };
+// };
 
 module Error = {
   [@react.component]
@@ -17,7 +17,7 @@ module Router = {
   let make = () => {
     let route = ReasonReactRouter.useUrl();
     switch (route.path) {
-    | [] => <Index />
+    | [] => <Home />
     | _ => <Error />
     };
   };
