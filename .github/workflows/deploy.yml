@@ -22,14 +22,14 @@ jobs:
       #     opam init 
       #     opam install . --deps-only -y
 
-      # - name: Instaa Node.js
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 20
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
     
-      # - name: Node Deps
-      #   run: |
-      #     npm install -y
+      - name: Node Deps
+        run: |
+          npm install -y
 
       - name: Build ReasonReact app
         run: |
