@@ -29,14 +29,19 @@ function Index$App(Props) {
   const route = ReasonReactRouter.useUrl(undefined, undefined);
   const match = route.path;
   if (match) {
-    if (match.hd === "index") {
-      return JsxRuntime.jsx(Index$Hello, {});
-    } else {
-      return JsxRuntime.jsx(Index$Error, {});
+    let exit = 0;
+    switch (match.hd) {
+      case "" :
+      case "hello" :
+        exit = 2;
+        break;
     }
-  } else {
-    return JsxRuntime.jsx(Index$Error, {});
+    if (exit === 2 && !match.tl) {
+      return JsxRuntime.jsx(Index$Hello, {});
+    }
+    
   }
+  return JsxRuntime.jsx(Index$Error, {});
 }
 
 const App = {

@@ -17,7 +17,8 @@ module App = {
   let make = () => {
     let route = ReasonReactRouter.useUrl();
     switch (route.path) {
-    | ["index", ..._] => <Hello />
+    | [""] => <Hello />
+    | ["hello"] => <Hello />
     | _ => <Error />
     };
   };
