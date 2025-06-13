@@ -1,6 +1,5 @@
 .DS_Store
 node_modules/
-!_build/*/node_modules
-# _build/
+!_build/*
 _opam/
 .github/
