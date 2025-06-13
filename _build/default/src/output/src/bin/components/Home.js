@@ -11,10 +11,10 @@ function Home(Props) {
         children: R.s("This is /miya-lis.net/")
       }),
       JsxRuntime.jsx("h2", {
-        children: R.s("Created with ReasonReact + Melange + VitE")
+        children: R.s("Created with ReasonReact + Melange + Vite!!!")
       }),
       JsxRuntime.jsx("h3", {
-        children: R.s("日本語はエラー出るんだっけなたしか")
+        children: R.s("\xe3\x81\x82\xe3\x81\x82\xe3\x81\x82\xe3\x81\x82")
       }),
       JsxRuntime.jsx(DirListing.make, {})
     ]
