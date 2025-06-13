@@ -36,7 +36,7 @@ jobs:
           eval $(opam env)
           npm run build
 
-          mkdir -p dist
+          mkdir -p dist/_build/default/output
           cp _build/default/output dist/_build/default/output -fr
           cp index.html dist/
           # cp styles.css dist/
