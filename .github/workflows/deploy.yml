@@ -37,12 +37,12 @@ jobs:
           npm run build
 
           mkdir -p dist
-          cp _build/ dist/ -fr
+          cp _build/default/output dist/_build/default/output -fr
           cp index.html dist/
           # cp styles.css dist/
 
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/pages-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
