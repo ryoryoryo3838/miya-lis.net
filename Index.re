@@ -1,15 +1,15 @@
 module Hello = {
   [@react.component]
   let make = () => {
-    <h1> {React.string("ReasonReact + Melange + Vite!!!")} </h1>
-  }
+    <h1> {React.string("ReasonReact + Melange + Vite!!!")} </h1>;
+  };
 };
 
 module Error = {
   [@react.component]
   let make = () => {
-    <h1>{ React.string("Error!!!")}</h1>
-  }
+    <h1> {React.string("Error!!!")} </h1>;
+  };
 };
 
 module App = {

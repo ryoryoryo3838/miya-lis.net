@@ -4,18 +4,3 @@
 # Shared cache location: /home/miyax/.cache/dune/db
 # Workspace root: /home/miyax/Documents/OCaml/Reason/melange
 # Auto-detected concurrency: 16
-# Dune context:
-#  { name = "default"
-#  ; kind = "default"
-#  ; profile = Dev
-#  ; merlin = true
-#  ; fdo_target_exe = None
-#  ; build_dir = In_build_dir "default"
-#  ; instrument_with = []
-#  }
-$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/ocamlc.opt -config > /tmp/dune_1c5fc2_output
-$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc --where > /tmp/dune_eae21d_output
-$ (cd _build/.sandbox/8a02fa9e2ae2f2ca931e5f1c6af28a85/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/refmt --print binary Index.re) > _build/.sandbox/8a02fa9e2ae2f2ca931e5f1c6af28a85/default/Index.re.ml
-$ (cd _build/.sandbox/b2517cb580c64412f68eeea41910f5a0/default && .ppx/9aa86304e1964cfc127b38093f18cb83/ppx.exe -o Index.re.pp.ml --impl Index.re.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
-$ (cd _build/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -I .output.mobjs/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/dom/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/js/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/reason-react/melange --bs-stop-after-cmj --bs-package-output . --bs-module-name Index -no-alias-deps -opaque -o .output.mobjs/melange/melange__Index.cmj -c -impl Index.re.pp.ml)
-$ (cd _build/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc -I .output.mobjs/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/dom/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/js/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/reason-react/melange -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g --bs-module-type es6 -o output/Index.js .output.mobjs/melange/melange__Index.cmj)
