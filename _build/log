@@ -13,5 +13,5 @@
 #  ; build_dir = In_build_dir "default"
 #  ; instrument_with = []
 #  }
-$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/ocamlc.opt -config > /tmp/dune_b17f5d_output
-$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc --where > /tmp/dune_935287_output
+$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/ocamlc.opt -config > /tmp/dune_647465_output
+$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc --where > /tmp/dune_ad169b_output
