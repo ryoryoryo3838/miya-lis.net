@@ -1,4 +1,4 @@
-module Hello = {
+module Index = {
   [@react.component]
   let make = () => {
     <h1> {React.string("ReasonReact + Melange + Vite!!!")} </h1>;
@@ -12,12 +12,12 @@ module Error = {
   };
 };
 
-module App = {
+module Router = {
   [@react.component]
   let make = () => {
     let route = ReasonReactRouter.useUrl();
     switch (route.path) {
-    | [] => <Hello />
+    | [] => <Index />
     | _ => <Error />
     };
   };
@@ -29,5 +29,5 @@ switch (node) {
   Js.Console.error("Failed to start React: couldn't find the #root element")
 | Some(root) =>
   let root = ReactDOM.Client.createRoot(root);
-  ReactDOM.Client.render(root, <App />);
+  ReactDOM.Client.render(root, <Router />);
 };
