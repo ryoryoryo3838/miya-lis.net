@@ -1,9 +1,0 @@
-lib: [
-  "_build/install/default/lib/melange-for-react-devs/META"
-  "_build/install/default/lib/melange-for-react-devs/dune-package"
-  "_build/install/default/lib/melange-for-react-devs/opam"
-]
-doc: [
-  "_build/install/default/doc/melange-for-react-devs/LICENSE"
-  "_build/install/default/doc/melange-for-react-devs/README.md"
-]
