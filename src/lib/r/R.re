@@ -1,4 +1,2 @@
 include React;
-let s = word => {
-  let w = 
-}
+let s = React.string;

@@ -14,7 +14,10 @@ function Home(Props) {
         children: R.s("Created with ReasonReact + Melange + Vite!!!")
       }),
       JsxRuntime.jsx("h3", {
-        children: R.s("\xe3\x81\x82\xe3\x81\x82\xe3\x81\x82\xe3\x81\x82")
+        children: JsxRuntime.jsx("a", {
+          children: R.s("旧サイトはこちら"),
+          href: "https://astro.miya-lis.net/"
+        })
       }),
       JsxRuntime.jsx(DirListing.make, {})
     ]
