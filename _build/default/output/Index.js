@@ -28,10 +28,15 @@ const $$Error = {
 function Index$App(Props) {
   const route = ReasonReactRouter.useUrl(undefined, undefined);
   const match = route.path;
-  if (match && match.hd === "index" && !match.tl) {
-    return JsxRuntime.jsx(Index$Hello, {});
+  if (match) {
+    if (match.hd === "index") {
+      return JsxRuntime.jsx(Index$Hello, {});
+    } else {
+      return JsxRuntime.jsx(Index$Error, {});
+    }
+  } else {
+    return JsxRuntime.jsx(Index$Error, {});
   }
-  return JsxRuntime.jsx(Index$Error, {});
 }
 
 const App = {

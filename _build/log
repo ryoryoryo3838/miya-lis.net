@@ -1,4 +1,4 @@
-# dune build --watch
+# dune build
 # OCAMLPARAM: unset
 # Shared cache: enabled-except-user-rules
 # Shared cache location: /home/miyax/.cache/dune/db
@@ -13,16 +13,9 @@
 #  ; build_dir = In_build_dir "default"
 #  ; instrument_with = []
 #  }
-$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/ocamlc.opt -config > /tmp/dune_7fb283_output
-$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc --where > /tmp/dune_ffa197_output
-$ (cd _build/.sandbox/381691eff052c5b48126a7a3897756ab/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/refmt --print binary Index.re) > _build/.sandbox/381691eff052c5b48126a7a3897756ab/default/Index.re.ml
-> File "Index.re", line 20, characters 6-7:
-> 20 |       ["index"] => <Hello/>;
->            ^
-> Error: Syntax error
->
-[1]
-$ (cd _build/.sandbox/e649b53827463ea9b12d339ba9ace47e/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/refmt --print binary Index.re) > _build/.sandbox/e649b53827463ea9b12d339ba9ace47e/default/Index.re.ml
-$ (cd _build/.sandbox/b94d333b8f3023acb42bb87ab0816594/default && .ppx/9aa86304e1964cfc127b38093f18cb83/ppx.exe -o Index.re.pp.ml --impl Index.re.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/ocamlc.opt -config > /tmp/dune_39dd78_output
+$ /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc --where > /tmp/dune_d33ffe_output
+$ (cd _build/.sandbox/dcfbb70eb663c5b2a576714dfec63db5/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/refmt --print binary Index.re) > _build/.sandbox/dcfbb70eb663c5b2a576714dfec63db5/default/Index.re.ml
+$ (cd _build/.sandbox/db06f05f5b1265e2d3d73c41b96ce9ff/default && .ppx/9aa86304e1964cfc127b38093f18cb83/ppx.exe -o Index.re.pp.ml --impl Index.re.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
 $ (cd _build/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g -bin-annot -I .output.mobjs/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/dom/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/js/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/reason-react/melange --bs-stop-after-cmj --bs-package-output . --bs-module-name Index -no-alias-deps -opaque -o .output.mobjs/melange/melange__Index.cmj -c -impl Index.re.pp.ml)
 $ (cd _build/default && /home/miyax/Documents/OCaml/Reason/melange/_opam/bin/melc -I .output.mobjs/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/dom/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/js/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/melange/melange -I /home/miyax/Documents/OCaml/Reason/melange/_opam/lib/reason-react/melange -w @1..3@5..28@30..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -g --bs-module-type es6 -o output/Index.js .output.mobjs/melange/melange__Index.cmj)
