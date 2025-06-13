@@ -50,7 +50,7 @@ jobs:
       #     directory: ./dist
       #     branch: main
       - name: Deploy
-        uses: cloudflare/wrangler-action@v3
+        # uses: cloudflare/wrangler-action@v3
         run : npx wrangler deploy
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
