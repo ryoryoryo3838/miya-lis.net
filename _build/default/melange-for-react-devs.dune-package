@@ -1,4 +1,0 @@
-(lang dune 3.19)
-(name melange-for-react-devs)
-(sections (lib .) (doc ../../doc/melange-for-react-devs))
-(files (lib (META dune-package opam)) (doc (LICENSE README.md)))
