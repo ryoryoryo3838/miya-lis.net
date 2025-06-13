@@ -1,7 +1,26 @@
+module Hello = {
+  [@react.component]
+  let make = () => {
+    <h1> {React.string("ReasonReact + Melange + Vite!!!")} </h1>
+  }
+};
+
+module Error = {
+  [@react.component]
+  let make = () => {
+    <h1>{ React.string("Error!!!")}</h1>
+  }
+};
+
 module App = {
   [@react.component]
-  let make = () =>
-    <h1> {React.string("ReasonReact + Melange + Vite!!!")} </h1>;
+  let make = () => {
+    let route = ReasonReactRouter.useUrl();
+    switch (route.path) {
+    | ["index"] => <Hello />
+    | _ => <Error />
+    };
+  };
 };
 
 let node = ReactDOM.querySelector("#root");
