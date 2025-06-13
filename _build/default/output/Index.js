@@ -6,7 +6,7 @@ import * as JsxRuntime from "react/jsx-runtime";
 
 function Index$App(Props) {
   return JsxRuntime.jsx("h1", {
-    children: "Welcome to my app!"
+    children: "ReasonReact + Melange + Vite!!!"
   });
 }
 
