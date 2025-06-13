@@ -1,2 +1,2 @@
 name = "melange"
-main = "dist/_build/default/output/index.js"
+main = "dist/_build/default/output/Index.js"
