@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const NUM_BOIDS = 50;
+const NUM_BOIDS = 75;
 const BOID_SIZE = 6;
 let mouse = { x: null, y: null };
 
@@ -76,7 +76,7 @@ class Boid {
 
     // limit speed
     const speed = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
-    const maxSpeed = 2;
+    const maxSpeed = 5;
     if (speed > maxSpeed) {
       this.velocity.x = (this.velocity.x / speed) * maxSpeed;
       this.velocity.y = (this.velocity.y / speed) * maxSpeed;
@@ -97,10 +97,10 @@ class Boid {
       const dy = this.position.y - mouse.y;
       const distSq = dx * dx + dy * dy;
 
-      const avoidanceRadius = 80; // ピクセル
+      const avoidanceRadius = 300; // ピクセル
       if (distSq < avoidanceRadius * avoidanceRadius) {
         const dist = Math.sqrt(distSq);
-        const strength = 100 / (distSq + 1); // 力は距離の逆数
+        const strength = 500 / (distSq + 1); // 力は距離の逆数
         this.velocity.x += (dx / dist) * strength;
         this.velocity.y += (dy / dist) * strength;
       }
