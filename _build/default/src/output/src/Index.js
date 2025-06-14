@@ -20,19 +20,22 @@ const $$Error = {
 function Index$Router(Props) {
   const route = ReasonReactRouter.useUrl(undefined, undefined);
   const match = route.path;
-  if (match) {
-    if (match.hd === "aboutme") {
-      if (match.tl) {
-        return JsxRuntime.jsx(Index$Error, {});
-      } else {
+  if (!match) {
+    return JsxRuntime.jsx(Home.make, {});
+  }
+  switch (match.hd) {
+    case "aboutme" :
+      if (!match.tl) {
         return JsxRuntime.jsx(AboutMe.detail, {});
       }
-    } else {
-      return JsxRuntime.jsx(Index$Error, {});
-    }
-  } else {
-    return JsxRuntime.jsx(Home.dev, {});
+      break;
+    case "dev" :
+      if (!match.tl) {
+        return JsxRuntime.jsx(Home.dev, {});
+      }
+      break;
   }
+  return JsxRuntime.jsx(Index$Error, {});
 }
 
 const Router = {

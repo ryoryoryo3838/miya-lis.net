@@ -2,7 +2,10 @@
 
 import * as AboutMe from "./AboutMe.js";
 import * as Header from "./Header.js";
+import * as Layout from "./Layout.js";
+import * as Link from "./Link.js";
 import * as R from "../../lib/r/R.js";
+import * as Title from "./Title.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function Home(Props) {
@@ -20,6 +23,13 @@ function Home(Props) {
       JsxRuntime.jsx("h1", {
         children: R.s("※※※ THIS WEB SITE IS UNDER CONSTRUCTION ※※※"),
         className: "text-4xl"
+      }),
+      JsxRuntime.jsx("h2", {
+        children: JsxRuntime.jsx(Link.make, {
+          path: "/dev",
+          children: R.s("→→作り途中のやつ←←")
+        }),
+        className: "text-3xl"
       })
     ],
     className: "font-serif"
@@ -27,72 +37,15 @@ function Home(Props) {
 }
 
 function Home$dev(Props) {
-  return JsxRuntime.jsxs("div", {
+  return JsxRuntime.jsxs(Layout.wrap, {
     children: [
-      JsxRuntime.jsx("header", {
-        children: JsxRuntime.jsx("h1", {
-          children: R.s("Index of /mofumofu/"),
-          className: "\n        m-0 p-0 font-bold text-6xl\n        max-lg:text-[4.5vw] max-md:text-[10vw]\n        max-md:leading-tight\n        font-serif\n        ",
-          id: "l-header>h1"
-        }),
-        className: "\n        pt-8 pl-5 pr-5\n        max-lg:pt-[2.5vw] max-md:pt-[10vw]\n        max-lg:pl-[1.5vw]\n        max-lg:pr-[1.5vw]\n        ",
-        id: "Head l-header"
-      }),
-      JsxRuntime.jsx("div", {
-        children: JsxRuntime.jsxs("header", {
-          children: [
-            JsxRuntime.jsxs("h2", {
-              children: [
-                R.s("Yuka Nagase"),
-                JsxRuntime.jsx("br", {}),
-                R.s("Mofu Mofu Project")
-              ],
-              className: "leading-normal font-bold text-4xl max-lg:text-[3vw] max-md:text-[4.5vw] w-4/5 font-serif\n          ",
-              id: "l-title>h2"
-            }),
-            JsxRuntime.jsx("div", {
-              children: JsxRuntime.jsx("table", {
-                children: JsxRuntime.jsx("thead", {
-                  children: JsxRuntime.jsxs("tr", {
-                    children: [
-                      JsxRuntime.jsx("th", {
-                        id: "icon"
-                      }),
-                      JsxRuntime.jsx("th", {
-                        children: R.s("Name"),
-                        className: "pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]",
-                        id: "ttl"
-                      }),
-                      JsxRuntime.jsx("th", {
-                        children: R.s("Last Modified"),
-                        className: "pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]",
-                        id: "update"
-                      }),
-                      JsxRuntime.jsx("th", {
-                        children: R.s("Size"),
-                        id: "size"
-                      })
-                    ]
-                  }),
-                  className: "position-relative height-auto mb-4 text-xl max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono",
-                  id: "l-directory>table>thead"
-                }),
-                className: "m-0 p-0 border-0 w-full text-[100%] font-inherit align-middle border-collapse border-spacing-0 md:w-full md:max-w-md ",
-                id: "l-directory>table"
-              }),
-              className: "pl-5 pr-5 max-lg:pl-[1.5vw] max-md:pl-0 max-lg:pr-[1.5vw] max-md:pr-0 ",
-              id: "l-directory"
-            })
-          ],
-          className: "flex flex-wrap items-center justify-between box-border mb-6 pl-5 pr-5 p5-5max-lg:mb-[2vw] max-md:mb-[4.5vw] max-lg:pt-[3vw] max-lg:pl-[1.5vw] max-lg:pr-[1.5vw]md:w-full md:max-w-screen-md",
-          id: "l-title"
-        }),
-        className: "\n      pb-20 max-lg:pb-[6vw] max-md:pb-[14vw]\n      ",
-        id: "Wrap Main"
+      JsxRuntime.jsx(Header.make, {}),
+      JsxRuntime.jsx(Layout.wrapMain, {
+        children: JsxRuntime.jsx("div", {
+          children: JsxRuntime.jsx(Title.make, {})
+        })
       })
-    ],
-    className: "\n  text-[#333]\n  text-xl max-lg:text-[1.5vw] max-md:text-[3.5vw]\n  ",
-    id: "Wrap"
+    ]
   });
 }
 
