@@ -31,7 +31,7 @@ function Index$Router(Props) {
       return JsxRuntime.jsx(Index$Error, {});
     }
   } else {
-    return JsxRuntime.jsx(Home.make, {});
+    return JsxRuntime.jsx(Home.dev, {});
   }
 }
 

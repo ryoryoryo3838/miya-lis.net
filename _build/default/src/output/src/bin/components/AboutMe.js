@@ -7,10 +7,6 @@ import * as JsxRuntime from "react/jsx-runtime";
 function AboutMe$home(Props) {
   return JsxRuntime.jsxs("div", {
     children: [
-      JsxRuntime.jsx("h2", {
-        children: R.s("About me"),
-        className: "text-5xl"
-      }),
       JsxRuntime.jsx("h3", {
         children: R.s("Name: miya"),
         className: "text-3xl"
@@ -22,7 +18,7 @@ function AboutMe$home(Props) {
       JsxRuntime.jsx("h3", {
         children: JsxRuntime.jsx(Link.make, {
           path: "/aboutme",
-          children: R.s("More detail, see here...")
+          children: R.s("More detail, see Aboutme")
         }),
         className: "text-3xl"
       })
@@ -65,7 +61,7 @@ function AboutMe$detail(Props) {
                 children: R.s("横山研究室")
               })
             ],
-            className: "list-disc pl-15"
+            className: "pl-15"
           })
         ],
         className: "text-3xl"

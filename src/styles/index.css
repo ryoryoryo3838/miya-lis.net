@@ -1,1 +1,8 @@
+@import"https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Sometype+Mono:ital,wght@0,400..700;1,400..700&display=swap";
+/* @charset "utf-8"; */
 @import "tailwindcss";
+
+@theme {
+  --font-serif: "Times New Roman", Times, Serif;
+  --font-sometype_mono: "Sometype Mono", monospace
+}

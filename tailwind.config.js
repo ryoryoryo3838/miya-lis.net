@@ -3,8 +3,8 @@ export default {
   content: [],
   theme: {
     extend: {
-      sans: ['Sometype Mono', 'BIZ UDPGothic', 'sans-serif'],
-      serif: ['Times New Roman', 'serif'],
+      //sans: ['Sometype Mono', 'BIZ UDPGothic', 'sans-serif'],
+      //serif: ['Times New Roman', 'serif'],
     },
   },
   plugins: [],
