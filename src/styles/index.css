@@ -13,3 +13,40 @@
     font-feature-settings: "palt";
   }
 }
+
+
+/* for Boids */
+
+
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* for after */
+#title:after {
+  content: "";
+  display: block;
+  height: auto;
+  background: url(../public/icon.svg) center center no-repeat;
+  background-size: 100% auto;
+  aspect-ratio: 96.33/76
+}
+
+@media print,
+screen and (min-width:769px) {
+  .l-title:after {
+    width: 11.666666666666666%;
+    max-width: 140px
+  }
+}
+
+@media screen and (max-width:768px) {
+  .l-title:after {
+    width: 18.461538461538463%
+  }
+}

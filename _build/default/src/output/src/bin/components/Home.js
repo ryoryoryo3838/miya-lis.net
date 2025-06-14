@@ -5,6 +5,7 @@ import * as Header from "./Header.js";
 import * as Layout from "./Layout.js";
 import * as Link from "./Link.js";
 import * as R from "../../lib/r/R.js";
+import * as Table from "./Table.js";
 import * as Title from "./Title.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
@@ -12,7 +13,7 @@ function Home(Props) {
   return JsxRuntime.jsxs("div", {
     children: [
       JsxRuntime.jsx(Header.make, {}),
-      JsxRuntime.jsx(AboutMe.home, {}),
+      JsxRuntime.jsx(Title.make, {}),
       JsxRuntime.jsx("h3", {
         children: JsxRuntime.jsx("a", {
           children: R.s("→→→旧サイトはこちら←←←"),
@@ -26,7 +27,7 @@ function Home(Props) {
       }),
       JsxRuntime.jsx("h2", {
         children: JsxRuntime.jsx(Link.make, {
-          path: "/dev",
+          path: "/",
           children: R.s("→→作り途中のやつ←←")
         }),
         className: "text-3xl"
@@ -37,13 +38,36 @@ function Home(Props) {
 }
 
 function Home$dev(Props) {
-  return JsxRuntime.jsxs(Layout.wrap, {
+  return JsxRuntime.jsxs(JsxRuntime.Fragment, {
     children: [
-      JsxRuntime.jsx(Header.make, {}),
-      JsxRuntime.jsx(Layout.wrapMain, {
-        children: JsxRuntime.jsx("div", {
-          children: JsxRuntime.jsx(Title.make, {})
-        })
+      JsxRuntime.jsxs(Layout.wrap, {
+        children: [
+          JsxRuntime.jsx(Header.make, {}),
+          JsxRuntime.jsxs(Layout.wrapMain, {
+            children: [
+              JsxRuntime.jsx(AboutMe.home, {}),
+              JsxRuntime.jsxs(Table.make, {
+                children: [
+                  JsxRuntime.jsx(Table.element, {
+                    path: "/aboutme",
+                    name: "About me"
+                  }),
+                  JsxRuntime.jsx(Table.element, {
+                    path: "/prev",
+                    name: "旧サイト"
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+      JsxRuntime.jsx("div", {
+        children: JsxRuntime.jsx("h1", {
+          children: R.s("※※ THIS WEB SITE IS UNDER CONSTRUCTION ※※"),
+          className: "text-3xl pb-0 text-center"
+        }),
+        className: "mt-auto"
       })
     ]
   });

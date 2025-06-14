@@ -1,15 +1,19 @@
 [@react.component]
 let home = () => {
   <div
-    className="font-serif flex flex-col justify-between box-border  pt-5 pb-5 pl-4 pr-4 leading-normal font-bold">
-    //<h2 className="text-5xl"> {R.s @@ "About me"} </h2>
-
+    id="title"
+    className="font-serif flex flex-row justify-between box-border  pt-5 pb-5 pl-4 pr-4 leading-normal font-bold items-center lg:pr-[50vw]">
+    <div className="flex-col pr-0">
       <h3 className="text-3xl"> {R.s @@ {j|Name: miya|j}} </h3>
       <h3 className="text-3xl"> {R.s @@ {j|Affiliation: KLiS'23|j}} </h3>
-      <h3 className="text-3xl">
-        <Link path="/aboutme"> {R.s @@ "More detail, see Aboutme"} </Link>
+      <h3 className="text-2xl">
+        <Link path="/aboutme">
+          {R.s @@ "(for more detail, see \"About me\")"}
+        </Link>
       </h3>
-    </div>;
+    </div>
+    <img src="src/public/icon.svg" alt="icon" className="ml-0 w-[150px]" />
+  </div>;
 };
 [@react.component]
 let detail = () => {

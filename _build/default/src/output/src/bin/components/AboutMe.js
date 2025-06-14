@@ -7,23 +7,34 @@ import * as JsxRuntime from "react/jsx-runtime";
 function AboutMe$home(Props) {
   return JsxRuntime.jsxs("div", {
     children: [
-      JsxRuntime.jsx("h3", {
-        children: R.s("Name: miya"),
-        className: "text-3xl"
+      JsxRuntime.jsxs("div", {
+        children: [
+          JsxRuntime.jsx("h3", {
+            children: R.s("Name: miya"),
+            className: "text-3xl"
+          }),
+          JsxRuntime.jsx("h3", {
+            children: R.s("Affiliation: KLiS'23"),
+            className: "text-3xl"
+          }),
+          JsxRuntime.jsx("h3", {
+            children: JsxRuntime.jsx(Link.make, {
+              path: "/aboutme",
+              children: R.s("(for more detail, see \"About me\")")
+            }),
+            className: "text-2xl"
+          })
+        ],
+        className: "flex-col pr-0"
       }),
-      JsxRuntime.jsx("h3", {
-        children: R.s("Affiliation: KLiS'23"),
-        className: "text-3xl"
-      }),
-      JsxRuntime.jsx("h3", {
-        children: JsxRuntime.jsx(Link.make, {
-          path: "/aboutme",
-          children: R.s("More detail, see Aboutme")
-        }),
-        className: "text-3xl"
+      JsxRuntime.jsx("img", {
+        className: "ml-0 w-[150px]",
+        alt: "icon",
+        src: "src/public/icon.svg"
       })
     ],
-    className: "font-serif flex flex-col justify-between box-border  pt-5 pb-5 pl-4 pr-4 leading-normal font-bold"
+    className: "font-serif flex flex-row justify-between box-border  pt-5 pb-5 pl-4 pr-4 leading-normal font-bold items-center lg:pr-[50vw]",
+    id: "title"
   });
 }
 

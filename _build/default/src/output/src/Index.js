@@ -40,7 +40,7 @@ function Index$Router(Props) {
   const route = ReasonReactRouter.useUrl(undefined, undefined);
   const match = route.path;
   if (!match) {
-    return JsxRuntime.jsx(Home.make, {});
+    return JsxRuntime.jsx(Home.dev, {});
   }
   switch (match.hd) {
     case "aboutme" :
@@ -48,9 +48,9 @@ function Index$Router(Props) {
         return JsxRuntime.jsx(AboutMe.detail, {});
       }
       break;
-    case "dev" :
+    case "prev" :
       if (!match.tl) {
-        return JsxRuntime.jsx(Home.dev, {});
+        return JsxRuntime.jsx(Home.make, {});
       }
       break;
   }

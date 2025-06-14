@@ -6,10 +6,10 @@ import * as JsxRuntime from "react/jsx-runtime";
 
 function Table(Props) {
   let children = Props.children;
-  return JsxRuntime.jsxs("div", {
-    children: [
-      JsxRuntime.jsx("table", {
-        children: JsxRuntime.jsx("thead", {
+  return JsxRuntime.jsx("div", {
+    children: JsxRuntime.jsxs("table", {
+      children: [
+        JsxRuntime.jsx("thead", {
           children: JsxRuntime.jsxs("tr", {
             children: [
               JsxRuntime.jsx("th", {
@@ -31,39 +31,53 @@ function Table(Props) {
               })
             ]
           }),
-          className: "position-relative height-auto mb-4 text-[10px] max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono",
+          className: "position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono",
           id: "l-directory>table>thead"
         }),
-        className: "m-0 p-0 border-0 w-full text-[100%] font-inherit align-middle border-collapse border-spacing-0 md:w-full md:max-w-md",
-        id: "l-directory>table"
-      }),
-      JsxRuntime.jsx("tbody", {
-        children: children
-      })
-    ],
-    className: "pl-5 pr-5 max-lg:pl-[1.5vw] max-md:pl-0 max-lg:pr-[1.5vw] max-md:pr-0 ",
+        JsxRuntime.jsx("tbody", {
+          children: children,
+          className: "position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono pl-[5vw]",
+          id: "l-directory>table>body"
+        })
+      ],
+      className: "m-0 p-0 border-0 w-full  font-inherit align-middle border-collapse border-spacing-0 md:w-full md:max-w-md",
+      id: "l-directory>table"
+    }),
+    className: "pl-5 pr-5 max-lg:pl-[1.5vw] max-md:pl-0 max-lg:pr-[1.5vw] max-md:pr-0 text-2xl",
     id: "l-directory"
   });
 }
 
-function element(name, update, size) {
-  return JsxRuntime.jsxs(Link.make, {
-    path: name,
-    children: [
-      JsxRuntime.jsx("th", {
-        children: R.s(name)
-      }),
-      JsxRuntime.jsx("th", {
-        children: R.s(update)
-      }),
-      JsxRuntime.jsx("th", {
-        children: R.s(size)
-      })
-    ]
+function Table$element(Props) {
+  let path = Props.path;
+  let name = Props.name;
+  return JsxRuntime.jsx(JsxRuntime.Fragment, {
+    children: [JsxRuntime.jsxs("tr", {
+        children: [
+          JsxRuntime.jsx("th", {
+            children: R.s("")
+          }),
+          JsxRuntime.jsx("th", {
+            children: JsxRuntime.jsx(Link.make, {
+              path: path,
+              children: R.s(name)
+            })
+          }),
+          JsxRuntime.jsx("th", {
+            children: R.s("")
+          }),
+          JsxRuntime.jsx("th", {
+            children: R.s("")
+          })
+        ],
+        className: "p-10 "
+      })]
   });
 }
 
 const make = Table;
+
+const element = Table$element;
 
 export {
   make,
