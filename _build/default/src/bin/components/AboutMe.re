@@ -12,7 +12,7 @@ let home = () => {
         </Link>
       </h3>
     </div>
-    <img src="static/icon.svg" alt="icon" className="ml-0 w-[150px]" />
+    <img src="public/icon.svg" alt="icon" className="ml-0 w-[150px]" />
   </div>;
 };
 [@react.component]
