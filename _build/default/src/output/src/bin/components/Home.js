@@ -62,12 +62,12 @@ function Home$dev(Props) {
           })
         ]
       }),
-      JsxRuntime.jsx("div", {
+      JsxRuntime.jsx("footer", {
         children: JsxRuntime.jsx("h1", {
           children: R.s("※※ THIS WEB SITE IS UNDER CONSTRUCTION ※※"),
-          className: "text-3xl pb-0 text-center"
+          className: "text-2xl"
         }),
-        className: "mt-auto"
+        className: "text-center fixed bottom-0"
       })
     ]
   });

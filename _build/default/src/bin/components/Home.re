@@ -31,11 +31,11 @@ let dev = () => {
         </Table>
       </Layout.wrapMain>
     </Layout.wrap>
-    <div className="mt-auto">
-      <h1 className="text-3xl pb-0 text-center">
+    <footer className="text-center fixed bottom-0">
+      <h1 className="text-2xl">
         {R.s @@ {j|※※ THIS WEB SITE IS UNDER CONSTRUCTION ※※|j}}
       </h1>
-    </div>
+    </footer>
     // <Table/>
   </>;
 };
