@@ -25,7 +25,7 @@ function Index$Router(Props) {
       if (match.tl) {
         return JsxRuntime.jsx(Index$Error, {});
       } else {
-        return JsxRuntime.jsx(AboutMe.make, {});
+        return JsxRuntime.jsx(AboutMe.detail, {});
       }
     } else {
       return JsxRuntime.jsx(Index$Error, {});

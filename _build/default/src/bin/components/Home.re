@@ -2,11 +2,11 @@
 let make = () => {
   <div className="font-serif">
     <Header />
-    <HomeAbout />
+    <AboutMe.home />
     //<h2> {R.s @@ "Created with ReasonReact + Melange + Vite!!!"} </h2>
     <h3 className="text-4xl pb-5 font-black">
       <a href="https://astro.miya-lis.net/">
-        {R.s @@ {j|→→→サイトはこちら←←←|j}}
+        {R.s @@ {j|→→→旧サイトはこちら←←←|j}}
       </a>
     </h3>
     // <DirListing />
