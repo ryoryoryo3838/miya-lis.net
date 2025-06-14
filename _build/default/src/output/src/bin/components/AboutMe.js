@@ -30,7 +30,7 @@ function AboutMe$home(Props) {
       JsxRuntime.jsx("img", {
         className: "ml-0 w-[150px]",
         alt: "icon",
-        src: "public/icon.svg"
+        src: "/icon.svg"
       })
     ],
     className: "font-serif flex flex-row justify-between box-border  pt-5 pb-5 pl-4 pr-4 leading-normal font-bold items-center lg:pr-[50vw]",
