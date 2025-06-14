@@ -5,7 +5,13 @@ canvas.height = window.innerHeight;
 
 const NUM_BOIDS = 50;
 const BOID_SIZE = 6;
+let mouse = { x: null, y: null };
 
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+});
 class Boid {
   constructor() {
     this.position = {
@@ -84,8 +90,22 @@ class Boid {
     if (this.position.x > canvas.width) this.position.x = 0;
     if (this.position.y < 0) this.position.y = canvas.height;
     if (this.position.y > canvas.height) this.position.y = 0;
-  }
 
+    // マウスからの回避行動（force = repulsion）
+    if (mouse.x !== null && mouse.y !== null) {
+      const dx = this.position.x - mouse.x;
+      const dy = this.position.y - mouse.y;
+      const distSq = dx * dx + dy * dy;
+
+      const avoidanceRadius = 80; // ピクセル
+      if (distSq < avoidanceRadius * avoidanceRadius) {
+        const dist = Math.sqrt(distSq);
+        const strength = 100 / (distSq + 1); // 力は距離の逆数
+        this.velocity.x += (dx / dist) * strength;
+        this.velocity.y += (dy / dist) * strength;
+      }
+    }
+  }
   draw(ctx) {
     const angle = Math.atan2(this.velocity.y, this.velocity.x);
     ctx.save();
@@ -100,6 +120,8 @@ class Boid {
     ctx.fill();
     ctx.restore();
   }
+
+
 }
 
 const boids = Array.from({ length: NUM_BOIDS }, () => new Boid());
@@ -119,3 +141,4 @@ window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 });
+
