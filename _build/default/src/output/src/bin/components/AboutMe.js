@@ -65,13 +65,6 @@ function AboutMe$detail(Props) {
           })
         ],
         className: "text-3xl"
-      }),
-      JsxRuntime.jsx("h3", {
-        children: JsxRuntime.jsx(Link.make, {
-          path: "/aboutme",
-          children: R.s("More detail, see here...")
-        }),
-        className: "text-3xl"
       })
     ],
     className: "font-serif jstify-between box-border  pt-5 pb-5 pl-4 pr-4 leading-normal font-bold"

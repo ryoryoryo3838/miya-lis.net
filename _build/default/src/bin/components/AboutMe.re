@@ -27,8 +27,5 @@ let detail = () => {
         <li> {R.s @@ {j|横山研究室|j}} </li>
       </ul>
     </h3>
-    <h3 className="text-3xl">
-      <Link path="/aboutme"> {R.s @@ "More detail, see here..."} </Link>
-    </h3>
   </div>;
 };

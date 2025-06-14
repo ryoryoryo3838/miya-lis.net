@@ -3,13 +3,32 @@
 import * as AboutMe from "./bin/components/AboutMe.js";
 import * as Caml_option from "melange.js/caml_option.js";
 import * as Home from "./bin/components/Home.js";
+import * as Link from "./bin/components/Link.js";
+import * as R from "./lib/r/R.js";
 import * as ReasonReactRouter from "reason-react/ReasonReactRouter.js";
 import * as Client from "react-dom/client";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function Index$Error(Props) {
-  return JsxRuntime.jsx("h1", {
-    children: "Error!!!"
+  return JsxRuntime.jsxs("div", {
+    children: [
+      JsxRuntime.jsx("h1", {
+        children: R.s("404 Not Found"),
+        className: "text-8xl items-center"
+      }),
+      JsxRuntime.jsx("p", {
+        children: R.s("This is requested URL was not found on this server."),
+        className: "text-4xl pt-5"
+      }),
+      JsxRuntime.jsx(Link.make, {
+        path: "/",
+        children: JsxRuntime.jsx("p", {
+          children: R.s("Back to Home"),
+          className: "text-3xl pt-10"
+        })
+      })
+    ],
+    className: "p-10 text-center"
   });
 }
 
