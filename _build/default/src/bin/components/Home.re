@@ -2,8 +2,7 @@
 let make = () => {
   <div className="font-serif">
     <Header />
-    <Title />
-    //<h2> {R.s @@ "Created with ReasonReact + Melange + Vite!!!"} </h2>
+    <AboutMe.home />
     <h3 className="text-4xl pb-5 font-black">
       <a href="https://astro.miya-lis.net/">
         {R.s @@ {j|→→→旧サイトはこちら←←←|j}}
@@ -26,9 +25,14 @@ let dev = () => {
       <Layout.wrapMain>
         <AboutMe.home />
         <Table>
-          <Table.element path="/aboutme" name="About me" />
-          <Table.element path="/prev" name={j|旧サイト|j} />
-        </Table>
+
+            {[("/aboutme", "About me"), ("/prev", "Prev Site")]
+             |> List.map(((path, name)) => <Table.element path name />)
+             |> Array.of_list
+             |> React.array}
+          </Table>
+          // <Table.element path="/aboutme" name="About me" />
+          // <Table.element path="/prev" name={j|旧サイト|j} />
       </Layout.wrapMain>
     </Layout.wrap>
     <footer className="text-center fixed bottom-0">

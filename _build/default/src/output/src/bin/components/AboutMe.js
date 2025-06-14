@@ -2,6 +2,8 @@
 
 import * as Link from "./Link.js";
 import * as R from "../../lib/r/R.js";
+import * as Stdlib__Array from "melange/array.js";
+import * as Stdlib__List from "melange/list.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function AboutMe$home(Props) {
@@ -82,12 +84,35 @@ function AboutMe$detail(Props) {
   });
 }
 
+function AboutMe$element(Props) {
+  let category = Props.category;
+  let lst = Props.lst;
+  return JsxRuntime.jsxs(JsxRuntime.Fragment, {
+    children: [
+      JsxRuntime.jsx("p", {
+        children: R.s(category)
+      }),
+      JsxRuntime.jsx("ul", {
+        children: Stdlib__Array.of_list(Stdlib__List.map((function (x) {
+          return JsxRuntime.jsx("li", {
+            children: R.s(x)
+          });
+        }), lst)),
+        className: "pl-15"
+      })
+    ]
+  });
+}
+
 const home = AboutMe$home;
 
 const detail = AboutMe$detail;
 
+const element = AboutMe$element;
+
 export {
   home,
   detail,
+  element,
 }
 /* Link Not a pure module */

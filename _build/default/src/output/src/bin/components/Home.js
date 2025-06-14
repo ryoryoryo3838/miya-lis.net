@@ -5,15 +5,16 @@ import * as Header from "./Header.js";
 import * as Layout from "./Layout.js";
 import * as Link from "./Link.js";
 import * as R from "../../lib/r/R.js";
+import * as Stdlib__Array from "melange/array.js";
+import * as Stdlib__List from "melange/list.js";
 import * as Table from "./Table.js";
-import * as Title from "./Title.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function Home(Props) {
   return JsxRuntime.jsxs("div", {
     children: [
       JsxRuntime.jsx(Header.make, {}),
-      JsxRuntime.jsx(Title.make, {}),
+      JsxRuntime.jsx(AboutMe.home, {}),
       JsxRuntime.jsx("h3", {
         children: JsxRuntime.jsx("a", {
           children: R.s("→→→旧サイトはこちら←←←"),
@@ -46,17 +47,25 @@ function Home$dev(Props) {
           JsxRuntime.jsxs(Layout.wrapMain, {
             children: [
               JsxRuntime.jsx(AboutMe.home, {}),
-              JsxRuntime.jsxs(Table.make, {
-                children: [
-                  JsxRuntime.jsx(Table.element, {
-                    path: "/aboutme",
-                    name: "About me"
-                  }),
-                  JsxRuntime.jsx(Table.element, {
-                    path: "/prev",
-                    name: "旧サイト"
-                  })
-                ]
+              JsxRuntime.jsx(Table.make, {
+                children: Stdlib__Array.of_list(Stdlib__List.map((function (param) {
+                  return JsxRuntime.jsx(Table.element, {
+                    path: param[0],
+                    name: param[1]
+                  });
+                }), {
+                  hd: [
+                    "/aboutme",
+                    "About me"
+                  ],
+                  tl: {
+                    hd: [
+                      "/prev",
+                      "Prev Site"
+                    ],
+                    tl: /* [] */ 0
+                  }
+                }))
               })
             ]
           })
