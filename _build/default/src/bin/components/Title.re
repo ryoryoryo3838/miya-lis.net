@@ -7,9 +7,9 @@ let make = () => {
       id="l-title>h2"
       className="leading-normal font-bold text-4xl max-lg:text-[3vw] max-md:text-[4.5vw] w-4/5 font-serif
           ">
-      {R.s @@ "Yuka Nagase"}
+      {R.s @@ "Name: Ryotaro Seimiya"}
       <br />
-      {R.s @@ "Mofu Mofu Project"}
+      {R.s @@ "Affiliation: KLiS'23"}
     </h2>
   </header>;
 };
