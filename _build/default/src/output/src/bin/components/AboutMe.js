@@ -48,7 +48,7 @@ function AboutMe$detail(Props) {
         className: "text-5xl"
       }),
       JsxRuntime.jsx("h3", {
-        children: R.s("氏名: 清宮 亮太郎"),
+        children: R.s("氏名: 清宮亮太郎"),
         className: "text-3xl"
       }),
       JsxRuntime.jsxs("h3", {
