@@ -6,7 +6,7 @@ function Layout$wrap(Props) {
   let children = Props.children;
   return JsxRuntime.jsx("div", {
     children: children,
-    className: "\n  text-[#333]\n  text-xl max-lg:text-[1.5vw] max-md:text-[3.5vw] text-[62.5%] font-normal backface-hidden palt\n  ",
+    className: "\n  text-[#333]\n  text-xl max-lg:text-[1.5vw] max-md:text-[3.5vw] text-[62.5%] font-normal backface-hidden palt\n  max-lg:pl-\n  ",
     id: "Wrap"
   });
 }

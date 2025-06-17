@@ -2,40 +2,23 @@
 
 import * as Link from "./Link.js";
 import * as R from "../../lib/r/R.js";
+import * as Stdlib__Array from "melange/array.js";
+import * as Stdlib__List from "melange/list.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function Table(Props) {
-  let children = Props.children;
+  let thead = Props.thead;
+  let tbody = Props.tbody;
   return JsxRuntime.jsx("div", {
     children: JsxRuntime.jsxs("table", {
       children: [
         JsxRuntime.jsx("thead", {
-          children: JsxRuntime.jsxs("tr", {
-            children: [
-              JsxRuntime.jsx("th", {
-                id: "icon"
-              }),
-              JsxRuntime.jsx("th", {
-                children: R.s("Name"),
-                className: "pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]",
-                id: "ttl"
-              }),
-              JsxRuntime.jsx("th", {
-                children: R.s("Last Modified"),
-                className: "pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]",
-                id: "update"
-              }),
-              JsxRuntime.jsx("th", {
-                children: R.s("Size"),
-                id: "size"
-              })
-            ]
-          }),
+          children: thead,
           className: "position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono",
           id: "l-directory>table>thead"
         }),
         JsxRuntime.jsx("tbody", {
-          children: children,
+          children: tbody,
           className: "position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono pl-[5vw]",
           id: "l-directory>table>body"
         })
@@ -48,39 +31,54 @@ function Table(Props) {
   });
 }
 
-function Table$element(Props) {
-  let path = Props.path;
-  let name = Props.name;
+function Table$tbody(Props) {
+  let lst = Props.lst;
+  return JsxRuntime.jsx(JsxRuntime.Fragment, {
+    children: [Stdlib__Array.of_list(Stdlib__List.map((function (param) {
+        const path = param[0];
+        return JsxRuntime.jsx("tr", {
+          children: Stdlib__Array.of_list(Stdlib__List.map((function (x) {
+            return JsxRuntime.jsx("th", {
+              children: JsxRuntime.jsx(Link.make, {
+                path: path,
+                children: R.s(x)
+              })
+            });
+          }), param[1]))
+        });
+      }), lst))]
+  });
+}
+
+function Table$thead(Props) {
+  let index = Props.index;
   return JsxRuntime.jsx(JsxRuntime.Fragment, {
     children: [JsxRuntime.jsxs("tr", {
         children: [
           JsxRuntime.jsx("th", {
-            children: R.s("")
+            id: "icon"
           }),
-          JsxRuntime.jsx("th", {
-            children: JsxRuntime.jsx(Link.make, {
-              path: path,
-              children: R.s(name)
-            })
-          }),
-          JsxRuntime.jsx("th", {
-            children: R.s("")
-          }),
-          JsxRuntime.jsx("th", {
-            children: R.s("")
-          })
-        ],
-        className: "p-10 "
+          Stdlib__Array.of_list(Stdlib__List.map((function (x) {
+            return JsxRuntime.jsx("th", {
+              children: R.s(x),
+              className: "pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]",
+              id: x
+            });
+          }), index))
+        ]
       })]
   });
 }
 
 const make = Table;
 
-const element = Table$element;
+const tbody = Table$tbody;
+
+const thead = Table$thead;
 
 export {
   make,
-  element,
+  tbody,
+  thead,
 }
 /* Link Not a pure module */

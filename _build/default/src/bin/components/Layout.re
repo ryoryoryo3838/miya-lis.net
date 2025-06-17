@@ -5,6 +5,7 @@ let wrap = (~children) => {
     className="
   text-[#333]
   text-xl max-lg:text-[1.5vw] max-md:text-[3.5vw] text-[62.5%] font-normal backface-hidden palt
+  max-lg:pl-
   ">
     children
   </div>;
