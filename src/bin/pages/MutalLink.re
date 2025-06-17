@@ -5,6 +5,10 @@ let table = () => {
       <Table.tbody
         lst=[
           (
+            "https:かすしゅく.みんな/",
+            ["", "-", "かすしゅく.みんな", "-"],
+          ),
+          (
             "https://romablog-lime.vercel.app/about",
             ["", "Romanohu", "Roma.Log(/\t・\t・\t)/", "-"],
           ),
