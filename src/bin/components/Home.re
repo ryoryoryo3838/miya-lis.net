@@ -32,11 +32,6 @@ let dev = () => {
         </Table>
       </Layout.wrapMain>
     </Layout.wrap>
-    <footer className="text-center fixed bottom-0">
-      <h1 className="text-2xl">
-        {R.s @@ "※※ THIS WEB SITE IS UNDER CONSTRUCTION ※※"}
-      </h1>
-    </footer>
-    // <Table/>
+    <Footer />
   </>;
 };

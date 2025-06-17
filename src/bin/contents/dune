@@ -1,7 +1,7 @@
 (library
- (name components)
+ (name contents)
  (modes melange)
  (wrapped false)
- (libraries reason-react r contents)
+ (libraries reason-react r components)
  (preprocess
   (pps melange.ppx reason-react-ppx)))
