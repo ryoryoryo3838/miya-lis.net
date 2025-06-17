@@ -9,3 +9,8 @@ let make = (~path, ~children) => {
     children
   </a>;
 };
+
+[@react.component]
+let url = (~path, ~children) => {
+  <a href=path> children </a>;
+};

@@ -33,17 +33,27 @@ function Table(Props) {
 
 function Table$tbody(Props) {
   let lst = Props.lst;
+  let url = Props.url;
   return JsxRuntime.jsx(JsxRuntime.Fragment, {
     children: [Stdlib__Array.of_list(Stdlib__List.map((function (param) {
         const path = param[0];
         return JsxRuntime.jsx("tr", {
           children: Stdlib__Array.of_list(Stdlib__List.map((function (x) {
-            return JsxRuntime.jsx("th", {
-              children: JsxRuntime.jsx(Link.make, {
-                path: path,
-                children: R.s(x)
-              })
-            });
+            if (url === undefined) {
+              return JsxRuntime.jsx("th", {
+                children: JsxRuntime.jsx(Link.make, {
+                  path: path,
+                  children: R.s(x)
+                })
+              });
+            } else {
+              return JsxRuntime.jsx("th", {
+                children: JsxRuntime.jsx(Link.url, {
+                  path: path,
+                  children: R.s(x)
+                })
+              });
+            }
           }), param[1]))
         });
       }), lst))]

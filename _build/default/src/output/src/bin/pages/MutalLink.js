@@ -8,46 +8,30 @@ import * as Table from "../components/Table.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 function table(param) {
-  return JsxRuntime.jsx(Table.make, {
-    thead: JsxRuntime.jsx(Table.thead, {
-      index: {
-        hd: "Name",
-        tl: {
-          hd: "Link",
+  return JsxRuntime.jsx("div", {
+    children: JsxRuntime.jsx(Table.make, {
+      thead: JsxRuntime.jsx(Table.thead, {
+        index: {
+          hd: "Name",
           tl: {
-            hd: "Size",
-            tl: /* [] */ 0
-          }
-        }
-      }
-    }),
-    tbody: JsxRuntime.jsx(Table.tbody, {
-      lst: {
-        hd: [
-          "https:かすしゅく.みんな/",
-          {
-            hd: "",
+            hd: "Link",
             tl: {
-              hd: "-",
-              tl: {
-                hd: "かすしゅく.みんな",
-                tl: {
-                  hd: "-",
-                  tl: /* [] */ 0
-                }
-              }
+              hd: "Size",
+              tl: /* [] */ 0
             }
           }
-        ],
-        tl: {
+        }
+      }),
+      tbody: JsxRuntime.jsx(Table.tbody, {
+        lst: {
           hd: [
-            "https://romablog-lime.vercel.app/about",
+            "https:かすしゅく.みんな/",
             {
               hd: "",
               tl: {
-                hd: "Romanohu",
+                hd: "-",
                 tl: {
-                  hd: "Roma.Log(/\t・\t・\t)/",
+                  hd: "かすしゅく.みんな",
                   tl: {
                     hd: "-",
                     tl: /* [] */ 0
@@ -58,13 +42,13 @@ function table(param) {
           ],
           tl: {
             hd: [
-              "https://mikazukimo.github.io/zukimo_shiroko_suki/",
+              "https://romablog-lime.vercel.app/about",
               {
                 hd: "",
                 tl: {
-                  hd: "Zukimo",
+                  hd: "Romanohu",
                   tl: {
-                    hd: "ずきもの書庫",
+                    hd: "Roma.Log(/\t・\t・\t)/",
                     tl: {
                       hd: "-",
                       tl: /* [] */ 0
@@ -75,13 +59,13 @@ function table(param) {
             ],
             tl: {
               hd: [
-                "https://utsugi0101.dev/",
+                "https://mikazukimo.github.io/zukimo_shiroko_suki/",
                 {
                   hd: "",
                   tl: {
-                    hd: "Ustugi",
+                    hd: "Zukimo",
                     tl: {
-                      hd: "Ustugi0101",
+                      hd: "ずきもの書庫",
                       tl: {
                         hd: "-",
                         tl: /* [] */ 0
@@ -90,11 +74,30 @@ function table(param) {
                   }
                 }
               ],
-              tl: /* [] */ 0
+              tl: {
+                hd: [
+                  "https://utsugi0101.dev/",
+                  {
+                    hd: "",
+                    tl: {
+                      hd: "Ustugi",
+                      tl: {
+                        hd: "Ustugi0101",
+                        tl: {
+                          hd: "-",
+                          tl: /* [] */ 0
+                        }
+                      }
+                    }
+                  }
+                ],
+                tl: /* [] */ 0
+              }
             }
           }
-        }
-      }
+        },
+        url: "url"
+      })
     })
   });
 }

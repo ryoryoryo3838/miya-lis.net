@@ -4,7 +4,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const NUM_BOIDS = 75;
-const BOID_SIZE = 6;
+const BOID_SIZE = 6.5;
 let mouse = { x: null, y: null };
 
 canvas.addEventListener('mousemove', (e) => {

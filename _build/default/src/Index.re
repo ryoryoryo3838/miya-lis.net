@@ -22,6 +22,7 @@ module Router = {
     | ["aboutme"] => <AboutMe.detail />
     | ["prev"] => <Home.prev />
     | ["mutual"] => <MutalLink />
+    | ["aquarium"] => <Aquarium />
     | _ => <Error />
     };
   };

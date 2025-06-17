@@ -1,20 +1,18 @@
 let table = () => {
   <Table
-    thead={
-      <Table.thead 
-        index=["Name", "Last modified", "Size"] 
-      />}
+    thead={<Table.thead index=["Name", "Last modified", "Size"] />}
     tbody={
       <Table.tbody
-        lst = [
-          ("/aboutme",["","About me","2025-06-17","-"]),
+        lst=[
+          ("/aboutme", ["", "About me", "2025-06-17", "-"]),
           ("/prev", ["", "Prev site", "2025-06-17", "-"]),
-          ("/mutual",["", "Mutual link", "2025-06-17","-"])
+          ("/mutual", ["", "Mutual link", "2025-06-17", "-"]),
+          ("/aquarium", ["", "Aquarium", "2025-06-18", "-"]),
         ]
-      />}
-  />
+      />
+    }
+  />;
 };
-
 
 // ホーム
 [@react.component]
@@ -25,7 +23,7 @@ let make = () => {
       <Layout.wrapMain> <AboutMe.home /> {table()} </Layout.wrapMain>
     </Layout.wrap>
     <Footer />
-    </>;
+  </>;
 };
 
 // 旧ホーム

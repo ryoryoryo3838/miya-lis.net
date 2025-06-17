@@ -21,13 +21,19 @@ let make = (~thead, ~tbody) => {
 };
 
 [@react.component]
-let tbody = (~lst: list((string, list(string)))) => {
+let tbody = (~lst: list((string, list(string))), ~url=?) => {
   <>
     {lst
      |> List.map(((path, index)) =>
           <tr>
             {index
-             |> List.map(x => <th> <Link path> {R.s @@ x} </Link> </th>)
+             |> List.map(x =>
+                  if (url == None) {
+                    <th> <Link path> {R.s @@ x} </Link> </th>;
+                  } else {
+                    <th> <Link.url path> {R.s @@ x} </Link.url> </th>;
+                  }
+                )
              |> Array.of_list
              |> React.array}
           </tr>

@@ -16,9 +16,21 @@ function Link(Props) {
   });
 }
 
+function Link$url(Props) {
+  let path = Props.path;
+  let children = Props.children;
+  return JsxRuntime.jsx("a", {
+    children: children,
+    href: path
+  });
+}
+
 const make = Link;
+
+const url = Link$url;
 
 export {
   make,
+  url,
 }
 /* ReasonReactRouter Not a pure module */
