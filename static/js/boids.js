@@ -7,7 +7,7 @@ const NUM_BOIDS = 75;
 const BOID_SIZE = 6.5;
 let mouse = { x: null, y: null };
 
-canvas.addEventListener('mousemove', (e) => {
+window.addEventListener('mousemove', (e) => {
   const rect = canvas.getBoundingClientRect();
   mouse.x = e.clientX - rect.left;
   mouse.y = e.clientY - rect.top;
