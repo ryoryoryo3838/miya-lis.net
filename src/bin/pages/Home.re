@@ -1,24 +1,21 @@
 let table = () => {
   <Table
     thead={<Table.thead index=["Name", "Last modified", "Size"] />}
-    tbody={
-      <>
-      <Table.tbody
-        lst=[
-          ("/aboutme", ["", "About me", "2025-06-17", "-"]),
-          ("/prev", ["", "Prev site", "2025-06-17", "-"]),
-          ("/mutual", ["", "Mutual link", "2025-06-17", "-"]),
-          ("/aquarium", ["", "Aquarium", "2025-06-18", "-"]),
-        ]
-      />
-    <Table.tbody
-      lst=[
-        ("/blog", ["", "Blog", "2025-06-18","-"])
-      ]
-      url="url"
-    />
-    </>
-    }
+    tbody=
+      {<>
+         <Table.tbody
+           lst=[
+             ("/aboutme", ["", "About me", "2025-06-17", "-"]),
+             ("/prev", ["", "Prev site", "2025-06-17", "-"]),
+             ("/mutual", ["", "Mutual link", "2025-06-17", "-"]),
+             ("/aquarium", ["", "Aquarium", "2025-06-18", "-"]),
+           ]
+         />
+         <Table.tbody
+           lst=[("https://blog.miya-lis.net", ["", "Blog", "2025-06-18", "-"])]
+           url="url"
+         />
+       </>}
   />;
 };
 

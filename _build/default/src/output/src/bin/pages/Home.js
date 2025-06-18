@@ -103,7 +103,7 @@ function table(param) {
         JsxRuntime.jsx(Table.tbody, {
           lst: {
             hd: [
-              "/blog",
+              "https://blog.miya-lis.net",
               {
                 hd: "",
                 tl: {
