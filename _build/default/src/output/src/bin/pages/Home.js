@@ -23,48 +23,16 @@ function table(param) {
         }
       }
     }),
-    tbody: JsxRuntime.jsx(Table.tbody, {
-      lst: {
-        hd: [
-          "/aboutme",
-          {
-            hd: "",
-            tl: {
-              hd: "About me",
-              tl: {
-                hd: "2025-06-17",
-                tl: {
-                  hd: "-",
-                  tl: /* [] */ 0
-                }
-              }
-            }
-          }
-        ],
-        tl: {
-          hd: [
-            "/prev",
-            {
-              hd: "",
-              tl: {
-                hd: "Prev site",
-                tl: {
-                  hd: "2025-06-17",
-                  tl: {
-                    hd: "-",
-                    tl: /* [] */ 0
-                  }
-                }
-              }
-            }
-          ],
-          tl: {
+    tbody: JsxRuntime.jsxs(JsxRuntime.Fragment, {
+      children: [
+        JsxRuntime.jsx(Table.tbody, {
+          lst: {
             hd: [
-              "/mutual",
+              "/aboutme",
               {
                 hd: "",
                 tl: {
-                  hd: "Mutual link",
+                  hd: "About me",
                   tl: {
                     hd: "2025-06-17",
                     tl: {
@@ -77,13 +45,13 @@ function table(param) {
             ],
             tl: {
               hd: [
-                "/aquarium",
+                "/prev",
                 {
                   hd: "",
                   tl: {
-                    hd: "Aquarium",
+                    hd: "Prev site",
                     tl: {
-                      hd: "2025-06-18",
+                      hd: "2025-06-17",
                       tl: {
                         hd: "-",
                         tl: /* [] */ 0
@@ -92,11 +60,69 @@ function table(param) {
                   }
                 }
               ],
-              tl: /* [] */ 0
+              tl: {
+                hd: [
+                  "/mutual",
+                  {
+                    hd: "",
+                    tl: {
+                      hd: "Mutual link",
+                      tl: {
+                        hd: "2025-06-17",
+                        tl: {
+                          hd: "-",
+                          tl: /* [] */ 0
+                        }
+                      }
+                    }
+                  }
+                ],
+                tl: {
+                  hd: [
+                    "/aquarium",
+                    {
+                      hd: "",
+                      tl: {
+                        hd: "Aquarium",
+                        tl: {
+                          hd: "2025-06-18",
+                          tl: {
+                            hd: "-",
+                            tl: /* [] */ 0
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  tl: /* [] */ 0
+                }
+              }
             }
           }
-        }
-      }
+        }),
+        JsxRuntime.jsx(Table.tbody, {
+          lst: {
+            hd: [
+              "/blog",
+              {
+                hd: "",
+                tl: {
+                  hd: "Blog",
+                  tl: {
+                    hd: "2025-06-18",
+                    tl: {
+                      hd: "-",
+                      tl: /* [] */ 0
+                    }
+                  }
+                }
+              }
+            ],
+            tl: /* [] */ 0
+          },
+          url: "url"
+        })
+      ]
     })
   });
 }

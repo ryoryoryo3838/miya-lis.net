@@ -2,6 +2,7 @@ let table = () => {
   <Table
     thead={<Table.thead index=["Name", "Last modified", "Size"] />}
     tbody={
+      <>
       <Table.tbody
         lst=[
           ("/aboutme", ["", "About me", "2025-06-17", "-"]),
@@ -10,6 +11,13 @@ let table = () => {
           ("/aquarium", ["", "Aquarium", "2025-06-18", "-"]),
         ]
       />
+    <Table.tbody
+      lst=[
+        ("/blog", ["", "Blog", "2025-06-18","-"])
+      ]
+      url="url"
+    />
+    </>
     }
   />;
 };
