@@ -13,12 +13,15 @@ function table(param) {
   return JsxRuntime.jsx(Table.make, {
     thead: JsxRuntime.jsx(Table.thead, {
       index: {
-        hd: "Name",
+        hd: "",
         tl: {
-          hd: "Last modified",
+          hd: "Name",
           tl: {
-            hd: "Size",
-            tl: /* [] */ 0
+            hd: "Last modified",
+            tl: {
+              hd: "Size",
+              tl: /* [] */ 0
+            }
           }
         }
       }
@@ -30,7 +33,7 @@ function table(param) {
             hd: [
               "/aboutme",
               {
-                hd: "",
+                hd: "fa-solid fa-address-card",
                 tl: {
                   hd: "About me",
                   tl: {
@@ -47,7 +50,7 @@ function table(param) {
               hd: [
                 "/prev",
                 {
-                  hd: "",
+                  hd: "fa-solid fa-rotate",
                   tl: {
                     hd: "Prev site",
                     tl: {
@@ -64,7 +67,7 @@ function table(param) {
                 hd: [
                   "/mutual",
                   {
-                    hd: "",
+                    hd: "fa-solid fa-link",
                     tl: {
                       hd: "Mutual link",
                       tl: {
@@ -81,7 +84,7 @@ function table(param) {
                   hd: [
                     "/aquarium",
                     {
-                      hd: "",
+                      hd: "fa-solid fa-fish",
                       tl: {
                         hd: "Aquarium",
                         tl: {
@@ -105,7 +108,7 @@ function table(param) {
             hd: [
               "https://blog.miya-lis.net",
               {
-                hd: "",
+                hd: "las la-database",
                 tl: {
                   hd: "Blog",
                   tl: {

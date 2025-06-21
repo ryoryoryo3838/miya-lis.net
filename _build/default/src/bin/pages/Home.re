@@ -1,18 +1,35 @@
 let table = () => {
   <Table
-    thead={<Table.thead index=["Name", "Last modified", "Size"] />}
+    thead={<Table.thead index=["", "Name", "Last modified", "Size"] />}
     tbody=
       {<>
          <Table.tbody
            lst=[
-             ("/aboutme", ["", "About me", "2025-06-17", "-"]),
-             ("/prev", ["", "Prev site", "2025-06-17", "-"]),
-             ("/mutual", ["", "Mutual link", "2025-06-17", "-"]),
-             ("/aquarium", ["", "Aquarium", "2025-06-18", "-"]),
+             (
+               "/aboutme",
+               ["fa-solid fa-address-card", "About me", "2025-06-17", "-"],
+             ),
+             (
+               "/prev",
+               ["fa-solid fa-rotate", "Prev site", "2025-06-17", "-"],
+             ),
+             (
+               "/mutual",
+               ["fa-solid fa-link", "Mutual link", "2025-06-17", "-"],
+             ),
+             (
+               "/aquarium",
+               ["fa-solid fa-fish", "Aquarium", "2025-06-18", "-"],
+             ),
            ]
          />
          <Table.tbody
-           lst=[("https://blog.miya-lis.net", ["", "Blog", "2025-06-18", "-"])]
+           lst=[
+             (
+               "https://blog.miya-lis.net",
+               ["las la-database", "Blog", "2025-06-18", "-"],
+             ),
+           ]
            url="url"
          />
        </>}

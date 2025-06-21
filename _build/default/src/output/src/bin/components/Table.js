@@ -36,9 +36,19 @@ function Table$tbody(Props) {
   let url = Props.url;
   return JsxRuntime.jsx(JsxRuntime.Fragment, {
     children: [Stdlib__Array.of_list(Stdlib__List.map((function (param) {
+        const index = param[1];
         const path = param[0];
-        return JsxRuntime.jsx("tr", {
-          children: Stdlib__Array.of_list(Stdlib__List.map((function (x) {
+        let tmp;
+        if (index) {
+          const iconcomp = JsxRuntime.jsx("th", {
+            children: JsxRuntime.jsx(Link.make, {
+              path: path,
+              children: JsxRuntime.jsx("i", {
+                className: "pr-[0.1vw] " + index.hd
+              })
+            })
+          });
+          const othercomp = Stdlib__List.map((function (x) {
             if (url === undefined) {
               return JsxRuntime.jsx("th", {
                 children: JsxRuntime.jsx(Link.make, {
@@ -54,7 +64,16 @@ function Table$tbody(Props) {
                 })
               });
             }
-          }), param[1]))
+          }), index.tl);
+          tmp = Stdlib__Array.of_list({
+            hd: iconcomp,
+            tl: othercomp
+          });
+        } else {
+          tmp = JsxRuntime.jsx("div", {});
+        }
+        return JsxRuntime.jsx("tr", {
+          children: tmp
         });
       }), lst))]
   });
@@ -63,19 +82,13 @@ function Table$tbody(Props) {
 function Table$thead(Props) {
   let index = Props.index;
   return JsxRuntime.jsx(JsxRuntime.Fragment, {
-    children: [JsxRuntime.jsxs("tr", {
-        children: [
-          JsxRuntime.jsx("th", {
-            id: "icon"
-          }),
-          Stdlib__Array.of_list(Stdlib__List.map((function (x) {
-            return JsxRuntime.jsx("th", {
-              children: R.s(x),
-              className: "pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]",
-              id: x
-            });
-          }), index))
-        ]
+    children: [JsxRuntime.jsx("tr", {
+        children: Stdlib__Array.of_list(Stdlib__List.map((function (x) {
+          return JsxRuntime.jsx("th", {
+            children: R.s(x),
+            id: x
+          });
+        }), index))
       })]
   });
 }

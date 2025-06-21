@@ -26,16 +26,25 @@ let tbody = (~lst: list((string, list(string))), ~url=?) => {
     {lst
      |> List.map(((path, index)) =>
           <tr>
-            {index
-             |> List.map(x =>
-                  if (url == None) {
-                    <th> <Link path> {R.s @@ x} </Link> </th>;
-                  } else {
-                    <th> <Link.url path> {R.s @@ x} </Link.url> </th>;
-                  }
-                )
-             |> Array.of_list
-             |> React.array}
+            {switch (index) {
+             | [icon, ...other] =>
+               let iconcomp =
+                 <th>
+                   <Link path> <i className={"pr-[0.1vw] " ++ icon} /> </Link>
+                 </th>;
+               let othercomp = {
+                 other
+                 |> List.map(x =>
+                      if (url == None) {
+                        <th> <Link path> {R.s @@ x} </Link> </th>;
+                      } else {
+                        <th> <Link.url path> {R.s @@ x} </Link.url> </th>;
+                      }
+                    );
+               };
+               [iconcomp, ...othercomp] |> Array.of_list |> React.array;
+             | [] => <div />
+             }}
           </tr>
         )
      |> Array.of_list
@@ -47,15 +56,16 @@ let tbody = (~lst: list((string, list(string))), ~url=?) => {
 let thead = (~index) => {
   <>
     <tr>
-      <th id="icon" />
       {index
        |> List.map(x => {
-            <th id=x className="pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]">
+            // <th id=x className="pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]">
+            <th id=x>
               {R.s @@ x}
             </th>
           })
        |> Array.of_list
        |> React.array}
     </tr>
+    // <th id="icon" />
   </>;
 };
