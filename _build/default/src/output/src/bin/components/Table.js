@@ -14,7 +14,7 @@ function Table(Props) {
       children: [
         JsxRuntime.jsx("thead", {
           children: thead,
-          className: "position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono",
+          className: "position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mb-[5vw] text-left font-sometype_mono border-b-[0.5px] border-[#333]",
           id: "l-directory>table>thead"
         }),
         JsxRuntime.jsx("tbody", {

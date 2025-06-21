@@ -8,7 +8,7 @@ let make = (~thead, ~tbody) => {
       className="m-0 p-0 border-0 w-full  font-inherit align-middle border-collapse border-spacing-0 md:w-full md:max-w-md">
       <thead
         id="l-directory>table>thead"
-        className="position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mv-[4vw] text-left font-sometype_mono">
+        className="position-relative height-auto mb-4 max-lg:mb-[1.25vw] max-md:mb-[5vw] text-left font-sometype_mono border-b-[0.5px] border-[#333]">
         thead
       </thead>
       <tbody
