@@ -108,7 +108,7 @@ function table(param) {
             hd: [
               "https://blog.miya-lis.net",
               {
-                hd: "las la-database",
+                hd: "fa-solid fa-book",
                 tl: {
                   hd: "Blog",
                   tl: {

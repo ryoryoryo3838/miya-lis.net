@@ -27,7 +27,7 @@ let table = () => {
            lst=[
              (
                "https://blog.miya-lis.net",
-               ["las la-database", "Blog", "2025-06-18", "-"],
+               ["fa-solid fa-book", "Blog", "2025-06-18", "-"],
              ),
            ]
            url="url"

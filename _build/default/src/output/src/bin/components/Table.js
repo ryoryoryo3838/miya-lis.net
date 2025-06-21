@@ -44,21 +44,39 @@ function Table$tbody(Props) {
             children: JsxRuntime.jsx(Link.make, {
               path: path,
               children: JsxRuntime.jsx("i", {
-                className: "pr-[0.1vw] " + index.hd
+                className: "pr-[0.1vw] fa-xs text-center " + index.hd
               })
             })
           });
           const othercomp = Stdlib__List.map((function (x) {
-            if (url === undefined) {
+            if (url !== undefined) {
+              if (x === "-") {
+                return JsxRuntime.jsx("th", {
+                  children: JsxRuntime.jsx(Link.url, {
+                    path: path,
+                    children: R.s(x)
+                  }),
+                  className: "text-center"
+                });
+              } else {
+                return JsxRuntime.jsx("th", {
+                  children: JsxRuntime.jsx(Link.url, {
+                    path: path,
+                    children: R.s(x)
+                  })
+                });
+              }
+            } else if (x === "-") {
               return JsxRuntime.jsx("th", {
                 children: JsxRuntime.jsx(Link.make, {
                   path: path,
                   children: R.s(x)
-                })
+                }),
+                className: "text-center"
               });
             } else {
               return JsxRuntime.jsx("th", {
-                children: JsxRuntime.jsx(Link.url, {
+                children: JsxRuntime.jsx(Link.make, {
                   path: path,
                   children: R.s(x)
                 })
@@ -84,10 +102,18 @@ function Table$thead(Props) {
   return JsxRuntime.jsx(JsxRuntime.Fragment, {
     children: [JsxRuntime.jsx("tr", {
         children: Stdlib__Array.of_list(Stdlib__List.map((function (x) {
-          return JsxRuntime.jsx("th", {
-            children: R.s(x),
-            id: x
-          });
+          if (x === "Size") {
+            return JsxRuntime.jsx("th", {
+              children: R.s(x),
+              className: "text-center",
+              id: x
+            });
+          } else {
+            return JsxRuntime.jsx("th", {
+              children: R.s(x),
+              id: x
+            });
+          }
         }), index))
       })]
   });

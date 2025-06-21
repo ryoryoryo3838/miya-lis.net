@@ -30,15 +30,29 @@ let tbody = (~lst: list((string, list(string))), ~url=?) => {
              | [icon, ...other] =>
                let iconcomp =
                  <th>
-                   <Link path> <i className={"pr-[0.1vw] " ++ icon} /> </Link>
+                   <Link path>
+                     <i
+                       className={
+                         "pr-[0.1vw] fa-xs text-center" ++ " " ++ icon
+                       }
+                     />
+                   </Link>
                  </th>;
                let othercomp = {
                  other
                  |> List.map(x =>
-                      if (url == None) {
-                        <th> <Link path> {R.s @@ x} </Link> </th>;
-                      } else {
-                        <th> <Link.url path> {R.s @@ x} </Link.url> </th>;
+                      switch (url, x) {
+                      | (None, "-") =>
+                        <th className="text-center">
+                          <Link path> {R.s @@ x} </Link>
+                        </th>
+                      | (None, _) => <th> <Link path> {R.s @@ x} </Link> </th>
+                      | (_, "-") =>
+                        <th className="text-center">
+                          <Link.url path> {R.s @@ x} </Link.url>
+                        </th>
+                      | (_, _) =>
+                        <th> <Link.url path> {R.s @@ x} </Link.url> </th>
                       }
                     );
                };
@@ -57,12 +71,15 @@ let thead = (~index) => {
   <>
     <tr>
       {index
-       |> List.map(x => {
+       |> List.map(x
             // <th id=x className="pl-1.5 max-lg:pl-[.5vw] max-md:pl-[1.5vw]">
-            <th id=x>
-              {R.s @@ x}
-            </th>
-          })
+            =>
+              if (x == "Size") {
+                <th id=x className="text-center"> {R.s @@ x} </th>;
+              } else {
+                <th id=x> {R.s @@ x} </th>;
+              }
+            )
        |> Array.of_list
        |> React.array}
     </tr>
