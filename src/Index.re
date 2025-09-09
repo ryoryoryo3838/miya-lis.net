@@ -1,3 +1,6 @@
+///
+///404 Error Page
+///
 module Error = {
   [@react.component]
   let make = () => {
@@ -13,6 +16,9 @@ module Error = {
   };
 };
 
+///
+/// Router
+///
 module Router = {
   [@react.component]
   let make = () => {
@@ -28,6 +34,9 @@ module Router = {
   };
 };
 
+///
+/// Render
+///
 let node = ReactDOM.querySelector("#root");
 switch (node) {
 | None =>

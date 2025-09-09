@@ -4,5 +4,6 @@
 # Tool
 - ReasonReact + melange + vite
 
-# Road map
+# 後で直す
 - Last modifiedを自動で更新するようにしたい
+- mutual linkのtableがずれてる
