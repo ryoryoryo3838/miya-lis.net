@@ -2,7 +2,8 @@
 _opam/
 .github/
 _archive
-node_modules/
+node_modules/*
+!_build/default/src/output/node_modules/*
 
 _build/install/
 _build/log
