@@ -1,0 +1,5 @@
+(library
+ (name r)
+ (modes melange)
+ (libraries reason-react)
+ (preprocess (pps melange.ppx reason-react-ppx)))
