@@ -1,35 +1,20 @@
 ///
-///404 Error Page
-///
-module Error = {
-  [@react.component]
-  let make = () => {
-    <div className="p-10 text-center">
-      <h1 className="text-8xl items-center"> {R.s @@ "404 Not Found"} </h1>
-      <p className="text-4xl pt-5">
-        {R.s @@ "This is requested URL was not found on this server."}
-      </p>
-      <Link path="/">
-        <p className="text-3xl pt-10"> {R.s @@ "Back to Home"} </p>
-      </Link>
-    </div>;
-  };
-};
-
-///
 /// Router
 ///
 module Router = {
   [@react.component]
   let make = () => {
     let route = ReasonReactRouter.useUrl();
+    Js.log(route.path);
     switch (route.path) {
-    | [] => <Home />
-    | ["aboutme"] => <AboutMe.detail />
-    | ["prev"] => <Home.prev />
-    | ["mutual"] => <MutalLink />
-    | ["aquarium"] => <Aquarium />
-    | _ => <Error />
+    | [] => <Exp />
+    | ["home"]
+    | ["index"] => <Home />
+    | ["aboutme"] => <Post path="aboutme" />
+    | ["post", path, ..._] => <Post path />
+    | _ =>
+      Js.log(route.path);
+      <Home />;
     };
   };
 };

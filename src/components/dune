@@ -1,0 +1,13 @@
+(library
+ (name components)
+ (modes melange)
+ (wrapped false)
+ (libraries reason-react r melange-webapi)
+ (preprocess
+  (pps melange.ppx reason-react-ppx)))
+
+(copy_files# %{project_root}/src/components/ReactJS/*)
+
+(copy_files# %{project_root}/src/*.css)
+
+(copy_files# %{project_root}/static/post/*.md)
