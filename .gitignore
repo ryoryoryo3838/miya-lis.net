@@ -10,7 +10,6 @@ _build/log
 _build/.*
 _build/default/*
 !_build/default/src/
-_build/default/src/components/
 _build/default/src/lib/
 _build/default/src/pages/
 _build/default/src/index*
