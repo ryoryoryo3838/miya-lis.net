@@ -1,0 +1,9 @@
+(library
+ (name pages)
+ (modes melange)
+ (wrapped false)
+ (libraries reason-react r components)
+ (preprocess
+  (pps melange.ppx reason-react-ppx)))
+
+
