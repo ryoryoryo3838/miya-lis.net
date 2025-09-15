@@ -12,7 +12,6 @@ _build/default/*
 !_build/default/src/
 _build/default/src/lib/
 _build/default/src/pages/
-_build/default/src/index*
 _build/default/src/Index*
 _build/default/src/.*
 
