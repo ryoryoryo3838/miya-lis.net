@@ -2,5 +2,4 @@
 _opam/
 .github/
 _archive
-node_modules/*
-!_build/default/src/output/*
+./node_modules/
