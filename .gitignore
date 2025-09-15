@@ -8,5 +8,5 @@ node_modules/*
 _build/install/
 _build/log
 _build/default/*
-!_build/default/src/output/*
+!_build/default/src/
 
