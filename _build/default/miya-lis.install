@@ -1,5 +1,0 @@
-lib: [
-  "_build/install/default/lib/miya-lis/META"
-  "_build/install/default/lib/miya-lis/dune-package"
-  "_build/install/default/lib/miya-lis/opam"
-]
