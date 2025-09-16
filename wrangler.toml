@@ -1,4 +1,4 @@
 name = "miyalis"
-main = "./worker-dist/index.js"
+main = "./worker-dist/default/src/output/src/index.js"
 [site]
 bucket = "./worker-dist"
