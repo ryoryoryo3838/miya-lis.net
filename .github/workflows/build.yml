@@ -41,7 +41,8 @@ jobs:
       - name: Prepage Worker assets
         run: |
           mkdir -p worker-dist
-          cp -r _build/* worker-dist/
+          cp -r _build/default/src/* worker-dist/
+          
       - name: Publish to Cloudflare Worker
         run: npx wrangler deploy
         env:
