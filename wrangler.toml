@@ -1,0 +1,4 @@
+name = "miya-lis.net"
+
+[site]
+bucket = "./worker-dist"
