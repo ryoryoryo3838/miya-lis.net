@@ -8,7 +8,4 @@
 
 (copy_files# %{project_root}/src/components/ReactJS/*)
 
-(copy_files# %{project_root}/src/*.css)
 
-(copy_files# %{project_root}/static/post/*.md)
-(copy_files# %{project_root}/static/*.svg)
