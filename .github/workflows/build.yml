@@ -34,6 +34,7 @@ jobs:
       - name: Build ReasonML project with Dune
         run: |
           eval $(opam env)
+          npm run build
           npx vite build
         # もし特定のビルドターゲットがある場合は、それを指定することもできます。
         # 例: dune build my_app.bc
