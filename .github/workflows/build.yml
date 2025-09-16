@@ -38,13 +38,9 @@ jobs:
           npx vite build
         # もし特定のビルドターゲットがある場合は、それを指定することもできます。
         # 例: dune build my_app.bc
-      - name: Prepage Worker assets
-        run: |
-          mkdir -p worker-dist
-          cp -r _build/default/src/* worker-dist/
-          
+        
       - name: Publish to Cloudflare Worker
-        run: npx wrangler pages deploy worker-dist
+        run: npx wrangler pages deploy dist
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
