@@ -25,6 +25,7 @@ jobs:
       - name: Install Opam dep
         run: |
           opam install . --deps-only
+          eval $(opam env)
           opam pin melange https://github.com/ryoryoryo3838/melange.git#miya
 
       - name: Install NPM dep
