@@ -11,7 +11,7 @@ let make = () => {
     <div className="columns-2 flex m-3">
       <h1 className="text-8xl mr-auto"> {R.s @@ "Miya-lis.net/"} </h1>
       <img
-        src="../../../build_static/icon.svg"
+        src="/icon.svg"
         alt="icon"
         className="ml-auto max:ml-[25%] w-[128px] h-[128px] mr-10"
       />

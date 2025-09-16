@@ -27,4 +27,13 @@
  ; module_systems lets you specify commonjs (the default) or es6
  (module_systems es6))
 
-
+(subdir output
+ (subdir public
+  (copy_files (files %{project_root}/public/*)))
+ (subdir static
+  (subdir post
+   (copy_files (files %{project_root}/static/post/*.md))))
+ (subdir src 
+  (copy_files (files %{project_root}/src/index.css))
+  (subdir components (subdir ReactJS
+   (copy_files (files %{project_root}/src/components/ReactJS/*))))))
