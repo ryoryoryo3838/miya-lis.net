@@ -3,4 +3,12 @@
 - Miyaがセルフホストしてるウェブサイト
 
 # ツール
+
 - ReasonML + Melange + Vite
+- ReasonML(OCamlの代替構文)をMelangeでJSにトランスパイルしてViteでデプロイ
+
+# 予定
+
+- 気が向いたら見た目をもうちょいましに
+- 過去の発表資料とかをSlidevとかで置きたい
+- Togglとかもろもろ自分の身辺を記録したやつを載せたい
