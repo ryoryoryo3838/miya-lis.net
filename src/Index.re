@@ -1,21 +1,30 @@
 ///
 /// Router
 ///
+let router = (path: list(string)): React.element => {
+  switch (path) {
+  | [] => <Home />
+  | ["home"]
+  | ["index"] => <Home />
+  | _ =>
+    <Layout>
+      {switch (path) {
+       | ["bookshelf"] => <BookShelf />
+       | ["link"] => <Link />
+       | ["aqualium"] => <Sakana />
+       | ["misc"] => <MISC />
+       | ["aboutme"] => <Post path="aboutme" />
+       | ["post", path, ..._] => <Post path />
+       | _ => <Home />
+       }}
+    </Layout>
+  };
+};
 module Router = {
   [@react.component]
   let make = () => {
     let route = ReasonReactRouter.useUrl();
-    Js.log(route.path);
-    switch (route.path) {
-    | [] => <Exp />
-    | ["home"]
-    | ["index"] => <Home />
-    | ["aboutme"] => <Post path="aboutme" />
-    | ["post", path, ..._] => <Post path />
-    | _ =>
-      Js.log(route.path);
-      <Home />;
-    };
+    <> {router(route.path)} </>;
   };
 };
 
