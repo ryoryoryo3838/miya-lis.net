@@ -26,13 +26,14 @@ jobs:
         run: |
           opam install melange dune
           opam install . --deps-only --with-test
-          eval $(opam env)
       - name: Install NPM dep
         run: |
           npm i
 
       - name: Build ReasonML project with Dune
-        run: dune build
+        run: |
+          eval $(opam env)
+          dune build
         # もし特定のビルドターゲットがある場合は、それを指定することもできます。
         # 例: dune build my_app.bc
 
