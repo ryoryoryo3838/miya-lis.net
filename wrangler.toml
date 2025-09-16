@@ -1,6 +1,0 @@
-name = "miyalis"
-main = "worker-dist/output/src/Index.js"
-compatibility_date = "2025-09-17"
-
-[site]
-bucket = "./worker-dist"
