@@ -17,18 +17,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup OCaml and Melange
-        uses: ocaml/setup-ocaml@v2
+        uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-version: '5.2.1' # 互換性のあるOCamlのバージョンを指定
-          opam-version: '2.1'
+          ocaml-compiler: '5.2.1' # 互換性のあるOCamlのバージョンを指定
+          dune-chache: true
 
-      - name: Install Melange and dependencies
+      - name: Install Opam dep
         run: |
           opam install melange dune
           opam install . --deps-only --with-test
+      - name: Install NPM dep
+        run: |
+          npm i
 
       - name: Build ReasonML project with Dune
-        run: dune build @melange
+        run: dune build
         # もし特定のビルドターゲットがある場合は、それを指定することもできます。
         # 例: dune build my_app.bc
 
