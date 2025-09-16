@@ -24,7 +24,7 @@ jobs:
 
       - name: Install Opam dep
         run: |
-          opam install melange dune
+          opam pin melange git@github.com:ryoryoryo3838/melange#miya
           opam install . --deps-only --with-test
 
       - name: Install NPM dep
