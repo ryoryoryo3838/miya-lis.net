@@ -3,6 +3,7 @@ _opam/
 _archive
 node_modules/
 _build/
+.vite
 # !_build/default/src/output/node_modules/*
 #
 # _build/install/
