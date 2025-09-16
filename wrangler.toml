@@ -1,4 +1,4 @@
-name = "miya-lis.net"
+name = "miyalis"
 main = "./worker-dist/index.js"
 [site]
 bucket = "./worker-dist"
