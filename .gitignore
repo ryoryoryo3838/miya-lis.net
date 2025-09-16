@@ -1,6 +1,5 @@
 .DS_Store
 _opam/
-.github/
 _archive
 node_modules/*
 !_build/default/src/output/node_modules/*

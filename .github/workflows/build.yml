@@ -1,0 +1,39 @@
+name: ReasonML Build with Melange
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup OCaml and Melange
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-version: '5.2.1' # 互換性のあるOCamlのバージョンを指定
+          opam-version: '2.1'
+
+      - name: Install Melange and dependencies
+        run: |
+          opam install melange dune
+          opam install . --deps-only --with-test
+
+      - name: Build ReasonML project with Dune
+        run: dune build @melange
+        # もし特定のビルドターゲットがある場合は、それを指定することもできます。
+        # 例: dune build my_app.bc
+
+      - name: Archive and upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: melange-build-artifacts
+          path: _build/default/
