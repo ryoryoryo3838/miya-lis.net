@@ -26,6 +26,7 @@ jobs:
         run: |
           opam install melange dune
           opam install . --deps-only --with-test
+          eval $(opam env)
       - name: Install NPM dep
         run: |
           npm i
