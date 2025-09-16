@@ -20,12 +20,13 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: '5.2.1' # 互換性のあるOCamlのバージョンを指定
-          dune-chache: true
+          dune-cache: true
 
       - name: Install Opam dep
         run: |
           opam install melange dune
           opam install . --deps-only --with-test
+
       - name: Install NPM dep
         run: |
           npm i
@@ -33,12 +34,15 @@ jobs:
       - name: Build ReasonML project with Dune
         run: |
           eval $(opam env)
-          dune build
+          npx vite build
         # もし特定のビルドターゲットがある場合は、それを指定することもできます。
         # 例: dune build my_app.bc
-
-      - name: Archive and upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: melange-build-artifacts
-          path: _build/default/
+      - name: Prepage Worker assets
+        run: |
+          mkdir -p worker-dist
+          cp -r _build/* worker-dist/
+      - name: Publish to Cloudflare Worker
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
