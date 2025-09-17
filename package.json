@@ -43,17 +43,16 @@
     "react-dom": "^18.3.1",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "sanitize": "^2.1.2",
-    "wrangler": "^4.37.1"
+    "sanitize": "^2.1.2"
   },
   "devDependencies": {
-    "wrangler": "^4.24.3",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@tailwindcss/typography": "^0.5.16",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.5",
     "tailwindcss": "^4.1.13",
     "vite": "^7.1.5",
-    "vite-plugin-string": "^1.2.3"
+    "vite-plugin-string": "^1.2.3",
+    "wrangler": "^4.37.1"
   }
 }

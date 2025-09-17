@@ -42,5 +42,6 @@ jobs:
       - name: Publish to Cloudflare Worker
         run: npx wrangler pages deploy dist --project-name miya-lis
         env:
+          CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID: ${{ secrets.CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
