@@ -13,7 +13,6 @@ echo "vite building...";
 echo "";
 npm run bundle; # build into /dist
 
-echo "${CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID}" | npx wrangler pages secret put CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID
 echo "";
 case "$@" in
   --local)
@@ -21,7 +20,7 @@ case "$@" in
     npx wrangler pages deploy;; #local deploy
   --public)
     echo "wrangler public local deploying...";
-    npx wrangler pages deploy --project-name miya-list;; #local deploy
+    npx wrangler pages deploy --project-name miya-lis;; #local deploy
   *)
     echo "$@";
     echo "Error";
