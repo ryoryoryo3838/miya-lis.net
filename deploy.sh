@@ -32,4 +32,4 @@ wait;
 echo "removing /dist"
 echo ""
 
-rm /dist -fr
+rm dist -fr
