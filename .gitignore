@@ -1,7 +1,7 @@
 _opam/
 node_modules/
 _build/
-.env
+.dev.vars
 .vite
 .envrc
 dist/
