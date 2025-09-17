@@ -13,13 +13,16 @@ function UserForm() {
       const res = await fetch('/api/db', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain',
         },
-        body: JSON.stringify({ sql: username }),
+        body: sql,
       });
 
       const data = await res.json();
-      setResponse(data);
+      console.log(data.message);
+      console.log(data.executeSql);
+      setResponse(data.message);
+
     } catch (error) {
       console.error("API呼び出しエラー:", error);
       setResponse({ error: "API呼び出しに失敗しました。" });
@@ -34,7 +37,7 @@ function UserForm() {
         <input
           type="text"
           value={sql}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => setSql(e.target.value)}
           placeholder="ユーザー名を入力"
         />
         <button type="submit" disabled={loading}>
