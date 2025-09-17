@@ -14,8 +14,8 @@
     "watch": "npm run build -- --watch",
     "serve": "vite serve --open",
     "bundle": "npm run build && vite build && cp -r static/ dist/",
-    "deploy:bundle": "npm run bundle && wrangler deploy",
-    "deploy": "npm run bundle && wrangler deploy"
+    "deploy": "sh deploy.sh --local",
+    "deploy:public": "sh deploy.sh --public"
   },
   "scriptsComments": {
     "preinstall:opam": "# Sync opam database with upstream repositories: https://opam.ocaml.org/doc/Usage.html#opam-update",
