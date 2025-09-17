@@ -2,23 +2,20 @@
 /// Router
 ///
 let router = (path: list(string)): React.element => {
-  switch (path) {
-  | [] => <Home />
-  | ["home"]
-  | ["index"] => <Home />
-  | _ =>
-    <Layout>
-      {switch (path) {
-       | ["bookshelf"] => <BookShelf />
-       | ["link"] => <Link />
-       | ["aqualium"] => <Sakana />
-       | ["misc"] => <MISC />
-       | ["aboutme"] => <Post path="aboutme" />
-       | ["post", path, ..._] => <Post path />
-       | _ => <Home />
-       }}
-    </Layout>
-  };
+  <Layout>
+    {switch (path) {
+     | [] => <Home />
+     | ["home"]
+     | ["index"] => <Home />
+     | ["bookshelf"] => <BookShelf />
+     | ["link"] => <Link />
+     | ["aqualium"] => <Sakana />
+     | ["misc"] => <MISC />
+     | ["aboutme"] => <Post path="aboutme" />
+     | ["post", path, ..._] => <Post path />
+     | _ => <Home />
+     }}
+  </Layout>;
 };
 module Router = {
   [@react.component]

@@ -8,17 +8,9 @@ let contentsList = [
 [@react.component]
 let make = () => {
   <>
-    <div className="columns-2 flex m-3">
-      <h1 className="text-8xl mr-auto"> {R.s @@ "Miya-lis.net/"} </h1>
-      <img
-        src="/icon.svg"
-        alt="icon"
-        className="ml-auto max:ml-[25%] w-[128px] h-[128px] mr-10"
-      />
-    </div>
     // タイトル部分、ルーティングに合わせて末尾にpathを足していきたい
     <div>
-      <p className="text-5xl m-8">
+      <p className="text-5xl m-5">
         {R.s @@
          "これは Miya がセルフホストしてるウェブサイトです。"}
       </p>

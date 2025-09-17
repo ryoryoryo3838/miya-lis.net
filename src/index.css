@@ -67,29 +67,33 @@
   @apply font-bold;
 }
 
-.markdown h1 {
-  @apply leading-tight text-5xl font-bold font-serif mb-4 mt-6 pb-2;
+/* .markdown h1 { */
+/*   @apply leading-tight text-5xl font-bold font-serif mb-4 mt-6 pb-2; */
+/* } */
+
+.markdown h1 { 
+  @apply text-5xl m-5;
 }
 
 .markdown h2 {
   @apply 
-  leading-tight text-3xl font-bold mb-4 mt-6 pb-2;
+  leading-tight text-3xl  mb-4 mt-6 pb-2 ;
 }
 
 .markdown h3 {
-  @apply leading-snug text-2xl font-bold mb-4 mt-6;
+  @apply leading-snug text-2xl  mb-4 mt-6 ;
 }
 
 .markdown h4 {
-  @apply leading-none text-2xl font-semibold mb-4 mt-6;
+  @apply leading-none text-2xl  mb-4 mt-6 ;
 }
 
 .markdown h5 {
-  @apply leading-tight text-2xl font-semibold mb-4 mt-6;
+  @apply leading-tight text-2xl  mb-4 mt-6 ;
 }
 
 .markdown h6 {
-  @apply leading-tight text-base font-semibold text-gray-600 mb-4 mt-6;
+  @apply leading-tight text-base  text-gray-600 mb-4 mt-6 ;
 }
 
 .markdown blockquote {
@@ -109,11 +113,11 @@
 }
 
 .markdown ul {
-  @apply text-2xl pl-8 list-disc;
+  @apply text-2xl pl-8 list-disc m-5;
 }
 
 .markdown ol {
-  @apply text-2xl pl-8 list-decimal;
+  @apply text-2xl pl-8 list-decimal ml-5;
 }
 
 .markdown kbd {
