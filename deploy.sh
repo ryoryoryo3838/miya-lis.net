@@ -13,6 +13,7 @@ echo "vite building...";
 echo "";
 npm run bundle; # build into /dist
 
+echo "${CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID}" | npx wrangler pages secret put CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID
 echo "";
 case "$@" in
   --local)

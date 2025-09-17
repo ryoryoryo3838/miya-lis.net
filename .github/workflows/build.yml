@@ -40,7 +40,9 @@ jobs:
         # 例: dune build my_app.bc
         
       - name: Publish to Cloudflare Worker
-        run: npx wrangler pages deploy dist --project-name miya-lis
+        run: |
+          npx wrangler secret put CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID
+          npx wrangler pages deploy dist --project-name miya-lis
         env:
           CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID: ${{ secrets.CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
