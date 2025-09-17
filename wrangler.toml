@@ -5,4 +5,4 @@ compatibility_date = "2025-09-17"
 [[d1_databases]]
 binding = "DB"
 database_name = "miya-lis-db"
-database_id = "d5138c4f-8693-46e6-a9b9-725b6b633bb8"
+database_id = ${{ secrets.CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID }}
