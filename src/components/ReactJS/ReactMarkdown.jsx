@@ -7,8 +7,7 @@ import '../../index.css'
 const md = `
 
 `
-const modules = import.meta.glob("../static/post/*.md", {
-  base: '../../../src',
+const modules = import.meta.glob("/static/post/*.md", {
   eager: true,
   query: '?raw',
   });
