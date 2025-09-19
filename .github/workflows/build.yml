@@ -44,12 +44,12 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-naem miya-lis
-          secrets: |
-            CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID
-          environment: production
-        env:
-          CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID: ${{ secrets.CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID }}
+          command: pages deploy dist --project-name miya-lis
+      #     secrets: |
+      #       CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID
+      #     environment: production
+      #   env:
+      #     CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID: ${{ secrets.CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID }}
       # - name: Publish to Cloudflare Worker
       #   run: npx wrangler pages deploy dist --project-name miya-lis
       #     # npx wrangler secret put CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID
