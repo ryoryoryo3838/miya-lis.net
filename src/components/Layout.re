@@ -1,6 +1,6 @@
 [@react.component]
 let make = (~children: React.element) => {
-  <> <Header /> children <Footer /> </>;
+  <div className="noise"> <Header /> children <Footer /> </div>;
 };
 [@react.component]
 let make_bak = (~children: React.element) => {

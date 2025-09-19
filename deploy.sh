@@ -20,7 +20,7 @@ case "$@" in
     npx wrangler pages deploy;; #local deploy
   --public)
     echo "wrangler public local deploying...";
-    npx wrangler pages deploy --project-name miya-list;; #local deploy
+    npx wrangler pages deploy --project-name miya-lis;; #local deploy
   *)
     echo "$@";
     echo "Error";
