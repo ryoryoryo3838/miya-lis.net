@@ -6,7 +6,7 @@
 @plugin "daisyui" {
   themes: light --default
 };
-html {
+html body {
   background-color: #ffffff; /* 明るいグレーなど */
   background-image: url('./noisy-texture-100x100-o4-d10-c-ffffff-t1.png');
   background-repeat: repeat;

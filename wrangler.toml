@@ -1,3 +1,10 @@
 name = "miya-lis"
 pages_build_output_dir = "./dist"
 compatibility_date = "2025-09-17"
+
+
+# これはpublishにしない
+[[d1_databases]]
+binding = "DB"
+database_name = "miya-lis-db"
+database_id = "${{ secret.CLOUDFLARE_MIYA_LIS_DB_DATABASE_ID }}"

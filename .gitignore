@@ -5,3 +5,4 @@ _build/
 .vite
 .envrc
 dist/
+wrangler.toml 
