@@ -13,3 +13,11 @@
 - 過去の発表資料とかをSlidevとかで置きたい
 - Togglとかもろもろ自分の身辺を記録したやつを載せたい
 - MDとかの静的ファイルのファイルベースルーティングを実装したい
+
+# Set up
+```
+opam init # if needed
+opam switch create .
+eval $(opam env)
+opam pin add melange https://github.com/ryoryoryo3838/melange.git\#miya
+```
