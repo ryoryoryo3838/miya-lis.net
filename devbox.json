@@ -8,12 +8,14 @@
   "shell": {
     "init_hook": [
       "echo 'Welcome to devbox!' > /dev/null",
-      "export DEVBOX_PROMPT_NAME='forester'"
+      "export DEVBOX_PROMPT_NAME='forester'",
+      "export PATH=\"$HOME/.cargo/bin:$PATH\""
     ],
     "scripts": {
       "test": [
         "echo \"Error: no test specified\" && exit 1"
-      ]
+      ],
+      "setup": "cargo install forest-server"
     }
   }
 }
