@@ -61,31 +61,41 @@ let setup_nav () =
     )) Js._true
   |> ignore
 
-(* ── Period scroll pinning ── *)
+(* ── Period scroll pinning: stop naturally at viewport top ── *)
 let setup_period_pin () =
   let period = get_element "hero-period" in
   let hero = get_element "hero" in
   let is_fixed = ref false in
+  let fixed_left = ref 0. in
 
   let on_scroll () =
     if not !is_fixed then begin
-      (* Not fixed: check if period reached viewport top *)
       let rect = period##getBoundingClientRect in
-      if Js.to_float rect##.top <= 0. then begin
-        add_class period "is-fixed";
+      let top = Js.to_float rect##.top in
+      if top <= 0. then begin
+        (* Capture current horizontal position, pin at same spot *)
+        fixed_left := Js.to_float rect##.left;
+        period##.style##.position := Js.string "fixed";
+        period##.style##.top := Js.string "0px";
+        period##.style##.left := Js.string (Printf.sprintf "%.1fpx" !fixed_left);
+        period##.style##.zIndex := Js.string "11";
+        period##.classList##add (Js.string "is-fixed");
         is_fixed := true
       end
     end else begin
-      (* Fixed: check if hero is visible again to unpin *)
       let hero_rect = hero##getBoundingClientRect in
       if Js.to_float hero_rect##.bottom > 0. then begin
-        remove_class period "is-fixed";
+        period##.style##.position := Js.string "";
+        period##.style##.top := Js.string "";
+        period##.style##.left := Js.string "";
+        period##.style##.zIndex := Js.string "";
+        period##.classList##remove (Js.string "is-fixed");
         is_fixed := false
       end
     end
   in
 
-  (* Throttled scroll handler using addEventListener *)
+  (* Throttled scroll handler *)
   let ticking = ref false in
   let handler _ev =
     if not !ticking then begin
@@ -100,6 +110,7 @@ let setup_period_pin () =
   Dom_html.addEventListener
     Dom_html.window (Dom.Event.make "scroll")
     (Dom_html.handler handler) Js._true
+  |> ignore
   |> ignore
 
 (* ── Intersection Observer: persistent header ── *)
