@@ -1,5 +1,5 @@
 \taxon{navigation}
 
-\p{\link{aboutme}{About}}
-\p{\link{grad-research}{卒業研究}}
-\p{\link{dev/0001}{開発ノート}}
+\p{[About](aboutme)}
+\p{[卒業研究](grad-researh)}
+\p{[開発ノート](dev/0001)}
