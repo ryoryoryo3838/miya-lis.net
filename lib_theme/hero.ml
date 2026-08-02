@@ -50,31 +50,44 @@ let setup_nav () =
   );
 
   (* Escape key → close *)
-  Dom_html.document##.onkeydown := Dom_html.handler (fun ev ->
-    if ev##.keyCode = 27 then begin
-      close_panel ();
-      Js._false
-    end else
-      Js._true
-  )
+  Dom_html.addEventListener
+    Dom_html.document (Dom.Event.make "keydown")
+    (Dom_html.handler (fun ev ->
+      if ev##.keyCode = 27 then begin
+        close_panel ();
+        Js._false
+      end else
+        Js._true
+    )) Js._true
+  |> ignore
 
 (* ── Period scroll pinning ── *)
 let setup_period_pin () =
   let period = get_element "hero-period" in
+  let hero = get_element "hero" in
+  let is_fixed = ref false in
 
   let on_scroll () =
-    let period_rect = period##getBoundingClientRect in
-    (* Pin the period when its top reaches the viewport top *)
-    if Js.to_float period_rect##.top <= 0. then begin
-      add_class period "is-fixed"
+    if not !is_fixed then begin
+      (* Not fixed: check if period reached viewport top *)
+      let rect = period##getBoundingClientRect in
+      if Js.to_float rect##.top <= 0. then begin
+        add_class period "is-fixed";
+        is_fixed := true
+      end
     end else begin
-      remove_class period "is-fixed"
+      (* Fixed: check if hero is visible again to unpin *)
+      let hero_rect = hero##getBoundingClientRect in
+      if Js.to_float hero_rect##.bottom > 0. then begin
+        remove_class period "is-fixed";
+        is_fixed := false
+      end
     end
   in
 
-  (* Throttled scroll handler *)
+  (* Throttled scroll handler using addEventListener *)
   let ticking = ref false in
-  Dom_html.window##.onscroll := Dom_html.handler (fun _ev ->
+  let handler _ev =
     if not !ticking then begin
       ticking := true;
       ignore (Dom_html.window##requestAnimationFrame (Js.wrap_callback (fun _ ->
@@ -83,7 +96,11 @@ let setup_period_pin () =
       )))
     end;
     Js._true
-  )
+  in
+  Dom_html.addEventListener
+    Dom_html.window (Dom.Event.make "scroll")
+    (Dom_html.handler handler) Js._true
+  |> ignore
 
 (* ── Intersection Observer: persistent header ── *)
 let setup_header_observer () =
