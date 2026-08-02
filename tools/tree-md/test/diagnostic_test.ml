@@ -52,11 +52,30 @@ let test_tab_excerpt () =
   in
   let diag =
     Tree_md.Diagnostic.make TM103
-      (Source_span (make_span "tab.md" 0 7)) "heading at wrong level"
+      (Source_span (make_span "tab.md" 0 6)) "heading at wrong level"
   in
   let rendered = Tree_md.Diagnostic.render ~sources:["tab.md", source] diag in
-  Alcotest.(check bool) "tab expanded to 4 columns"
-    true (String.length rendered > 0)
+  let lines = String.split_on_char '\n' rendered in
+  let text_line = List.nth lines 3 in
+  let marker_line = List.nth lines 4 in
+  Alcotest.(check string) "text starts with margin"
+    "   |         code" text_line;
+  Alcotest.(check string) "marker aligns with text"
+    "   | ^^^^^^^^^^^^" marker_line
+
+let test_cjk_marker () =
+  let source =
+    Result.get_ok (Tree_md.Source.of_string ~path:"cj.md" "日code")
+  in
+  let diag =
+    Tree_md.Diagnostic.make TM001
+      (Source_span (make_span "cj.md" 3 7)) "issue at code"
+  in
+  let rendered = Tree_md.Diagnostic.render ~sources:["cj.md", source] diag in
+  let lines = String.split_on_char '\n' rendered in
+  let marker_line = List.nth lines 4 in
+  Alcotest.(check string) "marker aligned after multibyte"
+    "   |  ^^^^" marker_line
 
 let test_make_diagnostic () =
   let diag =
@@ -75,5 +94,6 @@ let () =
     ; "path_location_sorts_after_span", [ test_case "path_location_sorts_after_span" `Quick test_path_location_sorts_after_span ]
     ; "no_location_sorts_last", [ test_case "no_location_sorts_last" `Quick test_no_location_sorts_last ]
     ; "tab_excerpt", [ test_case "tab_excerpt" `Quick test_tab_excerpt ]
+    ; "cjk_marker", [ test_case "cjk_marker" `Quick test_cjk_marker ]
     ; "make_diagnostic", [ test_case "make_diagnostic" `Quick test_make_diagnostic ]
     ]

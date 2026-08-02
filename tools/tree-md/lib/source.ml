@@ -131,17 +131,20 @@ let slice t s =
     Ok (String.sub t.text s.Span.start_byte
           (s.Span.end_byte - s.Span.start_byte))
 
-let find_line chars byte =
-  let rec loop lo hi =
-    if lo > hi then lo - 1
+let display_cols_between t ~start_byte ~end_byte =
+  let rec loop i acc =
+    if i >= end_byte then acc
     else
-      let mid = (lo + hi) / 2 in
-      if chars.(mid) > byte then loop lo (mid - 1)
-      else if mid + 1 < Array.length chars && chars.(mid + 1) <= byte then
-        loop (mid + 1) hi
-      else mid
+      let b = Char.code t.text.[i] in
+      let clen = codepoint_byte_length b in
+      if t.text.[i] = '\t' then
+        loop (i + 1) (acc + (4 - (acc mod 4)))
+      else if clen >= 1 && clen <= 4 then
+        loop (i + clen) (acc + 1)
+      else
+        loop (i + 1) (acc + 1)
   in
-  loop 0 (Array.length chars - 1)
+  loop start_byte 0
 
 let line_col t ~byte =
   if byte < 0 || byte > String.length t.text then
@@ -224,10 +227,11 @@ let excerpt t s =
         excerpt_text
     in
     let marker =
-      let col = s.Span.start_byte - excerpt_start in
-      let span_len = max 1 (s.Span.end_byte - s.Span.start_byte) in
-      let prefix = String.make col ' ' in
-      let underline = String.make span_len '^' in
+      let prefix_cols = display_cols_between t ~start_byte:excerpt_start ~end_byte:s.Span.start_byte in
+      let span_cols = display_cols_between t ~start_byte:s.Span.start_byte ~end_byte:s.Span.end_byte in
+      let span_display_len = max 1 span_cols in
+      let prefix = String.make prefix_cols ' ' in
+      let underline = String.make span_display_len '^' in
       prefix ^ underline
     in
     Ok (trimmed, marker)
