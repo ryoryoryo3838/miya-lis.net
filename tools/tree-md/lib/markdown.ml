@@ -373,12 +373,8 @@ let code_info_of_fence source_path base_byte info_node =
                "multi-token fenced code info is not supported")
 
 let code_block_lines lines =
-  let buf = Buffer.create 128 in
-  List.iter (fun line ->
-    let (s, _layout) = line in
-    Buffer.add_string buf s
-  ) lines;
-  Buffer.contents buf
+  let strings = List.map (fun (s, _layout) -> s) lines in
+  String.concat "\n" strings
 
 (* Check if an HTML comment is a subtree directive.
    Only matches exact <!-- subtree: ID --> and returns the ID.

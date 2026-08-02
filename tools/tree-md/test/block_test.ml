@@ -459,6 +459,44 @@ let test_list_tightness_preserved () =
     let msgs = List.map (fun d -> d.Tree_md.Diagnostic.message) diags |> String.concat "; " in
     Alcotest.fail ("expected Ok, got: " ^ msgs)
 
+(* ── Regression: multi-line code blocks preserve line separators ── *)
+
+let test_indented_code_multi_line () =
+  match parse "    line1\n    line2" with
+  | Ok doc ->
+    (match doc.blocks with
+     | [{ bnode = Tree_md.Ir.Code_block { info = Tree_md.Ir.No_info; code }; _ }] ->
+       Alcotest.(check string) "indented multi-line" "line1\nline2" code
+     | _ -> Alcotest.fail "expected CodeBlock")
+  | Error diags ->
+    let msgs = List.map (fun d -> d.Tree_md.Diagnostic.message) diags |> String.concat "; " in
+    Alcotest.fail ("expected Ok, got: " ^ msgs)
+
+let test_fenced_code_multi_line () =
+  match parse "```\nline1\nline2\n```" with
+  | Ok doc ->
+    (match doc.blocks with
+     | [{ bnode = Tree_md.Ir.Code_block { info = Tree_md.Ir.No_info; code }; _ }] ->
+       Alcotest.(check string) "fenced multi-line" "line1\nline2" code
+     | _ -> Alcotest.fail "expected CodeBlock")
+  | Error diags ->
+    let msgs = List.map (fun d -> d.Tree_md.Diagnostic.message) diags |> String.concat "; " in
+    Alcotest.fail ("expected Ok, got: " ^ msgs)
+
+(* ── Regression: nested embed/display-math in blockquote > list contexts ── *)
+
+let test_embed_in_blockquote_list_rejected () =
+  match parse "> - ![[note]]" with
+  | Error diags ->
+    Alcotest.(check bool) "embed in blockquote list TM106" true (has_diag_code diags "TM106")
+  | Ok _ -> Alcotest.fail "expected TM106 for embed in blockquote list"
+
+let test_display_math_in_blockquote_list_rejected () =
+  match parse "> - $$x$$" with
+  | Error diags ->
+    Alcotest.(check bool) "display math in blockquote list TM107" true (has_diag_code diags "TM107")
+  | Ok _ -> Alcotest.fail "expected TM107 for display math in blockquote list"
+
 (* ── Sanity: document span is valid ── *)
 
 let test_document_span () =
@@ -516,4 +554,8 @@ let () =
     ; "list_ordered_start_preserved", [ test_case "list_ordered_start_preserved" `Quick test_list_ordered_start_preserved ]
     ; "list_tightness_preserved", [ test_case "list_tightness_preserved" `Quick test_list_tightness_preserved ]
     ; "document_span", [ test_case "document_span" `Quick test_document_span ]
+    ; "indented_code_multi_line", [ test_case "indented_code_multi_line" `Quick test_indented_code_multi_line ]
+    ; "fenced_code_multi_line", [ test_case "fenced_code_multi_line" `Quick test_fenced_code_multi_line ]
+    ; "embed_in_blockquote_list_rejected", [ test_case "embed_in_blockquote_list_rejected" `Quick test_embed_in_blockquote_list_rejected ]
+    ; "display_math_in_blockquote_list_rejected", [ test_case "display_math_in_blockquote_list_rejected" `Quick test_display_math_in_blockquote_list_rejected ]
     ]
