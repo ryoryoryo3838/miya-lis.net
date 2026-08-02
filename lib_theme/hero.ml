@@ -66,22 +66,19 @@ let setup_period_pin () =
   let period = get_element "hero-period" in
   let hero = get_element "hero" in
   let is_fixed = ref false in
-  let fixed_left = ref 0. in
 
   let on_scroll () =
     if not !is_fixed then begin
       let rect = period##getBoundingClientRect in
       let top = Js.to_float rect##.top in
       let height = Js.to_float rect##.height in
-      (* Let .NET peek above viewport by ~15% of period height before pinning *)
+      (* Let .NET peek above viewport before pinning *)
       let threshold = -. (height *. 0.15) in
       if top <= threshold then begin
-        (* Capture current horizontal position *)
-        fixed_left := Js.to_float rect##.left;
         period##.style##.position := Js.string "fixed";
-        (* Match natural visual position: period sits near x-height top, not at line top *)
+        (* 45° from top-left corner: equal distance from top and left edges *)
         period##.style##.top := Js.string (Printf.sprintf "%.1fpx" (-.height *. 0.12));
-        period##.style##.left := Js.string (Printf.sprintf "%.1fpx" !fixed_left);
+        period##.style##.left := Js.string (Printf.sprintf "%.1fpx" (-.height *. 0.12));
         period##.style##.zIndex := Js.string "11";
         period##.classList##add (Js.string "is-fixed");
         is_fixed := true
@@ -145,10 +142,15 @@ let setup_header_observer () =
   ignore (observer##observe hero)
 
 (* ── Main ── *)
+let init () =
+  setup_nav ();
+  setup_period_pin ();
+  setup_header_observer ()
+
 let () =
-  Dom_html.window##.onload := Dom_html.handler (fun _ ->
-    setup_nav ();
-    setup_period_pin ();
-    setup_header_observer ();
-    Js._false
-  )
+  let ready = Js.to_string Dom_html.document##.readyState in
+  if ready = "complete" || ready = "interactive" then
+    init ()
+  else
+    ignore (Dom_html.addEventListener Dom_html.window (Dom.Event.make "DOMContentLoaded")
+      (Dom_html.handler (fun _ -> init (); Js._false)) Js._true)
