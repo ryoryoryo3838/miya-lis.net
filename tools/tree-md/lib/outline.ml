@@ -156,6 +156,14 @@ let build ~root_id (doc : Ir.document) =
        | [] -> ())
   ) doc.Ir.blocks;
 
+  (* Check for pending directive at end of document *)
+  (match !pending_directive with
+   | Some (dir_id, dir_span) ->
+     emit TM104 (Span.Source_span dir_span)
+       (Printf.sprintf "subtree directive \"%s\" at end of document without a following heading" dir_id);
+     pending_directive := None
+   | None -> ());
+
   (* Pop all remaining sections (everything except root at level 1) *)
   pop_sections_above stack 1;
 

@@ -33,6 +33,15 @@ let inline_text i = match i.Ir.node with Ir.Text s -> s | _ -> ""
 
 let title_texts title = List.map inline_text title
 
+let span_at start_byte end_byte =
+  match Span.make ~path:"test.md" ~start_byte ~end_byte with
+  | Ok s -> s | Error _ -> failwith "cannot create span"
+
+let custom_directive id sp = { Ir.bnode = Ir.Subtree_directive id; Ir.bspan = sp }
+let custom_heading level title sp =
+  { Ir.bnode = Ir.Heading { level; title = [text_inline title] }; Ir.bspan = sp }
+let custom_para text sp = { Ir.bnode = Ir.Paragraph [text_inline text]; Ir.bspan = sp }
+
 (* ── H1 first: becomes root title, no sections ── *)
 
 let test_h1_root_title () =
@@ -178,16 +187,17 @@ let test_shallower_closes_deeper () =
     let msgs = List.map (fun d -> d.Diagnostic.message) diags |> String.concat "; " in
     Alcotest.fail ("expected Ok, got: " ^ msgs)
 
-(* ── H4 after H2: TM103 level skip ── *)
+(* ── Orphan directive inside section: TM104 ── *)
 
-let test_h4_after_h2 () =
+let test_orphan_directive_in_section () =
   match Outline.build ~root_id:"t" (doc [
     heading 2 "A";
-    heading 4 "D";
+    directive "orphan";
+    para "body";
   ]) with
-  | Ok _ -> Alcotest.fail "expected TM103 for level skip"
+  | Ok _ -> Alcotest.fail "expected TM104 for orphaned directive inside section"
   | Error diags ->
-    Alcotest.(check bool) "TM103" true (has_code diags "TM103")
+    Alcotest.(check bool) "TM104" true (has_code diags "TM104")
 
 (* ── Paragraph then H1: TM103 (H1 not first block) ── *)
 
@@ -271,7 +281,7 @@ let test_directive_then_para () =
   | Error diags ->
     Alcotest.(check bool) "TM104" true (has_code diags "TM104")
 
-(* ── Two directives before H2: TM104 ── *)
+(* ── Two directives before H2: TM104 (first directive lost, second applied) ── *)
 
 let test_two_directives_before_h2 () =
   match Outline.build ~root_id:"t" (doc [
@@ -279,17 +289,8 @@ let test_two_directives_before_h2 () =
     directive "second";
     heading 2 "S";
   ]) with
-  | Ok tree ->
-    (* First directive should be TM104, second applied to heading *)
-    (* But build returns Ok because it continues past warnings *)
-    (match tree.sections with
-     | [s] ->
-       Alcotest.(check (option string)) "section gets second directive" (Some "second") s.id
-     | _ -> Alcotest.fail "expected 1 section")
+  | Ok _ -> Alcotest.fail "expected TM104 for multiple directives without heading"
   | Error diags ->
-    (* Wait - if TM104 is an Error, then Error is returned *)
-    (* Let's check: does TM104 make the whole build fail? *)
-    (* The brief says "collect named subtree definitions" and returns errors *)
     Alcotest.(check bool) "TM104" true (has_code diags "TM104")
 
 (* ── Directive before H1: TM104 ── *)
@@ -342,6 +343,65 @@ let test_multiple_definitions () =
     Alcotest.(check int) "three definitions" 3 (List.length defs);
     let ids = List.map (fun (d : Outline.definition) -> d.id) defs in
     Alcotest.(check (list string)) "def ids" ["a"; "b"; "c"] ids
+  | Error diags ->
+    let msgs = List.map (fun d -> d.Diagnostic.message) diags |> String.concat "; " in
+    Alcotest.fail ("expected Ok, got: " ^ msgs)
+
+(* ── Definition span points at directive source span, not heading span ── *)
+
+let test_definition_span_points_to_directive () =
+  let dir_sp = span_at 10 25 in
+  let h2_sp = span_at 30 40 in
+  match Outline.build ~root_id:"t" (doc [
+    custom_directive "named" dir_sp;
+    custom_heading 2 "S" h2_sp;
+  ]) with
+  | Ok tree ->
+    (match tree.sections with
+     | [s] ->
+       Alcotest.(check (option string)) "id matches" (Some "named") s.id;
+       (match s.definition_span with
+        | Some ds ->
+          Alcotest.(check int) "def_span start matches directive" dir_sp.Span.start_byte ds.Span.start_byte;
+          Alcotest.(check int) "def_span end matches directive" dir_sp.Span.end_byte ds.Span.end_byte
+        | None -> Alcotest.fail "expected definition_span");
+       let defs = Outline.definitions tree in
+       (match defs with
+        | [d] ->
+          Alcotest.(check int) "def start matches directive" dir_sp.Span.start_byte d.span.Span.start_byte;
+          Alcotest.(check int) "def end matches directive" dir_sp.Span.end_byte d.span.Span.end_byte
+        | _ -> Alcotest.fail "expected 1 definition")
+     | _ -> Alcotest.fail "expected 1 section")
+  | Error diags ->
+    let msgs = List.map (fun d -> d.Diagnostic.message) diags |> String.concat "; " in
+    Alcotest.fail ("expected Ok, got: " ^ msgs)
+
+(* ── Section span covers heading through body and children end ── *)
+
+let test_section_span_covers_range () =
+  let h2_sp = span_at 10 20 in
+  let p1_sp = span_at 30 40 in
+  let p2_sp = span_at 50 60 in
+  let h3_sp = span_at 70 80 in
+  let p3_sp = span_at 90 100 in
+  match Outline.build ~root_id:"t" (doc [
+    custom_heading 2 "A" h2_sp;
+    custom_para "a1" p1_sp;
+    custom_para "a2" p2_sp;
+    custom_heading 3 "B" h3_sp;
+    custom_para "b1" p3_sp;
+  ]) with
+  | Ok tree ->
+    (match tree.sections with
+     | [s1] ->
+       Alcotest.(check int) "s1 span start" h2_sp.Span.start_byte s1.span.Span.start_byte;
+       Alcotest.(check int) "s1 span end covers children" p3_sp.Span.end_byte s1.span.Span.end_byte;
+       (match s1.children with
+        | [c1] ->
+          Alcotest.(check int) "c1 span start" h3_sp.Span.start_byte c1.span.Span.start_byte;
+          Alcotest.(check int) "c1 span end" p3_sp.Span.end_byte c1.span.Span.end_byte
+        | _ -> Alcotest.fail "expected 1 child")
+     | _ -> Alcotest.fail "expected 1 section")
   | Error diags ->
     let msgs = List.map (fun d -> d.Diagnostic.message) diags |> String.concat "; " in
     Alcotest.fail ("expected Ok, got: " ^ msgs)
@@ -423,19 +483,16 @@ let test_non_heading_between_headings () =
     let msgs = List.map (fun d -> d.Diagnostic.message) diags |> String.concat "; " in
     Alcotest.fail ("expected Ok, got: " ^ msgs)
 
-(* ── Directive at end (no heading): stays pending but no error ── *)
+(* ── Directive at end (no heading): TM104 ── *)
 
 let test_directive_at_end () =
   match Outline.build ~root_id:"t" (doc [
     para "start";
     directive "unused";
   ]) with
-  | Ok tree ->
-    Alcotest.(check int) "one body block" 1 (List.length tree.body);
-    Alcotest.(check int) "no definitions" 0 (List.length (Outline.definitions tree))
+  | Ok _ -> Alcotest.fail "expected TM104 for directive at end of document"
   | Error diags ->
-    let msgs = List.map (fun d -> d.Diagnostic.message) diags |> String.concat "; " in
-    Alcotest.fail ("expected Ok, got: " ^ msgs)
+    Alcotest.(check bool) "TM104" true (has_code diags "TM104")
 
 (* ── TM103 when only H2, H4: level skipped at H4 ── *)
 
@@ -489,22 +546,24 @@ let () =
         test_case "shallower_closes_deeper" `Quick test_shallower_closes_deeper;
         test_case "non_heading_between_headings" `Quick test_non_heading_between_headings;
         test_case "h1_body_then_h2" `Quick test_h1_body_then_h2;
+        test_case "section_span_covers_range" `Quick test_section_span_covers_range;
       ]
     ; "directives", [
         test_case "directive_then_h2" `Quick test_directive_then_h2;
         test_case "directive_blank_h2" `Quick test_directive_blank_h2;
         test_case "directive_on_h3" `Quick test_directive_on_h3;
         test_case "multiple_definitions" `Quick test_multiple_definitions;
-        test_case "directive_at_end" `Quick test_directive_at_end;
+        test_case "definition_span_points_to_directive" `Quick test_definition_span_points_to_directive;
       ]
     ; "errors", [
-        test_case "h4_after_h2" `Quick test_h4_after_h2;
+        test_case "orphan_directive_in_section" `Quick test_orphan_directive_in_section;
         test_case "para_then_h1" `Quick test_para_then_h1;
         test_case "second_h1" `Quick test_second_h1;
         test_case "h1_after_h2" `Quick test_h1_after_h2;
         test_case "directive_then_para" `Quick test_directive_then_para;
         test_case "two_directives_before_h2" `Quick test_two_directives_before_h2;
         test_case "directive_before_h1" `Quick test_directive_before_h1;
+        test_case "directive_at_end" `Quick test_directive_at_end;
         test_case "level_skip_h2_to_h4" `Quick test_level_skip_h2_to_h4;
         test_case "h3_without_h2" `Quick test_h3_without_h2;
         test_case "level_skip_h3_to_h5" `Quick test_level_skip_h3_to_h5;
