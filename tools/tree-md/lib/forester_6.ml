@@ -1,4 +1,4 @@
-let target = "forester-6.0"
+let target = "forester-6.0-dev@30b73641cef02433ee158db6ddc77f7b49de60be"
 
 (* ── Escaping ── *)
 
@@ -85,6 +85,17 @@ let make_writer errors resolution =
   in
   { errors; resolution; text; safe_id; uri_text; xml_attr; meta_key; tex }
 
+(* ── URI helpers ── *)
+
+let is_http_uri s =
+  let len = String.length s in
+  (len >= 7 && String.sub s 0 7 = "http://")
+  || (len >= 8 && String.sub s 0 8 = "https://")
+
+let is_external_uri s =
+  is_http_uri s
+  || (String.length s >= 7 && String.sub s 0 7 = "mailto:")
+
 (* ── Inline emission ── *)
 
 let rec emit_inlines (w : writer) buf (inlines : Ir.inline list) =
@@ -105,72 +116,82 @@ and emit_inline_node (w : writer) buf (node : Ir.inline_node) span =
     Buffer.add_char buf '}'
   | Ir.Code s ->
     Buffer.add_string buf "\\code{";
-    w.safe_id buf s;
+    w.text buf s;
     Buffer.add_char buf '}'
   | Ir.Link { label; destination; title } ->
     emit_link w buf label destination title span
   | Ir.Wiki_link { target; alias } ->
-    (match alias with
-     | Some a ->
-       Buffer.add_string buf "\\link[";
-       w.text buf a;
-       Buffer.add_string buf "]{";
-       w.safe_id buf target;
-       Buffer.add_char buf '}'
-     | None ->
-       Buffer.add_string buf "\\link{";
-       w.safe_id buf target;
-       Buffer.add_char buf '}')
+    emit_wiki_link w buf target alias
   | Ir.Wiki_embed target ->
     Buffer.add_string buf "\\transclude{";
     w.safe_id buf target;
     Buffer.add_char buf '}'
   | Ir.Math { tex; display = _ } ->
-    Buffer.add_string buf "\\math{";
+    Buffer.add_string buf "#{";
     w.tex span buf tex;
     Buffer.add_char buf '}'
   | Ir.Image { alt; destination; title } ->
     emit_image w buf alt destination title span
   | Ir.Hard_break ->
-    Buffer.add_string buf "\\break\n"
+    Buffer.add_string buf "\\<html:br>{}"
   | Ir.Soft_break ->
     Buffer.add_char buf ' '
 
+(* Native Forester link forms per the approved profile:
+   - [[target]] for wiki links without alias
+   - [alias](target) for wiki links with alias
+   - [label](dest) for ordinary links without title
+   - \<html:a>[href]{URL}[title]{TITLE}{LABEL} for title-bearing external links *)
+
+and emit_wiki_link w buf target alias =
+  match alias with
+  | Some a ->
+    Buffer.add_char buf '[';
+    w.text buf a;
+    Buffer.add_string buf "](";
+    w.safe_id buf target;
+    Buffer.add_char buf ')'
+  | None ->
+    Buffer.add_string buf "[[";
+    w.safe_id buf target;
+    Buffer.add_string buf "]]"
+
 and emit_link w buf label destination title span =
-  let is_external =
-    String.length destination >= 7
-    && (String.sub destination 0 7 = "http://"
-     || String.length destination >= 8 && String.sub destination 0 8 = "https://"
-     || String.length destination >= 7 && String.sub destination 0 7 = "mailto:")
-  in
-  if is_external then begin
-    Buffer.add_string buf "\\<html:a>";
-    w.xml_attr buf "href" (fun b -> w.uri_text b destination);
-    (match title with
-     | Some t ->
-       Buffer.add_string buf "[title]{";
-       w.text buf t;
-       Buffer.add_char buf '}'
-     | None -> ());
-    Buffer.add_char buf '{';
-    emit_inlines w buf label;
-    Buffer.add_char buf '}'
+  let is_ext = is_external_uri destination in
+  if is_ext then begin
+    match title with
+    | Some t ->
+      Buffer.add_string buf "\\<html:a>";
+      w.xml_attr buf "href" (fun b -> w.uri_text b destination);
+      Buffer.add_string buf "[title]{";
+      w.text buf t;
+      Buffer.add_string buf "}{";
+      emit_inlines w buf label;
+      Buffer.add_char buf '}'
+    | None ->
+      Buffer.add_char buf '[';
+      emit_inlines w buf label;
+      Buffer.add_string buf "](";
+      w.uri_text buf destination;
+      Buffer.add_char buf ')'
   end else begin
-    let msg = "local link in Forester emission (use wiki link syntax)" in
-    let diag = Diagnostic.make TM106 (Span.Source_span span) msg in
-    let errs = w.errors in
-    errs := diag :: !errs;
-    Buffer.add_char buf '{';
-    emit_inlines w buf label;
-    Buffer.add_char buf '}'
+    match title with
+    | Some _ ->
+      let msg = "local link with HTML title is not supported" in
+      let diag = Diagnostic.make TM106 (Span.Source_span span) msg in
+      let errs = w.errors in
+      errs := diag :: !errs
+    | None ->
+      Buffer.add_char buf '[';
+      emit_inlines w buf label;
+      Buffer.add_string buf "](";
+      w.uri_text buf destination;
+      Buffer.add_char buf ')'
   end
 
 and emit_image w buf alt destination title span =
-  let is_external =
-    String.length destination >= 8
-    && String.sub destination 0 8 = "https://"
-  in
-  if is_external then begin
+  let is_ext = is_http_uri destination in
+  if is_ext then begin
     Buffer.add_string buf "\\<html:img>";
     w.xml_attr buf "src" (fun b -> w.uri_text b destination);
     let alt_text = flatten_alt w alt in
@@ -182,13 +203,20 @@ and emit_image w buf alt destination title span =
        Buffer.add_string buf "[title]{";
        w.text buf t;
        Buffer.add_char buf '}'
-     | None -> ())
+     | None -> ());
+    Buffer.add_string buf "{}"
   end else begin
     match Resolution.asset_route w.resolution span with
     | Some routed ->
+      Buffer.add_string buf "\\<html:img>";
+      Buffer.add_string buf "[src]{";
       Buffer.add_string buf "\\route-asset{";
       w.text buf routed;
-      Buffer.add_char buf '}'
+      Buffer.add_string buf "}}";
+      let alt_text = flatten_alt w alt in
+      Buffer.add_string buf "[alt]{";
+      w.text buf alt_text;
+      Buffer.add_string buf "}{}"
     | None ->
       let msg = "unresolved local image (no route-asset mapping)" in
       let diag = Diagnostic.make TM106 (Span.Source_span span) msg in
@@ -204,7 +232,7 @@ and flatten_alt (w : writer) (inlines : Ir.inline list) : string =
       w.text buf s;
       go rest
     | { Ir.node = Ir.Code s; _ } :: rest ->
-      w.safe_id buf s;
+      w.text buf s;
       go rest
     | { Ir.node = Ir.Emphasis is; _ } :: rest ->
       go (is @ rest)
@@ -254,7 +282,7 @@ let rec emit_block (w : writer) buf (block : Ir.block) =
   | Ir.Code_block { info; code } ->
     emit_code_block w buf info code
   | Ir.Thematic_break ->
-    Buffer.add_string buf "---"
+    Buffer.add_string buf "\\<html:hr>{}"
   | Ir.Heading { level = _; title = _ } ->
     ()
   | Ir.Subtree_directive _ ->
@@ -264,9 +292,9 @@ let rec emit_block (w : writer) buf (block : Ir.block) =
     w.safe_id buf id;
     Buffer.add_char buf '}'
   | Ir.Display_math tex ->
-    Buffer.add_string buf "\\\\[";
+    Buffer.add_string buf "##{";
     w.tex block.Ir.bspan buf tex;
-    Buffer.add_char buf ']'
+    Buffer.add_char buf '}'
 
 and emit_blocks_body (w : writer) buf (blocks : Ir.block list) =
   let rec loop = function
@@ -280,31 +308,41 @@ and emit_blocks_body (w : writer) buf (blocks : Ir.block list) =
   loop blocks
 
 and emit_list (w : writer) buf kind tight (items : Ir.list_item list) =
-  let start_attr = match kind with
-    | Ir.Ordered n when n <> 1 -> Some n
-    | _ -> None
+  let is_ordered_start_gt_1 = match kind with
+    | Ir.Ordered n when n <> 1 -> true
+    | _ -> false
   in
-  let rec emit_items b sep first items =
-    match items with
-    | [] -> ()
-    | [item] ->
-      if not first then Buffer.add_string b sep;
-      emit_list_item w b tight item.Ir.item_blocks
-    | item :: rest ->
-      if not first then Buffer.add_string b sep;
-      emit_list_item w b tight item.Ir.item_blocks;
-      emit_items b sep false rest
-  in
-  match start_attr with
-  | Some n ->
+  if is_ordered_start_gt_1 then begin
+    let n = match kind with Ir.Ordered n -> n | _ -> 1 in
     Buffer.add_string buf "\\<html:ol>";
     Buffer.add_string buf "[start]{";
     Buffer.add_string buf (string_of_int n);
     Buffer.add_string buf "}{";
-    emit_items buf "" true items;
+    emit_items w buf "" tight items;
     Buffer.add_char buf '}'
-  | None ->
-    emit_items buf "\n" true items
+  end else begin
+    let wrapper = match kind with
+      | Ir.Ordered _ -> "\\ol{"
+      | Ir.Unordered -> "\\ul{"
+    in
+    Buffer.add_string buf wrapper;
+    emit_items w buf "\n" tight items;
+    Buffer.add_char buf '}'
+  end
+
+and emit_items (w : writer) buf sep tight (items : Ir.list_item list) =
+  let rec loop first remaining =
+    match remaining with
+    | [] -> ()
+    | [item] ->
+      if not first then Buffer.add_string buf sep;
+      emit_list_item w buf tight item.Ir.item_blocks
+    | item :: rest ->
+      if not first then Buffer.add_string buf sep;
+      emit_list_item w buf tight item.Ir.item_blocks;
+      loop false rest
+  in
+  loop true items
 
 and emit_list_item (w : writer) buf tight (blocks : Ir.block list) =
   Buffer.add_string buf "\\li{";
@@ -345,7 +383,7 @@ and emit_code_block (w : writer) buf info code =
      Buffer.add_char buf '}'
    | Ir.No_info -> ());
   Buffer.add_string buf "{\\<html:code>{";
-  w.safe_id buf code;
+  w.text buf code;
   Buffer.add_string buf "}}"
 
 (* ── Metadata emission ── *)
@@ -355,9 +393,7 @@ let emit_attribution_inline w buf (attr : Metadata.attribution) =
   | Metadata.Literal { Metadata.value = name; _ } ->
     w.text buf name
   | Metadata.Tree { Metadata.value = id; _ } ->
-    Buffer.add_string buf "\\tree{";
-    w.safe_id buf id;
-    Buffer.add_char buf '}'
+    w.safe_id buf id
 
 let emit_title_inlines w buf (inlines : Ir.inline list) =
   Buffer.add_string buf "\\title{";
@@ -379,12 +415,20 @@ let emit_metadata (w : writer) buf (meta : Ir.inline list Metadata.t) =
      Buffer.add_string buf "}\n"
    | None -> ());
   List.iter (fun attr ->
-    Buffer.add_string buf "\\author{";
+    let prefix = match attr with
+      | Metadata.Tree _ -> "\\author{"
+      | Metadata.Literal _ -> "\\author/literal{"
+    in
+    Buffer.add_string buf prefix;
     emit_attribution_inline w buf attr;
     Buffer.add_string buf "}\n"
   ) meta.Metadata.authors;
   List.iter (fun attr ->
-    Buffer.add_string buf "\\contributor{";
+    let prefix = match attr with
+      | Metadata.Tree _ -> "\\contributor{"
+      | Metadata.Literal _ -> "\\contributor/literal{"
+    in
+    Buffer.add_string buf prefix;
     emit_attribution_inline w buf attr;
     Buffer.add_string buf "}\n"
   ) meta.Metadata.contributors;
@@ -402,7 +446,12 @@ let emit_metadata (w : writer) buf (meta : Ir.inline list Metadata.t) =
     Buffer.add_string buf "}\n"
   ) meta.Metadata.meta
 
-(* ── Section emission ── *)
+(* ── Section emission (\\subtree form) ── *)
+
+let emit_title_command w buf (inlines : Ir.inline list) =
+  Buffer.add_string buf "\\title{";
+  emit_inlines w buf inlines;
+  Buffer.add_char buf '}'
 
 let rec emit_sections (w : writer) buf (sections : Outline.section list) =
   let rec loop first remaining =
@@ -410,39 +459,34 @@ let rec emit_sections (w : writer) buf (sections : Outline.section list) =
     | [] -> ()
     | s :: rest ->
       if not first then Buffer.add_char buf '\n';
-      emit_section w buf s;
+      emit_subtree w buf s;
       Buffer.add_char buf '\n';
       loop false rest
   in
   loop true sections
 
-and emit_section (w : writer) buf (sec : Outline.section) =
-  Buffer.add_string buf "\\section{";
+and emit_subtree (w : writer) buf (sec : Outline.section) =
+  Buffer.add_string buf "\\subtree";
   (match sec.Outline.id with
    | Some id ->
+     Buffer.add_char buf '[';
      w.safe_id buf id;
-     Buffer.add_string buf "}{";
-     emit_inlines w buf sec.Outline.title;
-     Buffer.add_string buf "}{"
-   | None ->
-     emit_inlines w buf sec.Outline.title;
-     Buffer.add_string buf "}{");
+     Buffer.add_char buf ']'
+   | None -> ());
+  Buffer.add_string buf "{";
   let has_content = sec.Outline.body <> [] || sec.Outline.children <> [] in
+  if has_content then Buffer.add_char buf '\n';
+  emit_title_command w buf sec.Outline.title;
   if has_content then begin
     Buffer.add_char buf '\n';
-    let first = ref true in
     List.iter (fun b ->
-      if !first then first := false
-      else Buffer.add_string buf "\n\n";
-      emit_block w buf b
+      emit_block w buf b;
+      Buffer.add_char buf '\n'
     ) sec.Outline.body;
-    List.iter (fun child ->
-      if not (sec.Outline.body = []) || not !first then
-        Buffer.add_string buf "\n\n";
-      first := false;
-      emit_section w buf child
-    ) sec.Outline.children;
-    Buffer.add_char buf '\n'
+    if sec.Outline.children <> [] then begin
+      if sec.Outline.body <> [] then Buffer.add_char buf '\n';
+      emit_sections w buf sec.Outline.children
+    end
   end;
   Buffer.add_char buf '}'
 

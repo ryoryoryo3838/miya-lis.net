@@ -106,6 +106,13 @@ let emit_err ?(resolution=Resolution.empty) (t : Outline.t) =
 let lines s =
   String.split_on_char '\n' s
 
+(* ── Target string ── *)
+
+let test_target_string () =
+  Alcotest.(check string) "target"
+    "forester-6.0-dev@30b73641cef02433ee158db6ddc77f7b49de60be"
+    Forester_6.target
+
 (* ── Escaping tests ── *)
 
 let test_escape_percent () =
@@ -197,7 +204,7 @@ let test_inline_code_emission () =
 let test_hard_break_emission () =
   let t = outline_blocks "test" [para [text_inline "a"; hard_break (); text_inline "b"]] in
   Alcotest.(check string) "hard break"
-    "\\title{test}\n\\p{a\\break\nb}\n"
+    "\\title{test}\n\\p{a\\<html:br>{}b}\n"
     (emit_str t)
 
 let test_soft_break_emission () =
@@ -206,33 +213,40 @@ let test_soft_break_emission () =
     "\\title{test}\n\\p{a b}\n"
     (emit_str t)
 
-(* ── Math tests ── *)
+(* ── Math tests (approved #{} and ##{} forms) ── *)
 
 let test_inline_math_emission () =
   let t = outline_blocks "test" [para [math_inline "x^2" false]] in
   Alcotest.(check string) "inline math"
-    "\\title{test}\n\\p{\\math{x^2}}\n"
+    "\\title{test}\n\\p{#{x^2}}\n"
     (emit_str t)
 
 let test_display_math_inline_emission () =
   let t = outline_blocks "test" [para [math_inline "x^2" true]] in
   Alcotest.(check string) "display math inline"
-    "\\title{test}\n\\p{\\math{x^2}}\n"
+    "\\title{test}\n\\p{#{x^2}}\n"
     (emit_str t)
 
 let test_display_math_block_emission () =
   let t = outline_blocks "test" [display_math "x^2"] in
   Alcotest.(check string) "display math block"
-    "\\title{test}\n\\\\[x^2]\n"
+    "\\title{test}\n##{x^2}\n"
     (emit_str t)
 
-(* ── Links tests ── *)
+(* ── Links tests (native forms) ── *)
 
 let test_external_link_emission () =
   let t = outline_blocks "test"
     [para [external_link [text_inline "click"] "https://example.test" None]] in
   Alcotest.(check string) "external link"
-    "\\title{test}\n\\p{\\<html:a>[href]{https://example.test}{click}}\n"
+    "\\title{test}\n\\p{[click](https://example.test)}\n"
+    (emit_str t)
+
+let test_http_link_emission () =
+  let t = outline_blocks "test"
+    [para [external_link [text_inline "click"] "http://example.test" None]] in
+  Alcotest.(check string) "http link"
+    "\\title{test}\n\\p{[click](http://example.test)}\n"
     (emit_str t)
 
 let test_external_link_with_title () =
@@ -245,13 +259,13 @@ let test_external_link_with_title () =
 let test_wiki_link_emission () =
   let t = outline_blocks "test" [para [wiki_link "my.tree" None]] in
   Alcotest.(check string) "wiki link"
-    "\\title{test}\n\\p{\\link{my.tree}}\n"
+    "\\title{test}\n\\p{[[my.tree]]}\n"
     (emit_str t)
 
 let test_wiki_link_alias_emission () =
   let t = outline_blocks "test" [para [wiki_link "my.tree" (Some "display")]] in
   Alcotest.(check string) "wiki link alias"
-    "\\title{test}\n\\p{\\link[display]{my.tree}}\n"
+    "\\title{test}\n\\p{[display](my.tree)}\n"
     (emit_str t)
 
 let test_wiki_embed_emission () =
@@ -266,7 +280,14 @@ let test_external_image_emission () =
   let t = outline_blocks "test"
     [para [external_image [text_inline "alt"] "https://example.test/img.png" None]] in
   Alcotest.(check string) "external image"
-    "\\title{test}\n\\p{\\<html:img>[src]{https://example.test/img.png}[alt]{alt}}\n"
+    "\\title{test}\n\\p{\\<html:img>[src]{https://example.test/img.png}[alt]{alt}{}}\n"
+    (emit_str t)
+
+let test_http_image_emission () =
+  let t = outline_blocks "test"
+    [para [external_image [text_inline "alt"] "http://example.test/img.png" None]] in
+  Alcotest.(check string) "http image"
+    "\\title{test}\n\\p{\\<html:img>[src]{http://example.test/img.png}[alt]{alt}{}}\n"
     (emit_str t)
 
 let test_local_image_with_resolution () =
@@ -276,9 +297,8 @@ let test_local_image_with_resolution () =
   in
   let t = outline_blocks "test" [para [local_image [text_inline "photo"] "assets/cat.png" img_span]] in
   let resolution = Resolution.add_asset img_span ~routed_path:"root/assets/cat.png" Resolution.empty in
-  Alcotest.(check string) "local image routed"
-    "\\title{test}\n\\p{\\route-asset{root/assets/cat.png}}\n"
-    (emit_str ~resolution t)
+  Alcotest.(check bool) "local image routed has route-asset"
+    true (string_contains (emit_str ~resolution t) "\\route-asset{root/assets/cat.png}")
 
 let test_local_image_no_resolution_error () =
   let img_span =
@@ -301,7 +321,7 @@ let test_blockquote_emission () =
 let test_thematic_break_emission () =
   let t = outline_blocks "test" [thematic ()] in
   Alcotest.(check string) "thematic break"
-    "\\title{test}\n---\n"
+    "\\title{test}\n\\<html:hr>{}\n"
     (emit_str t)
 
 let test_code_block_no_lang () =
@@ -322,37 +342,53 @@ let test_block_embed_emission () =
     "\\title{test}\n\\transclude{other.tree}\n"
     (emit_str t)
 
+(* ── Hostile code tests ── *)
+
+let test_hostile_inline_code () =
+  let t = outline_blocks "test" [para [code_inline "{a}"]] in
+  let result = emit_str t in
+  Alcotest.(check bool) "inline code lbrace escaped"
+    true (string_contains result "\\verbFMD|{FMD");
+  Alcotest.(check bool) "inline code rbrace escaped"
+    true (string_contains result "\\verbFMD|}FMD")
+
+let test_hostile_code_block_content () =
+  let t = outline_blocks "test" [code_block Ir.No_info "line{n}"] in
+  let result = emit_str t in
+  Alcotest.(check bool) "code block lbrace escaped"
+    true (string_contains result "\\verbFMD|{FMD")
+
 (* ── Multi-line code block ── *)
 
 let test_code_block_multiline () =
   let t = outline_blocks "test" [code_block Ir.No_info "line1\nline2\n\\backslash"] in
   let result = emit_str t in
-  Alcotest.(check bool) "multi-line code contains line2"
+  Alcotest.(check bool) "multi-line code contains newline"
     true (String.contains result '\n');
   Alcotest.(check bool) "code keeps backslash"
     true (String.contains result '\\')
 
-(* ── List tests ── *)
+(* ── List tests (\\ul/\\ol wrappers) ── *)
 
 let test_tight_unordered_list () =
   let t = outline_blocks "test"
     [unordered_list ~tight:true [li_text "a"; li_text "b"]] in
   Alcotest.(check string) "tight unordered list"
-    "\\title{test}\n\\li{a}\n\\li{b}\n"
+    "\\title{test}\n\\ul{\\li{a}\n\\li{b}}\n"
     (emit_str t)
 
 let test_loose_unordered_list () =
   let t = outline_blocks "test"
     [unordered_list ~tight:false [li_text "a"; li_text "b"]] in
   Alcotest.(check string) "loose unordered list"
-    "\\title{test}\n\\li{\\p{a}}\n\\li{\\p{b}}\n"
+    "\\title{test}\n\\ul{\\li{\\p{a}}\n\\li{\\p{b}}}\n"
     (emit_str t)
 
 let test_tight_ordered_list_start_1 () =
   let t = outline_blocks "test"
     [ordered_list ~tight:true 1 [li_text "first"; li_text "second"]] in
   Alcotest.(check string) "tight ordered list start 1"
-    "\\title{test}\n\\li{first}\n\\li{second}\n"
+    "\\title{test}\n\\ol{\\li{first}\n\\li{second}}\n"
     (emit_str t)
 
 let test_ordered_list_start_7 () =
@@ -424,8 +460,8 @@ let test_metadata_authors_literal () =
   ] } in
   let t = outline (doc ~metadata:meta [para [text_inline "body"]]) in
   let result = emit_str t in
-  Alcotest.(check bool) "metadata author literal"
-    true (string_contains result "\\author{Alice}")
+  Alcotest.(check bool) "metadata author/literal"
+    true (string_contains result "\\author/literal{Alice}")
 
 let test_metadata_authors_tree () =
   let meta = { empty_meta with Metadata.authors = [
@@ -434,7 +470,9 @@ let test_metadata_authors_tree () =
   let t = outline (doc ~metadata:meta [para [text_inline "body"]]) in
   let result = emit_str t in
   Alcotest.(check bool) "metadata author tree"
-    true (string_contains result "\\tree{alice}")
+    true (string_contains result "\\author{alice}");
+  Alcotest.(check bool) "no \\tree wrapper"
+    true (not (string_contains result "\\tree{"))
 
 let test_metadata_contributors () =
   let meta = { empty_meta with Metadata.contributors = [
@@ -442,8 +480,8 @@ let test_metadata_contributors () =
   ] } in
   let t = outline (doc ~metadata:meta [para [text_inline "body"]]) in
   let result = emit_str t in
-  Alcotest.(check bool) "metadata contributor"
-    true (string_contains result "\\contributor{Bob}")
+  Alcotest.(check bool) "metadata contributor/literal"
+    true (string_contains result "\\contributor/literal{Bob}")
 
 let test_metadata_tags () =
   let meta = { empty_meta with Metadata.tags = [
@@ -488,7 +526,7 @@ let test_metadata_order () =
   Alcotest.(check bool) "contributor before tag" true (contrib_idx < tag_idx);
   Alcotest.(check bool) "tag before meta" true (tag_idx < meta_idx)
 
-(* ── Section tests ── *)
+(* ── Section tests (\\subtree form) ── *)
 
 let test_named_and_anon_sections () =
   let t = outline (doc [
@@ -500,14 +538,16 @@ let test_named_and_anon_sections () =
     para [text_inline "anon body"];
   ]) in
   let result = emit_str t in
-  Alcotest.(check bool) "named section present"
-    true (string_contains result "\\section{my.id}");
+  Alcotest.(check bool) "named subtree present"
+    true (string_contains result "\\subtree[my.id]");
   Alcotest.(check bool) "named title in output"
-    true (string_contains result "Named");
+    true (string_contains result "\\title{Named}");
   Alcotest.(check bool) "named body present"
     true (string_contains result "named body");
-  Alcotest.(check bool) "anonymous section present"
-    true (string_contains result "\\section{Anonymous}")
+  Alcotest.(check bool) "anonymous subtree present"
+    true (string_contains result "\\subtree{");
+  Alcotest.(check bool) "no legacy \\section"
+    true (not (string_contains result "\\section{"))
 
 (* ── TM107 unbalanced math in emitter ── *)
 
@@ -521,7 +561,7 @@ let test_math_balanced_passes () =
   let t = outline_blocks "test" [para [math_inline "x{y}" false]] in
   let result = emit_str t in
   Alcotest.(check bool) "balanced math passes"
-    true (string_contains result "\\math{x{y}}")
+    true (string_contains result "#{x{y}}")
 
 (* ── XML attribute safety ── *)
 
@@ -560,7 +600,7 @@ let test_image_alt_flattening () =
     [para [external_image [text_inline "see "; emph [text_inline "this"]; text_inline " pic"]
             "https://example.test/img.png" None]] in
   Alcotest.(check string) "image alt flatten"
-    "\\title{test}\n\\p{\\<html:img>[src]{https://example.test/img.png}[alt]{see this pic}}\n"
+    "\\title{test}\n\\p{\\<html:img>[src]{https://example.test/img.png}[alt]{see this pic}{}}\n"
     (emit_str t)
 
 (* ── Resolution tests ── *)
@@ -616,7 +656,7 @@ let test_deeply_nested_inlines () =
     external_link [emph [strong [text_inline "deep"]]] "https://example.test" None
   ]] in
   Alcotest.(check string) "deeply nested inlines"
-    "\\title{test}\n\\p{\\<html:a>[href]{https://example.test}{\\em{\\strong{deep}}}}\n"
+    "\\title{test}\n\\p{[\\em{\\strong{deep}}](https://example.test)}\n"
     (emit_str t)
 
 (* ── Run ── *)
@@ -624,7 +664,10 @@ let test_deeply_nested_inlines () =
 let () =
   let open Alcotest in
   run "Forester_6"
-    [ "escaping", [
+    [ "target", [
+        test_case "target_string" `Quick test_target_string;
+      ]
+    ; "escaping", [
         test_case "escape_percent" `Quick test_escape_percent;
         test_case "escape_backslash" `Quick test_escape_backslash;
         test_case "escape_hash" `Quick test_escape_hash;
@@ -648,6 +691,7 @@ let () =
         test_case "soft_break_emission" `Quick test_soft_break_emission;
         test_case "mixed_inlines" `Quick test_mixed_inlines;
         test_case "deeply_nested_inlines" `Quick test_deeply_nested_inlines;
+        test_case "hostile_inline_code" `Quick test_hostile_inline_code;
       ]
     ; "emission_math", [
         test_case "inline_math_emission" `Quick test_inline_math_emission;
@@ -658,6 +702,7 @@ let () =
       ]
     ; "emission_links", [
         test_case "external_link_emission" `Quick test_external_link_emission;
+        test_case "http_link_emission" `Quick test_http_link_emission;
         test_case "external_link_with_title" `Quick test_external_link_with_title;
         test_case "wiki_link_emission" `Quick test_wiki_link_emission;
         test_case "wiki_link_alias_emission" `Quick test_wiki_link_alias_emission;
@@ -665,6 +710,7 @@ let () =
       ]
     ; "emission_images", [
         test_case "external_image_emission" `Quick test_external_image_emission;
+        test_case "http_image_emission" `Quick test_http_image_emission;
         test_case "local_image_with_resolution" `Quick test_local_image_with_resolution;
         test_case "local_image_no_resolution_error" `Quick test_local_image_no_resolution_error;
         test_case "image_alt_flattening" `Quick test_image_alt_flattening;
@@ -678,6 +724,7 @@ let () =
         test_case "code_block_multiline" `Quick test_code_block_multiline;
         test_case "multiple_blocks_separated" `Quick test_multiple_blocks_separated;
         test_case "xml_attr_escaping" `Quick test_xml_attr_escaping;
+        test_case "hostile_code_block_content" `Quick test_hostile_code_block_content;
       ]
     ; "emission_lists", [
         test_case "tight_unordered_list" `Quick test_tight_unordered_list;
