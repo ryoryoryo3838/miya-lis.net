@@ -14,5 +14,30 @@ and inline_node =
   | Hard_break
   | Soft_break
 
+type list_kind = Unordered | Ordered of int
+type code_info = No_info | Language of string
+type list_item = { item_blocks : block list; item_span : Span.t }
+and block = { bnode : block_node; bspan : Span.t }
+and block_node =
+  | Paragraph of inline list
+  | Blockquote of block list
+  | List of {
+      kind : list_kind;
+      tight : bool;
+      items : list_item list;
+    }
+  | Code_block of { info : code_info; code : string }
+  | Thematic_break
+  | Heading of { level : int; title : inline list }
+  | Subtree_directive of string
+  | Block_embed of string
+  | Display_math of string
+
+type document = {
+  metadata : inline list Metadata.t;
+  blocks : block list;
+  doc_span : Span.t;
+}
+
 type reference_kind = Wiki | Embed | Attribution
 type reference = { kind : reference_kind; target : string; span : Span.t }

@@ -9,3 +9,12 @@
 val parse_inlines :
   Source.t -> string -> base_byte:int ->
   (Ir.inline list, Diagnostic.t list) result
+
+(* parse: lower a complete Markdown document.
+   [source] is the original source file.
+   [masked_markdown] is the Markdown body with YAML front matter masked.
+   [raw_metadata] is the parsed raw front matter metadata.
+   Returns a complete [Ir.document] or diagnostics. *)
+val parse :
+  Source.t -> masked_markdown:string -> Metadata.raw ->
+  (Ir.document, Diagnostic.t list) result

@@ -82,27 +82,27 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
     if text = "" then
       (acc_inlines, acc_diags)
     else
-      ({ Ir.node; span } :: acc_inlines, acc_diags)
+      (({ node; span } : Ir.inline) :: acc_inlines, acc_diags)
 
   | Cmarkit.Inline.Code_span (cs, meta) ->
     let span = meta_span source_path base_byte meta in
     let code = Cmarkit.Inline.Code_span.code cs in
     let node = Ir.Code code in
-    ({ Ir.node; span } :: acc_inlines, acc_diags)
+    (({ node; span } : Ir.inline) :: acc_inlines, acc_diags)
 
   | Cmarkit.Inline.Emphasis (em, meta) ->
     let span = meta_span source_path base_byte meta in
     let inner = Cmarkit.Inline.Emphasis.inline em in
     let children, diags = lower_inlines source_path base_byte defs inner [] [] in
     let node = Ir.Emphasis (List.rev children) in
-    ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+    (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags)
 
   | Cmarkit.Inline.Strong_emphasis (em, meta) ->
     let span = meta_span source_path base_byte meta in
     let inner = Cmarkit.Inline.Emphasis.inline em in
     let children, diags = lower_inlines source_path base_byte defs inner [] [] in
     let node = Ir.Strong (List.rev children) in
-    ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+    (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags)
 
   | Cmarkit.Inline.Link (link, meta) ->
     let span = meta_span source_path base_byte meta in
@@ -121,10 +121,10 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
             begin match info.Wiki.wiki_kind with
             | Wiki.Link ->
               let node = Ir.Wiki_link { target; alias } in
-              ({ Ir.node; span = ws } :: acc_inlines, acc_diags @ diags)
+              (({ node; span = ws } : Ir.inline) :: acc_inlines, acc_diags @ diags)
             | Wiki.Embed ->
               let node = Ir.Wiki_embed target in
-              ({ Ir.node; span = ws } :: acc_inlines, acc_diags @ diags)
+              (({ node; span = ws } : Ir.inline) :: acc_inlines, acc_diags @ diags)
             end
           | Error wiki_diags ->
             (acc_inlines, acc_diags @ diags @ wiki_diags))
@@ -136,13 +136,13 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
             (match Safe_uri.validate Safe_uri.Link span dest with
              | Ok validated_dest ->
                let node = Ir.Link { label = List.rev children; destination = validated_dest; title } in
-               ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+               (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags)
              | Error d ->
                (acc_inlines, d :: acc_diags @ diags))
           | None ->
             (* Unresolved link: no destination, still emit node with empty dest *)
             let node = Ir.Link { label = List.rev children; destination = ""; title = None } in
-            ({ Ir.node; span } :: acc_inlines, acc_diags @ diags))
+            (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags))
       )
     | `Ref _ ->
       (match resolve_link_ref defs link with
@@ -152,12 +152,12 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
          (match Safe_uri.validate Safe_uri.Link span dest with
           | Ok validated_dest ->
             let node = Ir.Link { label = List.rev children; destination = validated_dest; title } in
-            ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+            (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags)
           | Error d ->
             (acc_inlines, d :: acc_diags @ diags))
        | None ->
          let node = Ir.Link { label = List.rev children; destination = ""; title = None } in
-         ({ Ir.node; span } :: acc_inlines, acc_diags @ diags))
+         (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags))
     | `Inline def_node ->
       let def = fst def_node in
       let dest = link_dest def in
@@ -165,7 +165,7 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       (match Safe_uri.validate Safe_uri.Link span dest with
        | Ok validated_dest ->
          let node = Ir.Link { label = List.rev children; destination = validated_dest; title } in
-         ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+         (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags)
        | Error d ->
          (acc_inlines, d :: acc_diags @ diags))
     end
@@ -187,7 +187,7 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
     (match Safe_uri.validate Safe_uri.Image span dest with
      | Ok validated_dest ->
        let node = Ir.Image { alt = List.rev alt_children; destination = validated_dest; title } in
-       ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+       (({ node; span } : Ir.inline) :: acc_inlines, acc_diags @ diags)
      | Error d ->
        (acc_inlines, d :: acc_diags @ diags))
 
@@ -198,8 +198,8 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
     (match Safe_uri.validate Safe_uri.Link span dest with
      | Ok validated_dest ->
        let label_node = Ir.Text url in
-       let node = Ir.Link { label = [{ Ir.node = label_node; span }]; destination = validated_dest; title = None } in
-       ({ Ir.node; span } :: acc_inlines, acc_diags)
+       let node = Ir.Link { label = [{ node = label_node; span }]; destination = validated_dest; title = None } in
+       (({ node; span } : Ir.inline) :: acc_inlines, acc_diags)
      | Error d ->
        (acc_inlines, d :: acc_diags))
 
@@ -209,7 +209,7 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       | `Hard -> Ir.Hard_break
       | `Soft -> Ir.Soft_break
     in
-    ({ Ir.node; span } :: acc_inlines, acc_diags)
+    (({ node; span } : Ir.inline) :: acc_inlines, acc_diags)
 
   | Cmarkit.Inline.Ext_math_span (ms, meta) ->
     let span = meta_span source_path base_byte meta in
@@ -226,7 +226,7 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       (acc_inlines, diag :: acc_diags)
     else
       let node = Ir.Math { tex = trimmed; display } in
-      ({ Ir.node; span } :: acc_inlines, acc_diags)
+      (({ node; span } : Ir.inline) :: acc_inlines, acc_diags)
 
   | Cmarkit.Inline.Raw_html (_html, meta) ->
     let span = meta_span source_path base_byte meta in
@@ -323,3 +323,340 @@ let parse_inlines source text ~base_byte =
     Ok sorted_inlines
   else
     Error sorted_diags
+
+(* ── Block lowering ── *)
+
+let valid_lang_token s =
+  let len = String.length s in
+  if len = 0 then false
+  else
+    let first = s.[0] in
+    if not ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z')
+            || (first >= '0' && first <= '9'))
+    then false
+    else
+      let rec loop i =
+        if i >= len then true
+        else
+          let c = s.[i] in
+          match c with
+          | 'A'..'Z' | 'a'..'z' | '0'..'9' | '_' | '+' | '.' | '-' -> loop (i + 1)
+          | _ -> false
+      in
+      loop 1
+
+let code_info_of_fence source_path base_byte info_node =
+  let info_text = node_text info_node in
+  let trimmed = String.trim info_text in
+  let info_meta = snd info_node in
+  if trimmed = "" then
+    Ok Ir.No_info
+  else if trimmed = "math" then
+    let span = meta_span source_path base_byte info_meta in
+    Error (Diagnostic.make TM102 (Span.Source_span span)
+             "fenced math blocks are not supported; use $$...$$ for display math")
+  else
+    let tokens = String.split_on_char ' ' trimmed
+                 |> List.filter (fun s -> s <> "") in
+    match tokens with
+    | [] -> Ok Ir.No_info
+    | [tok] ->
+      if valid_lang_token tok then
+        Ok (Ir.Language tok)
+      else
+        let span = meta_span source_path base_byte info_meta in
+        Error (Diagnostic.make TM102 (Span.Source_span span)
+                 ("invalid language token: \"" ^ tok ^ "\""))
+    | _ ->
+      let span = meta_span source_path base_byte info_meta in
+      Error (Diagnostic.make TM102 (Span.Source_span span)
+               "multi-token fenced code info is not supported")
+
+let code_block_lines lines =
+  let buf = Buffer.create 128 in
+  List.iter (fun line ->
+    let (s, _layout) = line in
+    Buffer.add_string buf s
+  ) lines;
+  Buffer.contents buf
+
+(* Check if an HTML comment is a subtree directive.
+   Only matches exact <!-- subtree: ID --> and returns the ID.
+   Space before/after the colon is flexible, but the marker must
+   be exactly "subtree". *)
+let is_subtree_directive comment_text =
+  let s = comment_text in
+  (* Must be non-empty and look like a comment *)
+  if String.length s < 10 then None
+  else
+    let body = String.trim s in
+    (* Check for <!-- ... --> if preserved, or just the inner text *)
+    let inner =
+      if String.length body >= 7
+         && String.sub body 0 4 = "<!--"
+         && String.sub body (String.length body - 3) 3 = "-->"
+      then String.trim (String.sub body 4 (String.length body - 7))
+      else body
+    in
+    let words = String.split_on_char ' ' inner
+                |> List.filter (fun w -> w <> "") in
+    match words with
+    | "subtree:" :: rest ->
+      Some (String.concat " " rest |> String.trim)
+    | _ -> None
+
+(* Lower a single inline list, then check for paragraph normalization.
+   Returns either a block_node (Paragraph, Embed, or Display_math)
+   plus accumulated diagnostics. *)
+let lower_block_inlines source_path base_byte defs inline acc_diags =
+  let inlines_rev, diags = lower_inlines source_path base_byte defs inline [] [] in
+  let all_diags = acc_diags @ diags in
+  let inlines = List.rev inlines_rev in
+  let filtered_unwrapped = filter_wiki_wrappers inlines in
+  let filtered = List.filter (fun i ->
+    match i.Ir.node with
+    | Ir.Text s -> String.trim s <> ""
+    | _ -> true
+  ) filtered_unwrapped in
+  match filtered with
+  | [{ Ir.node = Ir.Wiki_embed target; span = _ }] ->
+    (Ir.Block_embed target, all_diags)
+  | [{ Ir.node = Ir.Math { tex; display = true }; span = _ }] ->
+    (Ir.Display_math tex, all_diags)
+  | _ ->
+    (* Check for mixed content: text + wiki embed or text + display math *)
+    let has_embed = List.exists (fun i ->
+      match i.Ir.node with Ir.Wiki_embed _ -> true | _ -> false
+    ) filtered in
+    let has_display_math = List.exists (fun i ->
+      match i.Ir.node with Ir.Math { display = true; _ } -> true | _ -> false
+    ) filtered in
+    let has_text = List.exists (fun i ->
+      match i.Ir.node with Ir.Text _ -> true | _ -> false
+    ) filtered in
+    let extra_diags =
+      if has_embed && (has_text || List.length filtered > 1) then
+        let span = match filtered with
+          | [] -> Span.Source_span { Span.path = source_path; start_byte = 0; end_byte = 0 }
+          | i :: _ -> Span.Source_span i.Ir.span
+        in
+        [Diagnostic.make TM106 span "embeds must appear alone in a paragraph"]
+      else if has_display_math && (has_text || List.length filtered > 1) then
+        let span = match filtered with
+          | [] -> Span.Source_span { Span.path = source_path; start_byte = 0; end_byte = 0 }
+          | i :: _ -> Span.Source_span i.Ir.span
+        in
+        [Diagnostic.make TM107 span "display math must appear alone in a paragraph"]
+      else
+        []
+    in
+    (Ir.Paragraph inlines, all_diags @ extra_diags)
+
+(* Recursively lower a Cmarkit block tree into Ir.block list.
+   [depth] tracks container nesting: 0 = document, >0 = inside blockquote/list. *)
+let rec lower_blocks source_path depth defs block acc_blocks acc_diags =
+  match block with
+  | Cmarkit.Block.Blocks (blocks, _meta) ->
+    List.fold_left (fun (blks, diags) b ->
+      lower_blocks source_path depth defs b blks diags
+    ) (acc_blocks, acc_diags) blocks
+
+  | Cmarkit.Block.Paragraph (p, p_meta) ->
+    let span = meta_span source_path 0 p_meta in
+    let inline = Cmarkit.Block.Paragraph.inline p in
+    let node, diags = lower_block_inlines source_path 0 defs inline acc_diags in
+    (* At depth > 0, reject embed/display math *)
+    let node', diags' =
+      if depth > 0 then
+        match node with
+        | Ir.Block_embed _ ->
+          let d = Diagnostic.make TM106 (Span.Source_span span)
+            "embeds are only allowed at document level" in
+          (Ir.Paragraph [], d :: diags)
+        | Ir.Display_math _ ->
+          let d = Diagnostic.make TM107 (Span.Source_span span)
+            "display math is only allowed at document level" in
+          (Ir.Paragraph [], d :: diags)
+        | _ -> (node, diags)
+      else (node, diags)
+    in
+    ({ Ir.bnode = node'; bspan = span } :: acc_blocks, diags')
+
+  | Cmarkit.Block.Heading (h, h_meta) ->
+    let span = meta_span source_path 0 h_meta in
+    if depth > 0 then
+      let diag = Diagnostic.make TM103 (Span.Source_span span)
+        "headings are only allowed at document level" in
+      (acc_blocks, diag :: acc_diags)
+    else
+      let level = Cmarkit.Block.Heading.level h in
+      let inline = Cmarkit.Block.Heading.inline h in
+      let inlines_rev, diags = lower_inlines source_path 0 defs inline [] [] in
+      let all_diags = acc_diags @ diags in
+      let title = List.rev inlines_rev in
+      let node = Ir.Heading { level; title } in
+      ({ Ir.bnode = node; bspan = span } :: acc_blocks, all_diags)
+
+  | Cmarkit.Block.Block_quote (bq, bq_meta) ->
+    let span = meta_span source_path 0 bq_meta in
+    let inner = Cmarkit.Block.Block_quote.block bq in
+    let inner_blocks, diags = lower_blocks source_path (depth + 1) defs inner [] acc_diags in
+    let node = Ir.Blockquote (List.rev inner_blocks) in
+    ({ Ir.bnode = node; bspan = span } :: acc_blocks, diags)
+
+  | Cmarkit.Block.List (l, l_meta) ->
+    let span = meta_span source_path 0 l_meta in
+    let type' = Cmarkit.Block.List'.type' l in
+    let kind = match type' with
+      | `Unordered _ -> Ir.Unordered
+      | `Ordered (start, _) -> Ir.Ordered start
+    in
+    let tight = Cmarkit.Block.List'.tight l in
+    let items = Cmarkit.Block.List'.items l in
+    let has_task, item_blocks_rev, diags =
+      List.fold_left (fun (task_found, items_acc, diags_acc) (item, item_meta) ->
+        let item_span = meta_span source_path 0 item_meta in
+        let task_found' =
+          match Cmarkit.Block.List_item.ext_task_marker item with
+          | Some _ -> true
+          | None -> task_found
+        in
+        let inner = Cmarkit.Block.List_item.block item in
+        let child_blocks, child_diags =
+          lower_blocks source_path (depth + 1) defs inner [] diags_acc in
+        let item_rec = { Ir.item_blocks = List.rev child_blocks; item_span } in
+        (task_found', item_rec :: items_acc, child_diags)
+      ) (false, [], acc_diags) items
+    in
+    let items_rev = List.rev item_blocks_rev in
+    let diags' =
+      if has_task then
+        Diagnostic.make TM102 (Span.Source_span span) "task list items are not supported" :: diags
+      else diags
+    in
+    (* At depth > 0, reject embed/display math inside list items *)
+    let diags'' =
+      if depth > 0 then
+        let check_item item acc =
+          let check_block b acc' =
+            match b.Ir.bnode with
+            | Ir.Block_embed _ ->
+              Diagnostic.make TM106 (Span.Source_span b.Ir.bspan)
+                "embeds are only allowed at document level" :: acc'
+            | Ir.Display_math _ ->
+              Diagnostic.make TM107 (Span.Source_span b.Ir.bspan)
+                "display math is only allowed at document level" :: acc'
+            | _ -> acc'
+          in
+          List.fold_left (fun acc' b -> check_block b acc') acc item.Ir.item_blocks
+        in
+        List.fold_left (fun acc item -> check_item item acc) diags' items_rev
+      else diags'
+    in
+    let node = Ir.List { kind; tight; items = items_rev } in
+    ({ Ir.bnode = node; bspan = span } :: acc_blocks, diags'')
+
+  | Cmarkit.Block.Code_block (cb, cb_meta) ->
+    let span = meta_span source_path 0 cb_meta in
+    let layout = Cmarkit.Block.Code_block.layout cb in
+    let info_result =
+      match layout with
+      | `Fenced _ ->
+        (match Cmarkit.Block.Code_block.info_string cb with
+         | Some info_node -> code_info_of_fence source_path 0 info_node
+         | None -> Ok Ir.No_info)
+      | `Indented -> Ok Ir.No_info
+    in
+    (match info_result with
+     | Error diag ->
+       (acc_blocks, diag :: acc_diags)
+     | Ok info ->
+       let lines = Cmarkit.Block.Code_block.code cb in
+       let code = code_block_lines lines in
+       let node = Ir.Code_block { info; code } in
+       ({ Ir.bnode = node; bspan = span } :: acc_blocks, acc_diags))
+
+  | Cmarkit.Block.Thematic_break (_tb, tb_meta) ->
+    let span = meta_span source_path 0 tb_meta in
+    ({ Ir.bnode = Ir.Thematic_break; bspan = span } :: acc_blocks, acc_diags)
+
+  | Cmarkit.Block.Blank_line _ ->
+    (acc_blocks, acc_diags)
+
+  | Cmarkit.Block.Link_reference_definition _ ->
+    (acc_blocks, acc_diags)
+
+  | Cmarkit.Block.Html_block (hb, hb_meta) ->
+    let span = meta_span source_path 0 hb_meta in
+    let hb_text = code_block_lines hb in
+    let trimmed = String.trim hb_text in
+    if String.length trimmed >= 7
+       && String.sub trimmed 0 4 = "<!--"
+       && String.sub trimmed (String.length trimmed - 3) 3 = "-->"
+    then
+      (match is_subtree_directive trimmed with
+       | Some id ->
+         let node = Ir.Subtree_directive id in
+         ({ Ir.bnode = node; bspan = span } :: acc_blocks, acc_diags)
+       | None ->
+         (acc_blocks, acc_diags))
+    else
+      let diag = Diagnostic.make TM102 (Span.Source_span span)
+        "raw block HTML is not supported" in
+      (acc_blocks, diag :: acc_diags)
+
+  | Cmarkit.Block.Ext_math_block (cb, cb_meta) ->
+    let span = meta_span source_path 0 cb_meta in
+    let diag = Diagnostic.make TM102 (Span.Source_span span)
+      "fenced math blocks are not supported; use $$...$$ for display math" in
+    (acc_blocks, diag :: acc_diags)
+
+  | Cmarkit.Block.Ext_table (_t, t_meta) ->
+    let span = meta_span source_path 0 t_meta in
+    let diag = Diagnostic.make TM102 (Span.Source_span span)
+      "tables are not supported" in
+    (acc_blocks, diag :: acc_diags)
+
+  | Cmarkit.Block.Ext_footnote_definition (_fn, fn_meta) ->
+    let span = meta_span source_path 0 fn_meta in
+    let diag = Diagnostic.make TM102 (Span.Source_span span)
+      "footnotes are not supported" in
+    (acc_blocks, diag :: acc_diags)
+
+  (* Fallback: any unrecognized block extension *)
+  | _ ->
+    let diag = Diagnostic.make TM102 Span.No_location
+      "unsupported Markdown block extension" in
+    (acc_blocks, diag :: acc_diags)
+
+(* parse: lower a complete Markdown document. *)
+let parse source ~masked_markdown raw_metadata =
+  let doc =
+    Cmarkit.Doc.of_string ~locs:true ~strict:false
+      ~resolver:(Wiki.resolver source) masked_markdown
+  in
+  let block = Cmarkit.Doc.block doc in
+  let defs = Cmarkit.Doc.defs doc in
+  let path = Source.path source in
+  let blocks_rev, block_diags = lower_blocks path 0 defs block [] [] in
+  let blocks = List.rev blocks_rev in
+  let text_len = String.length masked_markdown in
+  let doc_span =
+    match Span.make ~path ~start_byte:0 ~end_byte:text_len with
+    | Ok s -> s
+    | Error _ -> { Span.path = path; start_byte = 0; end_byte = text_len }
+  in
+  (* Lower metadata inline values *)
+  let parse_meta located =
+    parse_inlines source located.Metadata.value
+      ~base_byte:located.Metadata.span.Span.start_byte
+  in
+  match Metadata.lower_inline_values ~parse:parse_meta raw_metadata with
+  | Ok lowered_meta ->
+    let all_diags = block_diags in
+    if all_diags = [] then
+      Ok { Ir.metadata = lowered_meta; blocks; doc_span }
+    else
+      Error (List.rev all_diags)
+  | Error meta_diags ->
+    Error (List.rev (block_diags @ meta_diags))
