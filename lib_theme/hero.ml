@@ -72,11 +72,15 @@ let setup_period_pin () =
     if not !is_fixed then begin
       let rect = period##getBoundingClientRect in
       let top = Js.to_float rect##.top in
-      if top <= 0. then begin
-        (* Capture current horizontal position, pin at same spot *)
+      let height = Js.to_float rect##.height in
+      (* Let .NET peek above viewport by ~15% of period height before pinning *)
+      let threshold = -. (height *. 0.15) in
+      if top <= threshold then begin
+        (* Capture current horizontal position *)
         fixed_left := Js.to_float rect##.left;
         period##.style##.position := Js.string "fixed";
-        period##.style##.top := Js.string "0px";
+        (* Match natural visual position: period sits near x-height top, not at line top *)
+        period##.style##.top := Js.string (Printf.sprintf "%.1fpx" (-.height *. 0.12));
         period##.style##.left := Js.string (Printf.sprintf "%.1fpx" !fixed_left);
         period##.style##.zIndex := Js.string "11";
         period##.classList##add (Js.string "is-fixed");
