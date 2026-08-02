@@ -76,9 +76,9 @@ let setup_period_pin () =
       let threshold = -. (height *. 0.15) in
       if top <= threshold then begin
         period##.style##.position := Js.string "fixed";
-        (* 45° from top-left corner: equal distance from top and left edges *)
-        period##.style##.top := Js.string (Printf.sprintf "%.1fpx" (-.height *. 0.12));
-        period##.style##.left := Js.string (Printf.sprintf "%.1fpx" (-.height *. 0.12));
+        (* 45° from top-left corner *)
+        period##.style##.top := Js.string "0.5rem";
+        period##.style##.left := Js.string "0.5rem";
         period##.style##.zIndex := Js.string "11";
         period##.classList##add (Js.string "is-fixed");
         is_fixed := true
