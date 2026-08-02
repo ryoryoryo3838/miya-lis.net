@@ -10,14 +10,23 @@ type raw = {
   meta : (string located * string located) list;
 }
 
-let empty = {
+type 'inline t = {
+  date : string located option;
+  taxon : string located option;
+  authors : attribution list;
+  contributors : attribution list;
+  tags : 'inline located list;
+  meta : (string located * 'inline located) list;
+}
+
+let empty = ({
   date = None;
   taxon = None;
   authors = [];
   contributors = [];
   tags = [];
   meta = [];
-}
+} : raw)
 
 let valid_id s =
   let len = String.length s in
@@ -166,3 +175,42 @@ let valid_date s =
         | _ -> false)
      | _ -> false)
   | _ -> false
+
+let lower_inline_values ~parse (raw : raw) =
+  let all_diags = ref [] in
+
+  (* Lower each tag value through the inline parser *)
+  let lower_tag (tag : string located) =
+    match parse tag with
+    | Ok inlines -> Ok { value = inlines; span = tag.span }
+    | Error diags ->
+      all_diags := diags @ !all_diags;
+      Error ()
+  in
+
+  (* Lower each meta value through the inline parser *)
+  let lower_meta_entry ((key, value) : string located * string located) =
+    match parse value with
+    | Ok inlines -> Ok (key, { value = inlines; span = value.span })
+    | Error diags ->
+      all_diags := diags @ !all_diags;
+      Error ()
+  in
+
+  let tags_result = List.map lower_tag raw.tags in
+  let meta_result = List.map lower_meta_entry raw.meta in
+
+  let ok_tags = List.filter_map (function Ok v -> Some v | Error _ -> None) tags_result in
+  let ok_meta = List.filter_map (function Ok v -> Some v | Error _ -> None) meta_result in
+
+  if !all_diags <> [] then
+    Error !all_diags
+  else
+    Ok {
+      date = raw.date;
+      taxon = raw.taxon;
+      authors = raw.authors;
+      contributors = raw.contributors;
+      tags = ok_tags;
+      meta = ok_meta;
+    }
