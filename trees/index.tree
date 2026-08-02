@@ -1,6 +1,2 @@
-\title{Hello, World!}
-
-\subtree[sub-tree]{
-\p{This is a example of sub tree.}
-}
-
+\title{MIYA-LIS.NET}
+\transclude{aboutme}
