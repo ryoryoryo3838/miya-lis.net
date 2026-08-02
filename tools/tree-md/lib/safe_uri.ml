@@ -25,10 +25,6 @@ let percent_encode s =
   ) s;
   Buffer.contents buf
 
-let valid_url_char = function
-  | '\x00'..'\x1F' | '\x7F' -> false
-  | _ -> true
-
 (* Consume the scheme prefix: [A-Za-z][A-Za-z0-9+.-]*: *)
 let parse_scheme s =
   let len = String.length s in
@@ -90,14 +86,14 @@ let validate purpose span s =
       if String.length s > 0 && s.[0] = '#' then
         (* Fragment: accept for links, reject for images *)
         begin match purpose with
-        | Link -> Ok s
+        | Link -> Ok (percent_encode s)
         | Image ->
           Error (Diagnostic.make TM205 (Span.Source_span span)
                   "fragment URI not allowed for images")
         end
       else
         (* Relative path: accept for both purposes *)
-        Ok s
+        Ok (percent_encode s)
     | Some (scheme, _rest) ->
       let allowed = schemes_for purpose in
       if is_unsafe_scheme scheme allowed then

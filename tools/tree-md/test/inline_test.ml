@@ -411,6 +411,112 @@ let test_image_with_title () =
     ["Image(\"https://example.test/img.png\")[Text(\"alt\")]"]
     (strings_of result)
 
+(* ── Integration: javascript data URI via parse_inlines ── *)
+
+let test_parse_link_javascript_rejected () =
+  let result = parse_inlines "[label](javascript:alert(1))" in
+  match result with
+  | Error diags ->
+    Alcotest.(check bool) "javascript link TM205 via parse" true (has_diag_code diags "TM205")
+  | Ok _ -> Alcotest.fail "expected TM205 for javascript: link"
+
+let test_parse_image_data_rejected () =
+  let result = parse_inlines "![alt](data:image/png;base64,x)" in
+  match result with
+  | Error diags ->
+    Alcotest.(check bool) "data image TM205 via parse" true (has_diag_code diags "TM205")
+  | Ok _ -> Alcotest.fail "expected TM205 for data: image"
+
+(* ── Invalid Wiki forms via parse_inlines ── *)
+
+let test_parse_wiki_bad_id () =
+  let result = parse_inlines "[[bad id]]" in
+  match result with
+  | Error diags ->
+    Alcotest.(check bool) "bad wiki id TM105" true (has_diag_code diags "TM105")
+  | Ok _ -> Alcotest.fail "expected TM105 for invalid wiki target"
+
+let test_parse_wiki_empty_alias () =
+  let result = parse_inlines "[[id|]]" in
+  match result with
+  | Error diags ->
+    Alcotest.(check bool) "empty alias TM105" true (has_diag_code diags "TM105")
+  | Ok _ -> Alcotest.fail "expected TM105 for empty alias"
+
+let test_parse_wiki_multi_pipe () =
+  let result = parse_inlines "[[id|a|b]]" in
+  match result with
+  | Error diags ->
+    Alcotest.(check bool) "multi pipe TM105" true (has_diag_code diags "TM105")
+  | Ok _ -> Alcotest.fail "expected TM105 for multiple pipes"
+
+(* ── Invalid math forms via parse_inlines ── *)
+
+let test_parse_empty_math () =
+  let result = parse_inlines "$$ $$" in
+  match result with
+  | Error diags ->
+    Alcotest.(check bool) "empty math TM107" true (has_diag_code diags "TM107")
+  | Ok _ -> Alcotest.fail "expected TM107 for empty math"
+
+let test_parse_unbalanced_math () =
+  let result = parse_inlines "${a{b$" in
+  match result with
+  | Error diags ->
+    Alcotest.(check bool) "unbalanced math TM107" true (has_diag_code diags "TM107")
+  | Ok _ -> Alcotest.fail "expected TM107 for unbalanced braces"
+
+(* ── Percent encoding applied via parse_inlines ── *)
+
+let test_parse_link_space_encoded () =
+  let result = parse_inlines "[label](<https://example.test/a b>)" in
+  match result with
+  | Ok inlines ->
+    (match inlines with
+     | [{ Tree_md.Ir.node = Tree_md.Ir.Link { destination = dest; _ }; _ }] ->
+       Alcotest.(check string) "link space encoded" "https://example.test/a%20b" dest
+     | _ -> Alcotest.fail "expected Link node")
+  | Error diags ->
+    let msgs = List.map (fun d -> d.Tree_md.Diagnostic.message) diags
+      |> String.concat "; " in
+    Alcotest.fail ("expected Ok, got: " ^ msgs)
+
+let test_parse_link_fragment_encoded () =
+  let result = parse_inlines "[label](#section)" in
+  match result with
+  | Ok inlines ->
+    (match inlines with
+     | [{ Tree_md.Ir.node = Tree_md.Ir.Link { destination = dest; _ }; _ }] ->
+       Alcotest.(check string) "fragment preserved" "#section" dest
+     | _ -> Alcotest.fail "expected Link node")
+  | Error diags ->
+    let msgs = List.map (fun d -> d.Tree_md.Diagnostic.message) diags
+      |> String.concat "; " in
+    Alcotest.fail ("expected Ok, got: " ^ msgs)
+
+let test_parse_link_relative_encoded () =
+  let result = parse_inlines "[label](note)" in
+  match result with
+  | Ok inlines ->
+    (match inlines with
+     | [{ Tree_md.Ir.node = Tree_md.Ir.Link { destination = dest; _ }; _ }] ->
+       Alcotest.(check string) "relative preserved" "note" dest
+     | _ -> Alcotest.fail "expected Link node")
+  | Error diags ->
+    let msgs = List.map (fun d -> d.Tree_md.Diagnostic.message) diags
+      |> String.concat "; " in
+    Alcotest.fail ("expected Ok, got: " ^ msgs)
+
+(* ── math span assertions ── *)
+
+let test_parse_math_has_span () =
+  let result = parse_inlines "$x$" in
+  match result with
+  | Ok [i] ->
+    Alcotest.(check bool) "math span valid" true
+      (i.Tree_md.Ir.span.Tree_md.Span.end_byte > i.Tree_md.Ir.span.Tree_md.Span.start_byte)
+  | _ -> Alcotest.fail "expected Ok"
+
 let () =
   let open Alcotest in
   run "Inline"
@@ -447,4 +553,15 @@ let () =
     ; "every_inline_has_span", [ test_case "every_inline_has_span" `Quick test_every_inline_has_span ]
     ; "link_with_emphasis", [ test_case "link_with_emphasis" `Quick test_link_with_emphasis ]
     ; "image_with_title", [ test_case "image_with_title" `Quick test_image_with_title ]
+    ; "parse_link_javascript_rejected", [ test_case "parse_link_javascript_rejected" `Quick test_parse_link_javascript_rejected ]
+    ; "parse_image_data_rejected", [ test_case "parse_image_data_rejected" `Quick test_parse_image_data_rejected ]
+    ; "parse_wiki_bad_id", [ test_case "parse_wiki_bad_id" `Quick test_parse_wiki_bad_id ]
+    ; "parse_wiki_empty_alias", [ test_case "parse_wiki_empty_alias" `Quick test_parse_wiki_empty_alias ]
+    ; "parse_wiki_multi_pipe", [ test_case "parse_wiki_multi_pipe" `Quick test_parse_wiki_multi_pipe ]
+    ; "parse_empty_math", [ test_case "parse_empty_math" `Quick test_parse_empty_math ]
+    ; "parse_unbalanced_math", [ test_case "parse_unbalanced_math" `Quick test_parse_unbalanced_math ]
+    ; "parse_link_space_encoded", [ test_case "parse_link_space_encoded" `Quick test_parse_link_space_encoded ]
+    ; "parse_link_fragment_encoded", [ test_case "parse_link_fragment_encoded" `Quick test_parse_link_fragment_encoded ]
+    ; "parse_link_relative_encoded", [ test_case "parse_link_relative_encoded" `Quick test_parse_link_relative_encoded ]
+    ; "parse_math_has_span", [ test_case "parse_math_has_span" `Quick test_parse_math_has_span ]
     ]

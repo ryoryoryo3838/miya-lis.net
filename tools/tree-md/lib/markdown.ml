@@ -52,6 +52,22 @@ let resolve_link_ref defs link =
     Some (fst def_node)
   | _ -> None
 
+(* Validate TeX payload: reject empty and unbalanced braces *)
+let balanced_braces tex =
+  let depth = ref 0 in
+  let len = String.length tex in
+  let rec loop i =
+    if i >= len then !depth = 0
+    else
+      let c = tex.[i] in
+      match c with
+      | '{' -> incr depth; loop (i + 1)
+      | '}' -> decr depth; if !depth < 0 then false else loop (i + 1)
+      | '\\' when i + 1 < len -> loop (i + 2)
+      | _ -> loop (i + 1)
+  in
+  loop 0
+
 let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
   match inline with
   | Cmarkit.Inline.Inlines (inlines, _meta) ->
@@ -97,26 +113,34 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       let def_meta = Cmarkit.Label.meta def_label in
       (match Cmarkit.Meta.find Wiki.wiki_meta_key def_meta with
        | Some info ->
-         let target, alias = Wiki.parse_wiki_body info.Wiki.wiki_body in
          let ws = make_span source_path base_byte
                     info.Wiki.whole_first_byte
                     info.Wiki.whole_last_byte in
-         begin match info.Wiki.wiki_kind with
-         | Wiki.Link ->
-           let node = Ir.Wiki_link { target; alias } in
-           ({ Ir.node; span = ws } :: acc_inlines, acc_diags @ diags)
-         | Wiki.Embed ->
-           let node = Ir.Wiki_embed target in
-           ({ Ir.node; span = ws } :: acc_inlines, acc_diags @ diags)
-         end
+         (match Wiki.validate_wiki_body ~source_path ~info with
+          | Ok (target, alias) ->
+            begin match info.Wiki.wiki_kind with
+            | Wiki.Link ->
+              let node = Ir.Wiki_link { target; alias } in
+              ({ Ir.node; span = ws } :: acc_inlines, acc_diags @ diags)
+            | Wiki.Embed ->
+              let node = Ir.Wiki_embed target in
+              ({ Ir.node; span = ws } :: acc_inlines, acc_diags @ diags)
+            end
+          | Error wiki_diags ->
+            (acc_inlines, acc_diags @ diags @ wiki_diags))
        | None ->
          (match resolve_link_ref defs link with
           | Some def ->
             let dest = link_dest def in
             let title = link_title def in
-            let node = Ir.Link { label = List.rev children; destination = dest; title } in
-            ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+            (match Safe_uri.validate Safe_uri.Link span dest with
+             | Ok validated_dest ->
+               let node = Ir.Link { label = List.rev children; destination = validated_dest; title } in
+               ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+             | Error d ->
+               (acc_inlines, d :: acc_diags @ diags))
           | None ->
+            (* Unresolved link: no destination, still emit node with empty dest *)
             let node = Ir.Link { label = List.rev children; destination = ""; title = None } in
             ({ Ir.node; span } :: acc_inlines, acc_diags @ diags))
       )
@@ -125,8 +149,12 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
        | Some def ->
          let dest = link_dest def in
          let title = link_title def in
-         let node = Ir.Link { label = List.rev children; destination = dest; title } in
-         ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+         (match Safe_uri.validate Safe_uri.Link span dest with
+          | Ok validated_dest ->
+            let node = Ir.Link { label = List.rev children; destination = validated_dest; title } in
+            ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+          | Error d ->
+            (acc_inlines, d :: acc_diags @ diags))
        | None ->
          let node = Ir.Link { label = List.rev children; destination = ""; title = None } in
          ({ Ir.node; span } :: acc_inlines, acc_diags @ diags))
@@ -134,8 +162,12 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       let def = fst def_node in
       let dest = link_dest def in
       let title = link_title def in
-      let node = Ir.Link { label = List.rev children; destination = dest; title } in
-      ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+      (match Safe_uri.validate Safe_uri.Link span dest with
+       | Ok validated_dest ->
+         let node = Ir.Link { label = List.rev children; destination = validated_dest; title } in
+         ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+       | Error d ->
+         (acc_inlines, d :: acc_diags @ diags))
     end
 
   | Cmarkit.Inline.Image (link, meta) ->
@@ -152,17 +184,24 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
     in
     let dest = link_dest def in
     let title = link_title def in
-    let node = Ir.Image { alt = List.rev alt_children; destination = dest; title } in
-    ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+    (match Safe_uri.validate Safe_uri.Image span dest with
+     | Ok validated_dest ->
+       let node = Ir.Image { alt = List.rev alt_children; destination = validated_dest; title } in
+       ({ Ir.node; span } :: acc_inlines, acc_diags @ diags)
+     | Error d ->
+       (acc_inlines, d :: acc_diags @ diags))
 
   | Cmarkit.Inline.Autolink (al, meta) ->
     let span = meta_span source_path base_byte meta in
     let url = node_text (Cmarkit.Inline.Autolink.link al) in
     let dest = if Cmarkit.Inline.Autolink.is_email al then "mailto:" ^ url else url in
-    let label_node = Ir.Text url in
-    let lbl_span = span in
-    let node = Ir.Link { label = [{ Ir.node = label_node; span = lbl_span }]; destination = dest; title = None } in
-    ({ Ir.node; span } :: acc_inlines, acc_diags)
+    (match Safe_uri.validate Safe_uri.Link span dest with
+     | Ok validated_dest ->
+       let label_node = Ir.Text url in
+       let node = Ir.Link { label = [{ Ir.node = label_node; span }]; destination = validated_dest; title = None } in
+       ({ Ir.node; span } :: acc_inlines, acc_diags)
+     | Error d ->
+       (acc_inlines, d :: acc_diags))
 
   | Cmarkit.Inline.Break (br, meta) ->
     let span = meta_span source_path base_byte meta in
@@ -176,8 +215,18 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
     let span = meta_span source_path base_byte meta in
     let tex = Cmarkit.Inline.Math_span.tex ms in
     let display = Cmarkit.Inline.Math_span.display ms in
-    let node = Ir.Math { tex; display } in
-    ({ Ir.node; span } :: acc_inlines, acc_diags)
+    let trimmed = String.trim tex in
+    if trimmed = "" then
+      let diag = Diagnostic.make TM107 (Span.Source_span span)
+        "empty math expression" in
+      (acc_inlines, diag :: acc_diags)
+    else if not (balanced_braces tex) then
+      let diag = Diagnostic.make TM107 (Span.Source_span span)
+        "unbalanced braces in math expression" in
+      (acc_inlines, diag :: acc_diags)
+    else
+      let node = Ir.Math { tex = trimmed; display } in
+      ({ Ir.node; span } :: acc_inlines, acc_diags)
 
   | Cmarkit.Inline.Raw_html (_html, meta) ->
     let span = meta_span source_path base_byte meta in
@@ -191,7 +240,9 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       "strikethrough is not supported" in
     (acc_inlines, diag :: acc_diags)
 
-  (* Any unrecognized extension inline: reject with TM102 *)
+  (* Any unrecognized extension inline: reject with TM102.
+     When a span is available from the inline's metadata, use it;
+     otherwise fall back to No_location. *)
   | _ ->
     let diag = Diagnostic.make TM102 Span.No_location
       "unsupported Markdown extension" in
@@ -250,6 +301,12 @@ let rec extract_inlines source_path base_byte defs block acc_inlines acc_diags =
   | _ ->
     (acc_inlines, acc_diags)
 
+(* parse_inlines: parse the given Markdown string as inline content.
+   [source] is used for path and span resolution.
+   [text] is the masked Markdown string.
+   [base_byte] is an offset added to all byte positions in the result,
+   used when the text is a substring of the original source (e.g. YAML
+   scalar values within front matter). *)
 let parse_inlines source text ~base_byte =
   let doc =
     Cmarkit.Doc.of_string ~locs:true ~strict:false

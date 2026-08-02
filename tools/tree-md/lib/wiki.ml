@@ -326,3 +326,12 @@ let shapes_for_test source text =
   let block = Cmarkit.Doc.block doc in
   let (diags, shapes_rev) = collect_blocks (Source.path source) block [] [] in
   Ok (List.rev shapes_rev, List.rev diags)
+
+let validate_wiki_body ~source_path ~info =
+  let body = info.wiki_body in
+  let diags = wiki_diagnostics body source_path info in
+  if diags = [] then begin
+    let target, alias = parse_wiki_body body in
+    Ok (target, alias)
+  end else
+    Error diags
