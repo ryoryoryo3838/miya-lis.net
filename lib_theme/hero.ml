@@ -61,12 +61,11 @@ let setup_nav () =
 (* ── Period scroll pinning ── *)
 let setup_period_pin () =
   let period = get_element "hero-period" in
-  let hero = get_element "hero" in
 
   let on_scroll () =
-    let hero_rect = hero##getBoundingClientRect in
-    (* Pin the period when hero bottom is above viewport top *)
-    if Js.to_float hero_rect##.bottom < 0. then begin
+    let period_rect = period##getBoundingClientRect in
+    (* Pin the period when its top reaches the viewport top *)
+    if Js.to_float period_rect##.top <= 0. then begin
       add_class period "is-fixed"
     end else begin
       remove_class period "is-fixed"
