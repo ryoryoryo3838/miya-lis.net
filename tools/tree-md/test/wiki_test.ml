@@ -3,7 +3,11 @@ let source_from_string text =
 
 let shapes_of text =
   let src = source_from_string text in
-  Tree_md.Wiki.shapes_for_test src text
+  match Tree_md.Wiki.shapes_for_test src text with
+  | Ok (shapes, diags) -> (shapes, diags)
+  | Error diags -> Alcotest.fail ("unexpected Error: " ^
+      String.concat "; " (List.map
+        (fun d -> d.Tree_md.Diagnostic.message) diags))
 
 let span path start_byte end_byte =
   Result.get_ok (Tree_md.Span.make ~path ~start_byte ~end_byte)
@@ -182,7 +186,39 @@ let test_multiple_pipes_diagnostic () =
   let _shapes, diags = shapes_of "[[id|a|b]]" in
   Alcotest.(check bool) "has TM105" true (has_code diags "TM105")
 
-(* ── Unclosed forms are literal ── *)
+(* ── Escaped pipe: [[id\|alias]] → no split (escaped), invalid target → TM105 ── *)
+
+let test_escaped_pipe_no_split () =
+  let _shapes, diags = shapes_of "[[id\\|alias]]" in
+  Alcotest.(check bool) "has TM105" true (has_code diags "TM105")
+
+(* ── Even backslashes before pipe: [[id\\|alias]] → split, invalid target → TM105 ── *)
+
+let test_pipe_with_even_backslashes () =
+  let _shapes, diags = shapes_of "[[id\\\\|alias]]" in
+  Alcotest.(check bool) "has TM105" true (has_code diags "TM105")
+
+(* ── Multiple unescaped pipes: [[a\\|b\\|c]] → TM105 ── *)
+
+let test_multiple_unescaped_pipes_explicit () =
+  let _shapes, diags = shapes_of "[[a\\\\|b\\\\|c]]" in
+  Alcotest.(check bool) "has TM105" true (has_code diags "TM105")
+
+(* ── Cross-paragraph: [[id across blank line is never wiki ── *)
+
+let test_cross_paragraph_not_wiki () =
+  let shapes, diags = shapes_of "[[id\n\n]]" in
+  Alcotest.(check bool) "no diagnostics" true (diags = []);
+  Alcotest.(check bool) "no Shortcut_shape" true
+    (not (List.exists (function Tree_md.Wiki.Shortcut_shape _ -> true | _ -> false) shapes))
+
+(* ── Wiki inside paragraph is fine (guard 5 passes) ── *)
+
+let test_normal_paragraph_wiki () =
+  let shapes, diags = shapes_of "text [[id]] more" in
+  Alcotest.(check bool) "no diagnostics" true (diags = []);
+  Alcotest.(check bool) "has Shortcut_shape" true
+    (List.exists (function Tree_md.Wiki.Shortcut_shape _ -> true | _ -> false) shapes)
 
 let test_unclosed_is_literal () =
   let shapes, diags = shapes_of "[[id" in
@@ -200,9 +236,19 @@ let test_repeated_calls () =
 
 let test_second_call_same () =
   let src = source_from_string "[[id]]" in
-  let shapes1, _ = Tree_md.Wiki.shapes_for_test src "[[id]]" in
-  let shapes2, _ = Tree_md.Wiki.shapes_for_test src "[[id]]" in
-  Alcotest.(check int) "same shape count" (List.length shapes1) (List.length shapes2)
+  (match Tree_md.Wiki.shapes_for_test src "[[id]]" with
+   | Ok (shapes1, _) ->
+     (match Tree_md.Wiki.shapes_for_test src "[[id]]" with
+      | Ok (shapes2, _) ->
+        Alcotest.(check int) "same shape count" (List.length shapes1) (List.length shapes2)
+      | Error diags ->
+        Alcotest.fail ("unexpected Error: " ^
+          String.concat "; " (List.map
+            (fun d -> d.Tree_md.Diagnostic.message) diags)))
+   | Error diags ->
+     Alcotest.fail ("unexpected Error: " ^
+       String.concat "; " (List.map
+         (fun d -> d.Tree_md.Diagnostic.message) diags)))
 
 let () =
   let open Alcotest in
@@ -223,6 +269,11 @@ let () =
     ; "bad_id_diagnostic", [ test_case "bad_id_diagnostic" `Quick test_bad_id_diagnostic ]
     ; "empty_alias_diagnostic", [ test_case "empty_alias_diagnostic" `Quick test_empty_alias_diagnostic ]
     ; "multiple_pipes_diagnostic", [ test_case "multiple_pipes_diagnostic" `Quick test_multiple_pipes_diagnostic ]
+    ; "escaped_pipe_no_split", [ test_case "escaped_pipe_no_split" `Quick test_escaped_pipe_no_split ]
+    ; "pipe_with_even_backslashes", [ test_case "pipe_with_even_backslashes" `Quick test_pipe_with_even_backslashes ]
+    ; "multiple_unescaped_pipes_explicit", [ test_case "multiple_unescaped_pipes_explicit" `Quick test_multiple_unescaped_pipes_explicit ]
+    ; "cross_paragraph_not_wiki", [ test_case "cross_paragraph_not_wiki" `Quick test_cross_paragraph_not_wiki ]
+    ; "normal_paragraph_wiki", [ test_case "normal_paragraph_wiki" `Quick test_normal_paragraph_wiki ]
     ; "unclosed_is_literal", [ test_case "unclosed_is_literal" `Quick test_unclosed_is_literal ]
     ; "repeated_calls", [ test_case "repeated_calls" `Quick test_repeated_calls ]
     ; "second_call_same", [ test_case "second_call_same" `Quick test_second_call_same ]

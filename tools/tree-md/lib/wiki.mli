@@ -15,4 +15,4 @@ type shape =
   | Ordinary_link_shape of Span.t
 
 val resolver : Source.t -> Cmarkit.Label.resolver
-val shapes_for_test : Source.t -> string -> shape list * Diagnostic.t list
+val shapes_for_test : Source.t -> string -> ((shape list * Diagnostic.t list), Diagnostic.t list) result
