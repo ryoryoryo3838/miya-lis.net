@@ -1,0 +1,38 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main, miya, hero-theme]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.2"
+
+      - name: Install dependencies
+        run: |
+          opam install forester js_of_ocaml
+
+      - name: Build hero.js
+        run: |
+          opam exec -- dune build lib_theme/
+          cp _build/default/lib_theme/hero.bc.js theme/hero.js
+
+      - name: Build forester site
+        run: |
+          opam exec -- forester build forest.toml
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy output/ --project-name=miya-lis-forest
