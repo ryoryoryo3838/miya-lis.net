@@ -13,8 +13,6 @@ let trim_crlf_end s =
   else
     s
 
-let is_newline c = c = '\n' || c = '\r'
-
 (* Convert a YAML Mark character index to a byte offset in the original source *)
 let yaml_char_to_source_byte yaml_source yaml_start_byte char_index =
   match Source.character_to_byte yaml_source ~character:char_index with
@@ -42,7 +40,7 @@ let reject_anchor anchor start_mark end_mark source yaml_source yaml_start_byte 
       make_located source yaml_source yaml_start_byte ""
         ~start_mark ~end_mark
     in
-    Some (Diagnostic.make TM202
+    Some (Diagnostic.make TM101
       (Span.Source_span loc.span)
       "YAML anchors are not allowed in front matter")
   | None -> None
@@ -54,10 +52,23 @@ let reject_tag tag start_mark end_mark source yaml_source yaml_start_byte =
       make_located source yaml_source yaml_start_byte ""
         ~start_mark ~end_mark
     in
-    Some (Diagnostic.make TM202
+    Some (Diagnostic.make TM101
       (Span.Source_span loc.span)
       "YAML tags are not allowed in front matter")
   | None -> None
+
+let make_source_for_yaml source yaml_start yaml_content =
+  match Source.of_string ~path:(Source.path source) yaml_content with
+  | Ok src -> Ok src
+  | Error { byte = _ } ->
+    let diag =
+      Diagnostic.make TM002
+        (Span.Source_span
+           { Span.path = Source.path source; start_byte = yaml_start;
+             end_byte = yaml_start + String.length yaml_content })
+        "invalid UTF-8 in extracted YAML content"
+    in
+    Error [diag]
 
 let parse source =
   let text = Source.text source in
@@ -93,7 +104,7 @@ let parse source =
       match find_last_closing after_dash None with
       | None ->
         let diag =
-          Diagnostic.make TM201
+          Diagnostic.make TM002
             (Span.Source_span
                { Span.path; start_byte = 0; end_byte = len })
             "missing closing `---` delimiter"
@@ -126,15 +137,17 @@ let parse source =
         let yaml_start = after_dash in
         let yaml_content_raw = String.sub text yaml_start (closing_start - yaml_start) in
         let yaml_content = trim_crlf_end yaml_content_raw in
-        let yaml_source =
-          Result.get_ok (Source.of_string ~path yaml_content)
-        in
+
+        let yaml_source_result = make_source_for_yaml source yaml_start yaml_content in
 
         (* Parse YAML events *)
+        match yaml_source_result with
+        | Error diags -> Error diags
+        | Ok yaml_source ->
         match Yaml.Stream.parser yaml_content with
         | Error (`Msg msg) ->
           let diag =
-            Diagnostic.make TM201
+            Diagnostic.make TM002
               (Span.Source_span { Span.path; start_byte = yaml_start; end_byte = yaml_start + String.length yaml_content })
               ("YAML parse error: " ^ msg)
           in
@@ -153,7 +166,6 @@ let parse source =
           let temp_meta_key = ref None in
           let temp_list = ref [] in
           let doc_count = ref 0 in
-          let event_count = ref 0 in
           let finished = ref false in
 
           let emit_diag code msg start_mark end_mark =
@@ -167,25 +179,27 @@ let parse source =
           while not !finished do
             begin match do_parse yaml_parser with
             | Error (`Msg msg) ->
-              diags := Diagnostic.make TM201
+              diags := Diagnostic.make TM002
                 (Span.Source_span { Span.path; start_byte = yaml_start; end_byte = yaml_start + String.length yaml_content })
                 ("YAML parse error: " ^ msg) :: !diags;
               finished := true
             | Ok (event, pos) ->
-              incr event_count;
               begin match event with
                | Stream_start _ -> ()
                | Document_start _ ->
                  incr doc_count;
                  if !doc_count > 1 then
-                   emit_diag TM201 "multiple YAML documents are not allowed"
+                   emit_diag TM002 "multiple YAML documents are not allowed"
                      pos.start_mark pos.end_mark
                | Document_end _ -> ()
                | Stream_end ->
                  if !doc_count = 0 then
-                   emit_diag TM201 "empty YAML document" pos.start_mark pos.end_mark;
+                   emit_diag TM002 "empty YAML document" pos.start_mark pos.end_mark;
                  finished := true
                | Mapping_start { anchor; tag; _ } ->
+                 if !current_key = None && !nesting >= 1 then
+                   emit_diag TM101 "non-scalar mapping key is not allowed"
+                     pos.start_mark pos.end_mark;
                  begin match reject_anchor anchor pos.start_mark pos.end_mark source yaml_source yaml_start with
                   | Some d -> diags := d :: !diags
                   | None -> ()
@@ -197,11 +211,15 @@ let parse source =
                  incr nesting
                | Mapping_end ->
                  decr nesting;
+                 if !current_key = Some "meta" then current_key := None;
                  if !in_meta_key then begin
                    in_meta_key := false;
                    temp_meta_key := None
                  end
                | Sequence_start { anchor; tag; _ } ->
+                 if !current_key = None && !nesting >= 1 then
+                   emit_diag TM101 "non-scalar sequence key is not allowed"
+                     pos.start_mark pos.end_mark;
                  begin match reject_anchor anchor pos.start_mark pos.end_mark source yaml_source yaml_start with
                   | Some d -> diags := d :: !diags
                   | None -> ()
@@ -226,13 +244,9 @@ let parse source =
                     let tags = List.rev !temp_list in
                     let string_tags = List.map (fun (a : Metadata.attribution) ->
                       match a with
-                      | Tree tloc -> tloc.Metadata.value
-                      | Literal lloc -> lloc.Metadata.value
-                    ) tags
-                    |> List.map (fun v ->
-                      let loc = { Metadata.value = v; span = { Span.path; start_byte = 0; end_byte = 0 } } in
-                      loc
-                    ) in
+                      | Literal lloc -> lloc
+                      | Tree tloc -> { Metadata.value = tloc.Metadata.value; span = tloc.Metadata.span }
+                    ) tags in
                     metadata := { !metadata with tags = string_tags };
                     temp_list := [];
                     in_tags := false;
@@ -241,7 +255,7 @@ let parse source =
                     current_key := None
                  end
                | Alias _ ->
-                 emit_diag TM202 "YAML aliases are not allowed"
+                 emit_diag TM101 "YAML aliases are not allowed"
                    pos.start_mark pos.end_mark
                | Scalar scalar ->
                  let anchor_reject = reject_anchor scalar.Yaml.anchor pos.start_mark pos.end_mark source yaml_source yaml_start in
@@ -253,10 +267,10 @@ let parse source =
                     (* This scalar is a key *)
                     let key = scalar.Yaml.value in
                     if !nesting = 1 && not (List.mem key all_known_keys) then
-                      emit_diag TM203 ("unknown front matter key: \"" ^ key ^ "\"")
+                      emit_diag TM101 ("unknown front matter key: \"" ^ key ^ "\"")
                         pos.start_mark pos.end_mark;
                     if !nesting = 1 && List.mem key !seen_keys then
-                      emit_diag TM204 ("duplicate front matter key: \"" ^ key ^ "\"")
+                      emit_diag TM101 ("duplicate front matter key: \"" ^ key ^ "\"")
                         pos.start_mark pos.end_mark;
                     if !nesting = 1 then seen_keys := key :: !seen_keys;
                     current_key := Some key
@@ -272,7 +286,7 @@ let parse source =
                          in
                          metadata := { !metadata with date = Some located }
                        else
-                         emit_diag TM205 ("invalid date: \"" ^ date_str ^ "\"")
+                         emit_diag TM101 ("invalid date: \"" ^ date_str ^ "\"")
                            pos.start_mark pos.end_mark;
                        current_key := None
                      | "taxon" ->
@@ -387,4 +401,5 @@ let parse source =
           if diag_list <> [] then
             Error diag_list
           else
-            Ok { metadata = !metadata; masked_markdown = masked_str }
+            let meta_rev = List.rev !metadata.meta in
+            Ok { metadata = { !metadata with meta = meta_rev }; masked_markdown = masked_str }

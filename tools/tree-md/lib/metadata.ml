@@ -23,15 +23,19 @@ let valid_id s =
   let len = String.length s in
   if len = 0 then false
   else
-    let rec loop i =
-      if i >= len then true
-      else
-        let c = s.[i] in
-        match c with
-        | 'a' .. 'z' | '0' .. '9' | '-' -> loop (i + 1)
-        | _ -> false
-    in
-    loop 0
+    let first = s.[0] in
+    if not ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z') || (first >= '0' && first <= '9'))
+    then false
+    else
+      let rec loop i =
+        if i >= len then true
+        else
+          let c = s.[i] in
+          match c with
+          | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '.' | '_' | '-' -> loop (i + 1)
+          | _ -> false
+      in
+      loop 1
 
 let parse_attribution located =
   let s = located.value in
@@ -45,7 +49,7 @@ let parse_attribution located =
       Ok (Tree inner_located)
     else
       let diag =
-        Diagnostic.make TM205
+        Diagnostic.make TM101
           (Span.Source_span located.span)
           ("invalid tree id: \"" ^ inner ^ "\"")
       in
