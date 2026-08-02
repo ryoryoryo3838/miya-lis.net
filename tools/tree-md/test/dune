@@ -1,0 +1,3 @@
+(tests
+ (names source_test diagnostic_test)
+ (libraries tree-md alcotest))
