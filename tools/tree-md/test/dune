@@ -1,3 +1,3 @@
 (tests
- (names source_test diagnostic_test frontmatter_test wiki_test inline_test block_test outline_test)
+ (names source_test diagnostic_test frontmatter_test wiki_test inline_test block_test outline_test forester_6_test)
  (libraries tree-md alcotest))
