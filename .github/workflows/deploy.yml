@@ -25,10 +25,22 @@ jobs:
         run: |
           opam exec -- dune build lib_theme/
           cp _build/default/lib_theme/hero.bc.js theme/hero.js
+          cp _build/default/lib_theme/hero.bc.js assets/hero.js
 
       - name: Build forester site
         run: |
-          opam exec -- forester build forest.toml
+          opam exec -- forester .
+
+      - name: Mark home entry for HERO
+        run: |
+          printf '%s\n' \
+            '<!DOCTYPE html>' \
+            '<html>' \
+            '  <head>' \
+            '    <meta http-equiv="refresh" content="0;url=/index/index.xml?hero=1" />' \
+            '  </head>' \
+            '</html>' > output/index.html
+          sh test/hero-route.sh
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
