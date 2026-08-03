@@ -15,9 +15,10 @@ jobs:
       - name: Build with dune package management
         uses: ocaml-dune/setup-dune@v2
         with:
-          version: latest
+          version: 3.22.2
           steps: install-dune install-gpatch install-depexts build-deps build
 
+      # hero.bc.js is compiled by setup-dune's 'build' step above (dune build)
       - name: Build hero.js
         run: |
           cp _build/default/lib_theme/hero.bc.js theme/hero.js
