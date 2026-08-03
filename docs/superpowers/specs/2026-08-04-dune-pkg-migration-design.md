@@ -42,8 +42,7 @@ Follows: https://dune.readthedocs.io/en/stable/tutorials/dune-package-management
 
 (pin
  (url "forester")
- (package (name forester))
- (version "5.0"))
+ (package (name forester) (version "5.0")))
 
 (package
  (name miya-forest)
@@ -53,6 +52,8 @@ Follows: https://dune.readthedocs.io/en/stable/tutorials/dune-package-management
   js_of_ocaml-ppx
   forester))
 ```
+
+(dune 3.22: the version field must live inside the (package ...) form, not at pin top level.)
 
 ### 2. `dune-workspace` (new file)
 

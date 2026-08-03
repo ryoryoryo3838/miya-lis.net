@@ -17,7 +17,7 @@
 - dune 3.22.2 is the build tool; never run builds from inside the opam switch beyond dune itself.
 - `dune-project` project lang: `(lang dune 3.22)`; `dune-workspace` lang: `(lang dune 3.21)` with `(pkg enabled)` (verified parseable on dune 3.22.2).
 - Local package name: `miya-forest`. Dependencies (exact): `(ocaml (>= 5.3))`, `js_of_ocaml`, `js_of_ocaml-ppx`, `forester`.
-- forester pin: local path `forester` (submodule), `(version "5.0")`.
+- forester pin: local path `forester` (submodule); `(version "5.0")` lives inside the `(package ...)` form (dune 3.22 requirement).
 - `dune.lock/` is committed (never gitignored).
 - Commit style (repo convention): semantic prefixes (`feat:`, `ci:`, `chore:`, `docs:`), English messages, one concern per commit.
 - The opam `default` switch is NOT removed (out of scope; user may remove it afterwards).
@@ -85,8 +85,7 @@ Replace the entire file with:
 
 (pin
  (url "forester")
- (package (name forester))
- (version "5.0"))
+ (package (name forester) (version "5.0")))
 
 (package
  (name miya-forest)
@@ -401,4 +400,4 @@ Expected: all exit 0 (after the redirect step from Task 6 has been re-applied to
 
 **Placeholder scan:** no TBDs; the only conditional (`if the forester binary path differs`, `if the lock file changed`) has explicit resolution procedures with fallback commands. ✓
 
-**Type/name consistency:** `miya-forest`, `forester`, `js_of_ocaml`, `js_of_ocaml-ppx`, pin `(url "forester")`/`(version "5.0")`, and the binary path `_build/install/default/bin/forester` are identical across all tasks. ✓
+**Type/name consistency:** `miya-forest`, `forester`, `js_of_ocaml`, `js_of_ocaml-ppx`, pin `(url "forester")` with `(package (name forester) (version "5.0"))`, and the binary path `_build/install/default/bin/forester` are identical across all tasks. ✓
