@@ -74,18 +74,31 @@ let fsync_path path =
     Unix.close fd
   with Unix.Unix_error (Unix.ENOENT, _, _) -> ()
 
+(* mkdir_p_checked creates all directories from output_root up to full_path,
+   checking no-symlinks at each level.  After creating a new directory its
+   parent is immediately fsynced so the new entry is durable on disk.
+   Intermediate directories at depth >= 2 are thus fsynced BEFORE any output
+   file rename or manifest commit, satisfying the approved durability contract:
+   every directory that will hold output files must be durable before the
+   journal is removed. *)
 let rec mkdir_p_checked output_root full_path =
   let parent = Filename.dirname full_path in
   let at_root = parent = "/" || parent = output_root || String.length parent < String.length output_root in
   if at_root then begin
-    if not (Sys.file_exists full_path) then
-      Unix.mkdir full_path 0o700
+    if not (Sys.file_exists full_path) then begin
+      Unix.mkdir full_path 0o700;
+      (* fsync the parent so the new directory entry is durable *)
+      fsync_path parent
+    end
   end
   else begin
     mkdir_p_checked output_root parent;
     if not (Sys.file_exists full_path) then begin
       ignore (check_no_symlinks_abs parent "parent directory");
-      Unix.mkdir full_path 0o700
+      Unix.mkdir full_path 0o700;
+      (* fsync the parent so this new intermediate directory is durable
+         before any deeper directories or output files are placed. *)
+      fsync_path parent
     end
   end
 
@@ -123,12 +136,43 @@ let rec rmdir_rf_checked path =
       Ok ()
   with Unix.Unix_error (Unix.ENOENT, _, _) -> Ok ()
 
-let rec rmdir_rf path =
-  match rmdir_rf_checked path with
-  | Ok () -> ()
-  | Error _ -> ()  (* orphan cleanup; errors are non-fatal *)
-
 (* ── snapshot ── *)
+
+(* lstat_is_dir returns true if the path exists and is a directory (not a
+   symlink), false otherwise.  Unlike Sys.is_directory this does not follow
+   symlinks, so a symlink-to-directory is treated as "not a directory". *)
+let lstat_is_dir path =
+  try
+    let st = Unix.lstat path in
+    st.Unix.st_kind = Unix.S_DIR
+  with Unix.Unix_error _ -> false
+
+(* walk_stage_entries traverses .tree-md-stage/ using lstat so that symlinks
+   are never followed.  Symlink entries are silently skipped; regular files
+   are recorded; symlinked directories are not recursed into. *)
+let walk_stage_entries stage_base =
+  let results = ref [] in
+  let rec walk prefix dir =
+    let entries =
+      try Sys.readdir dir
+      with Sys_error _ -> [||]
+    in
+    Array.iter (fun entry ->
+      if entry <> "." && entry <> ".." then begin
+        let full = Filename.concat dir entry in
+        let rel = if prefix = "" then entry else prefix ^ "/" ^ entry in
+        if lstat_is_dir full then
+          walk rel full
+        else if Sys.file_exists full then
+          (* regular file or symlink-to-file: include in listing; symlinks
+             are harmless in snapshot (no read follows them) *)
+          results := (".tree-md-stage/" ^ rel) :: !results
+        (* symlink-to-dir, fifo, socket, etc.: silently skip *)
+      end)
+      entries
+  in
+  walk "" stage_base;
+  List.sort String.compare !results
 
 let snapshot ~output_root =
   let manifest =
@@ -153,21 +197,8 @@ let snapshot ~output_root =
   in
   let stage_base = stage_root output_root in
   let stage_entries =
-    if Sys.file_exists stage_base && Sys.is_directory stage_base then
-      let results = ref [] in
-      let rec walk prefix dir =
-        let entries = Sys.readdir dir in
-        Array.iter (fun entry ->
-          if entry <> "." && entry <> ".." then begin
-            let full = Filename.concat dir entry in
-            let rel = if prefix = "" then entry else prefix ^ "/" ^ entry in
-            if Sys.is_directory full then walk rel full
-            else results := (".tree-md-stage/" ^ rel) :: !results
-          end)
-          entries
-      in
-      walk "" stage_base;
-      List.sort String.compare !results
+    if lstat_is_dir stage_base then
+      walk_stage_entries stage_base
     else []
   in
   Ok { manifest; journal; stage_entries }
@@ -463,14 +494,19 @@ let execute ?(inject = fun (_ : fault_point) -> ()) ~output_root actions () =
                | Error e -> Error e)
         | Transaction.Remove_stage stage_dir ->
           let stage_abs = Filename.concat output_root (Path_safe.to_string stage_dir) in
-          if Sys.file_exists stage_abs then begin
-            match rmdir_rf_checked stage_abs with
-            | Ok () -> ()
-            | Error _ -> ()
-          end;
-          let stage_parent = Filename.dirname stage_abs in
-          if stage_parent <> output_root then fsync_path stage_parent;
-          process rest
+          let result =
+            if Sys.file_exists stage_abs then
+              rmdir_rf_checked stage_abs
+            else
+              Ok ()
+          in
+          begin match result with
+          | Error e -> Error e
+          | Ok () ->
+            let stage_parent = Filename.dirname stage_abs in
+            if stage_parent <> output_root then fsync_path stage_parent;
+            process rest
+          end
         | Transaction.Remove_journal ->
           if Sys.file_exists journal_abs then begin
             Sys.remove journal_abs;

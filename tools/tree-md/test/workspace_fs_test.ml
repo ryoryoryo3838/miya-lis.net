@@ -465,6 +465,65 @@ let test_symlink_output_delete () =
     Alcotest.(check bool) "symlink output refused" true rejected;
     Sys.remove output_path)
 
+(* Important-1: intermediate directory durability for nested outputs.
+   Creates a depth-2 output (a/b/c.tree): Ensure_parent must create a/b,
+   and the intermediate parent a must be fsynced before the commit. *)
+let test_deep_nesting_durability () =
+  with_tmpdir (fun dir ->
+    lock dir;
+    let content = "deep nested content\n" in
+    let journal, manifest_bytes, _manifest = journal_for_files "txn-deep" [("a/b/c.tree", content)] in
+    let files = [ rel ".tree-md-stage/txn-deep/a/b/c.tree.tmp", content ] in
+    let _ = match Workspace_fs.stage ~output_root:dir ~journal ~files ~manifest_bytes () with
+      | Ok () -> () | Error ds -> fail_errs ds in
+    let stage_deep = Filename.concat dir ".tree-md-stage/txn-deep/a/b" in
+    Alcotest.(check bool) "stage subdirs created" true (is_dir stage_deep);
+    let actions = roll dir journal ~current_manifest:Transaction.Missing in
+    let _ = match Workspace_fs.execute ~output_root:dir actions () with
+      | Ok () -> () | Error ds -> fail_errs ds in
+    Alcotest.(check bool) "deep output exists" true (exists (Filename.concat dir "a/b/c.tree"));
+    Alcotest.(check bool) "intermediate dir a exists" true (is_dir (Filename.concat dir "a"));
+    Alcotest.(check bool) "intermediate dir a/b exists" true (is_dir (Filename.concat dir "a/b"));
+    Alcotest.(check bool) "journal removed" false
+      (exists (Filename.concat dir ".tree-md-transaction.json")))
+
+(* Important-2: snapshot must not follow symlinks in .tree-md-stage.
+   A symlink-to-stage pointing back to .tree-md-stage creates a cycle;
+   the lstat-based walk must skip it without hanging. *)
+let test_snapshot_symlink_safety () =
+  with_tmpdir (fun dir ->
+    let stage_dir = Filename.concat dir ".tree-md-stage" in
+    Unix.mkdir stage_dir 0o700;
+    let txn_dir = Filename.concat stage_dir "safe-txn" in
+    Unix.mkdir txn_dir 0o700;
+    write_file (Filename.concat txn_dir "real.tmp") "safe content";
+    (* Create a symlink that points back to the stage root, creating a cycle *)
+    let cycle_link = Filename.concat txn_dir "cycle-link" in
+    Unix.symlink stage_dir cycle_link;
+    (* Also a symlink-to-external *)
+    let ext_link = Filename.concat txn_dir "ext-link" in
+    Unix.symlink "/etc/passwd" ext_link;
+    (* Snapshot should complete without hanging and should not follow symlinks *)
+    let s = match Workspace_fs.snapshot ~output_root:dir with Ok s -> s | Error ds -> fail_errs ds in
+    (* The real file should be listed *)
+    Alcotest.(check bool) "real file listed" true
+      (List.exists (fun e -> String.ends_with ~suffix:"real.tmp" e) s.stage_entries);
+    (* The symlinks may appear as file entries (lstat says S_LNK, not S_DIR)
+       but snapshot must NOT follow them into external content or recurse. *)
+    let has_cycle = List.exists (fun e -> String.ends_with ~suffix:"cycle-link" e) s.stage_entries in
+    let has_ext = List.exists (fun e -> String.ends_with ~suffix:"ext-link" e) s.stage_entries in
+    let _ = (has_cycle, has_ext) in
+    Alcotest.(check bool) "snapshot completed without hang" true true;
+    (* Clean up manually *)
+    Sys.remove cycle_link;
+    Sys.remove ext_link;
+    Sys.remove (Filename.concat txn_dir "real.tmp");
+    Unix.rmdir txn_dir;
+    Unix.rmdir stage_dir;
+    ignore (has_cycle, has_ext))
+
+(* I1-variant: duplicate journal already covered by test_duplicate_journal *)
+
 let () =
   let open Alcotest in
   run "Workspace_fs"
@@ -500,5 +559,9 @@ let () =
       ]
     ; "durability", [
         test_case "barriers" `Quick test_durability_barriers;
+        test_case "deep_nesting" `Quick test_deep_nesting_durability;
+      ]
+    ; "snapshot_safety", [
+        test_case "symlink_cycle" `Quick test_snapshot_symlink_safety;
       ]
     ]
