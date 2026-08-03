@@ -97,3 +97,123 @@ let parse ~root_id source =
 
 let emit ~resolution (doc : Parsed_document.t) =
   Forester_6.emit ~resolution doc.outline
+
+(* ── Pure forest orchestration ── *)
+
+type expected = {
+  source_path : string;
+  source_config_relative : Path_safe.relative;
+  output_relative : Path_safe.relative;
+  bytes : string;
+  sha256 : string;
+}
+
+let tm404 path message =
+  Diagnostic.make TM404 (Span.Path path) message
+
+(* Discovery and compilation are separate passes: a source may have been
+   replaced by a symlink or removed in between. Re-check before reading. *)
+let read_source (record : Discovery.source_file) =
+  match Unix.lstat record.Discovery.path with
+  | { Unix.st_kind = Unix.S_REG; _ } ->
+    (try
+       let channel = open_in_bin record.Discovery.path in
+       let contents =
+         Fun.protect
+           ~finally:(fun () -> close_in_noerr channel)
+           (fun () ->
+             really_input_string channel (in_channel_length channel))
+       in
+       Ok contents
+     with Sys_error message ->
+       Error [ tm404 record.Discovery.path ("cannot read source: " ^ message) ])
+  | { Unix.st_kind = Unix.S_LNK; _ } ->
+    Error [ tm404 record.Discovery.path "source became a symbolic link" ]
+  | { Unix.st_kind = _; _ } ->
+    Error [ tm404 record.Discovery.path "source is no longer a regular file" ]
+  | exception Unix.Unix_error (error, _, _) ->
+    Error
+      [ tm404 record.Discovery.path
+          ("cannot inspect source: " ^ Unix.error_message error) ]
+
+let parse_source (record : Discovery.source_file) contents =
+  match Source.of_string ~path:record.Discovery.path contents with
+  | Error { Source.byte } ->
+    let span =
+      { Span.path = record.Discovery.path; start_byte = byte; end_byte = byte }
+    in
+    Error
+      [ Diagnostic.make TM001 (Span.Source_span span) "invalid UTF-8" ]
+  | Ok source ->
+    (match parse ~root_id:record.Discovery.root_id source with
+     | Ok document -> Ok (record, document)
+     | Error diagnostics -> Error diagnostics)
+
+let sha256_hex bytes =
+  Digestif.SHA256.to_hex (Digestif.SHA256.digest_string bytes)
+
+let make_expected (record : Discovery.source_file) bytes =
+  { source_path = record.Discovery.path;
+    source_config_relative = record.Discovery.config_relative;
+    output_relative = record.Discovery.output_relative;
+    bytes;
+    sha256 = sha256_hex bytes }
+
+let compare_expected (a : expected) (b : expected) =
+  let by_output =
+    String.compare (Path_safe.to_string a.output_relative)
+      (Path_safe.to_string b.output_relative)
+  in
+  if by_output <> 0 then by_output
+  else String.compare a.source_path b.source_path
+
+let emit_documents resolutions records =
+  List.fold_left
+    (fun (diags, expecteds) ((record : Discovery.source_file), document) ->
+      let root_id = document.Parsed_document.outline.Outline.root_id in
+      match List.assoc_opt root_id resolutions with
+      | None ->
+        (Diagnostic.make TM500 Span.No_location
+           ("internal error: no resolution for root \"" ^ root_id ^ "\"")
+         :: diags, expecteds)
+      | Some resolution ->
+        (match emit ~resolution document with
+         | Error more -> (more @ diags, expecteds)
+         | Ok bytes -> (diags, make_expected record bytes :: expecteds)))
+    ([], []) records
+
+let compile_forest config discovery =
+  let parse_diags, records =
+    List.fold_left (fun (diags, records) record ->
+      match read_source record with
+      | Error more -> (more @ diags, records)
+      | Ok contents ->
+        (match parse_source record contents with
+         | Error more -> (more @ diags, records)
+         | Ok parsed -> (diags, parsed :: records))
+    ) ([], []) discovery.Discovery.sources
+  in
+  (* Provisional index from the documents that parsed: valid documents still
+     get reference and asset validation, while parse diagnostics from the
+     other sources are reported independently. *)
+  let documents = List.rev_map snd records in
+  let stage_diags, resolutions =
+    match
+      Forest_index.build ~handwritten:discovery.Discovery.handwritten_roots
+        ~generated:documents
+    with
+    | Error build_diags -> (build_diags, [])
+    | Ok index ->
+      (match Forest_index.resolve config.Config.forest index ~documents with
+       | Error resolve_diags -> (resolve_diags, [])
+       | Ok resolutions -> ([], resolutions))
+  in
+  let emit_diags, expecteds =
+    if resolutions = [] then ([], [])
+    else emit_documents resolutions records
+  in
+  let diagnostics =
+    List.sort Diagnostic.compare (parse_diags @ stage_diags @ emit_diags)
+  in
+  if diagnostics <> [] then Error diagnostics
+  else Ok (List.sort compare_expected expecteds)
