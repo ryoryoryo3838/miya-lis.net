@@ -112,7 +112,8 @@ let decode_forest forest_path value =
   let* fields = table_fields forest_path value in
   let* forest_value = require_field forest_path "forest" fields in
   let* forest_fields = table_fields forest_path forest_value in
-  let* () = check_closed forest_path ["trees"; "assets"] forest_fields in
+  (* forest.toml is user-owned: unknown keys (e.g. url) are allowed; only
+     trees/assets are validated for type and lexical path safety. *)
   let* trees =
     match find_field "trees" forest_fields with
     | Some value -> relative_list forest_path "forest.trees" value

@@ -140,6 +140,37 @@ let test_valid_path_bases () =
         [ ("assets", Filename.concat forest_directory "assets") ]
         (pair_strings config.forest.asset_roots))
 
+let test_valid_nested_forest_path_bases () =
+  let config_path = fixture_path "config/nested/tree-md.toml" in
+  let config_directory = Filename.dirname config_path in
+  let forest_directory = Filename.concat config_directory "forest" in
+  with_different_cwd (fun () ->
+    match Config.load ~path:config_path with
+    | Error diagnostics ->
+      let messages = List.map (fun d -> d.Diagnostic.message) diagnostics in
+      Alcotest.fail (String.concat "; " messages)
+    | Ok config ->
+      Alcotest.(check string) "config path" config_path config.Config.path;
+      Alcotest.(check string) "config directory" config_directory config.directory;
+      Alcotest.(check string) "forest path"
+        (Filename.concat forest_directory "forest.toml") config.forest.path;
+      Alcotest.(check string) "forest directory" forest_directory config.forest.directory;
+      Alcotest.(check (list (pair string string))) "source bases"
+        [ ("sources/trees", Filename.concat config_directory "sources/trees");
+          ("sources/notes", Filename.concat config_directory "sources/notes") ]
+        (pair_strings config.source_roots);
+      Alcotest.(check (pair string string)) "output base"
+        ("forest/generated", Filename.concat forest_directory "generated")
+        (let relative, resolved = config.output_root in
+         (Path_safe.to_string relative, resolved));
+      Alcotest.(check (list (pair string string))) "forest tree bases"
+        [ ("generated", Filename.concat forest_directory "generated");
+          ("handwritten", Filename.concat forest_directory "handwritten") ]
+        (pair_strings config.forest.tree_roots);
+      Alcotest.(check (list (pair string string))) "forest asset bases"
+        [ ("assets", Filename.concat forest_directory "assets") ]
+        (pair_strings config.forest.asset_roots))
+
 let test_missing_file () =
   let path = Filename.concat (Filename.get_temp_dir_name ()) "tree-md-missing.toml" in
   expect_tm401 "missing file" (Config.load ~path)
@@ -237,6 +268,7 @@ let () =
         test_case "relative_rejects_unsafe_paths" `Quick test_relative_rejects_unsafe_paths;
         test_case "relative_operations" `Quick test_relative_operations;
         test_case "valid_path_bases" `Quick test_valid_path_bases;
+        test_case "valid_nested_forest_path_bases" `Quick test_valid_nested_forest_path_bases;
       ]
     ; "invalid", [
         test_case "missing_file" `Quick test_missing_file;
