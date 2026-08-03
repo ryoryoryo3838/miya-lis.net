@@ -46,6 +46,7 @@ Follows: https://dune.readthedocs.io/en/stable/tutorials/dune-package-management
 
 (package
  (name miya-forest)
+ (allow_empty)
  (depends
   (ocaml (>= 5.3))
   js_of_ocaml

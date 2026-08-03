@@ -16,7 +16,7 @@
 - Do NOT run `dune clean`. A `dune build --watch` process runs in the background; explicit `dune build` calls may wait on its lock — that is normal, be patient.
 - dune 3.22.2 is the build tool; never run builds from inside the opam switch beyond dune itself.
 - `dune-project` project lang: `(lang dune 3.22)`; `dune-workspace` lang: `(lang dune 3.21)` with `(pkg enabled)` (verified parseable on dune 3.22.2).
-- Local package name: `miya-forest`. Dependencies (exact): `(ocaml (>= 5.3))`, `js_of_ocaml`, `js_of_ocaml-ppx`, `forester`.
+- Local package name: `miya-forest`. Dependencies (exact): `(ocaml (>= 5.3))`, `js_of_ocaml`, `js_of_ocaml-ppx`, `forester`; package stanza carries `(allow_empty)` (deps-only package).
 - forester pin: local path `forester` (submodule); `(version "5.0")` lives inside the `(package ...)` form (dune 3.22 requirement).
 - `dune.lock/` is committed (never gitignored).
 - Commit style (repo convention): semantic prefixes (`feat:`, `ci:`, `chore:`, `docs:`), English messages, one concern per commit.
@@ -89,6 +89,7 @@ Replace the entire file with:
 
 (package
  (name miya-forest)
+ (allow_empty)
  (depends
   (ocaml (>= 5.3))
   js_of_ocaml
