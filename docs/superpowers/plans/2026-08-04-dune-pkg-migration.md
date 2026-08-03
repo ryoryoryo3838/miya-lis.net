@@ -266,7 +266,7 @@ Expected: script exits 0 (all four greps succeed: redirect in `output/index.html
 - [ ] **Step 3: Spot-check parity with the pre-migration output**
 
 ```bash
-grep -c 'MIYA-LIS' output/index/index.xml; ls output/index/index.xml
+grep -ci 'miya-lis' output/index/index.xml; ls output/index/index.xml
 ```
 
 Expected: home index contains the MIYA-LIS content and looks identical to the previous forester 5.0 build (same pinned source ⇒ no content drift). No commit.
