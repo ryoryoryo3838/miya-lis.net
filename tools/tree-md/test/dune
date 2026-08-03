@@ -1,3 +1,4 @@
 (tests
- (names source_test diagnostic_test frontmatter_test wiki_test inline_test block_test outline_test forester_6_test)
- (libraries tree-md alcotest))
+ (names source_test diagnostic_test frontmatter_test wiki_test inline_test block_test outline_test forester_6_test compiler_test)
+ (libraries tree-md alcotest)
+ (deps (source_tree fixtures)))

@@ -228,11 +228,22 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       let node = Ir.Math { tex = trimmed; display } in
       (({ node; span } : Ir.inline) :: acc_inlines, acc_diags)
 
-  | Cmarkit.Inline.Raw_html (_html, meta) ->
-    let span = meta_span source_path base_byte meta in
-    let diag = Diagnostic.make TM102 (Span.Source_span span)
-      "raw HTML is not supported" in
-    (acc_inlines, diag :: acc_diags)
+  | Cmarkit.Inline.Raw_html (html, meta) ->
+    let html_str =
+      List.map Cmarkit.Block_line.tight_to_string html
+      |> String.concat "" in
+    let trimmed = String.trim html_str in
+    if String.length trimmed >= 7
+       && String.sub trimmed 0 4 = "<!--"
+       && String.sub trimmed (String.length trimmed - 3) 3 = "-->"
+    then
+      (acc_inlines, acc_diags)  (* discard HTML comments *)
+    else begin
+      let span = meta_span source_path base_byte meta in
+      let diag = Diagnostic.make TM102 (Span.Source_span span)
+        "raw HTML is not supported" in
+      (acc_inlines, diag :: acc_diags)
+    end
 
   | Cmarkit.Inline.Ext_strikethrough (_st, meta) ->
     let span = meta_span source_path base_byte meta in
@@ -446,7 +457,7 @@ let lower_block_inlines source_path base_byte defs inline acc_diags =
       else
         []
     in
-    (Ir.Paragraph inlines, all_diags @ extra_diags)
+    (Ir.Paragraph filtered_unwrapped, all_diags @ extra_diags)
 
 (* Recursively lower a Cmarkit block tree into Ir.block list.
    [depth] tracks container nesting: 0 = document, >0 = inside blockquote/list. *)
