@@ -1,0 +1,19 @@
+(version 1.27.0)
+
+(build
+ (all_platforms
+  ((action
+    (progn
+     (when %{pkg-self:dev} (run dune subst))
+     (run dune build -p %{pkg-self:name} -j %{jobs} @install))))))
+
+(depends
+ (all_platforms
+  (dune yojson ocaml)))
+
+(source
+ (fetch
+  (url
+   https://github.com/ocaml/ocaml-lsp/releases/download/1.27.0/lsp-1.27.0.tbz)
+  (checksum
+   sha256=043acd6923f8a5cbaad9154523570ab13973baeef698e2b5553213dd63792715)))
