@@ -1,3 +1,4 @@
 output/
 /devbox.lock
 /theme
+_build/
