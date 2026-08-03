@@ -243,7 +243,7 @@ Expected: no modifications to `dune.lock/` (a dirty lock file means the solver r
 - [ ] **Step 1: Generate the site**
 
 ```bash
-_build/install/default/bin/forester .
+_build/install/default/bin/forester build
 ```
 
 Expected: exits 0; `output/` regenerated.
@@ -314,7 +314,7 @@ jobs:
 
       - name: Build forester site
         run: |
-          _build/install/default/bin/forester .
+          _build/install/default/bin/forester build
 
       - name: Mark home entry for HERO
         run: |
@@ -378,7 +378,7 @@ Expected: the seven migration commits (Task 1–7) on top of the merged hero wor
 - [ ] **Step 3: Confirm the local workflow end-to-end once more**
 
 ```bash
-dune build && _build/install/default/bin/forester . && sh test/hero-route.sh
+dune build && _build/install/default/bin/forester build && sh test/hero-route.sh
 ```
 
 Expected: all exit 0 (after the redirect step from Task 6 has been re-applied to `output/index.html`).

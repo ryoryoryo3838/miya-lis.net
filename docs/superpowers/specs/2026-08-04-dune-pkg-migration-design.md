@@ -14,8 +14,8 @@ Follows: https://dune.readthedocs.io/en/stable/tutorials/dune-package-management
 - This repo is a **forest (site)** repository, not the forester source:
   - `trees/` — content trees; `theme/` — XSLT/CSS submodule (forester-base-theme fork)
   - `lib_theme/` — nested dune project (`lib_theme/dune-project`, lang 3.16) building `hero.js` via js_of_ocaml
-  - `forester` 5.0 binary installed in opam `default` switch; site is generated with `forester .`
-  - CI (`deploy.yml`): `ocaml/setup-ocaml` → `opam install forester js_of_ocaml` → `dune build lib_theme/` → copy `hero.bc.js` → `forester .` → Cloudflare deploy
+  - `forester` 5.0 binary installed in opam `default` switch; site is generated with `forester build`
+  - CI (`deploy.yml`): `ocaml/setup-ocaml` → `opam install forester js_of_ocaml` → `dune build lib_theme/` → copy `hero.bc.js` → `forester build` → Cloudflare deploy
 - dune 3.22.2 installed. forester requires `ocaml >= 5.3.0` and `dune >= 3.13`.
 - forester source repo: `https://git.sr.ht/~jonsterling/ocaml-forester`, tag `5.0` exists.
 
@@ -80,19 +80,19 @@ git submodule add https://git.sr.ht/~jonsterling/ocaml-forester forester
 - `dune pkg lock` → generates `dune.lock/` (committed).
 - `dune show depexts` → install required system packages (expected: `libgmp-dev` and/or `pkg-config`; system already has pkg-config 1.8.1, gmp.h currently absent).
 - First `dune build` compiles OCaml 5.3.x + forester's full dependency tree (~100 packages; 10–30 min, cached afterwards).
-- Locate the generated forester binary (expected: `_build/install/default/bin/forester`) and confirm it runs `forester .`.
+- Locate the generated forester binary (expected: `_build/install/default/bin/forester`) and confirm it runs `forester build`.
 
 ### 6. Site build entry point
 
 Replace direct `forester` invocation (which resolves from the opam switch) with the dune-built binary:
-`_build/install/default/bin/forester .` (exact path to be confirmed empirically after first build).
+`_build/install/default/bin/forester build` (exact path to be confirmed empirically after first build).
 
 ### 7. CI (`deploy.yml`)
 
 - Remove `ocaml/setup-ocaml` + `opam install forester js_of_ocaml` steps.
 - Install dune + build via package management (official howto: `ocaml-dune/setup-dune@v2`; exact options — dune version pin, whether the action's built-in build is used — verified against the action README at implementation time).
 - Install system depexts via `apt-get` before building.
-- Keep: hero.js copy steps, `forester .` site build, home-entry hero redirect, `test/hero-route.sh`, Cloudflare Pages deploy.
+- Keep: hero.js copy steps, `forester build` site build, home-entry hero redirect, `test/hero-route.sh`, Cloudflare Pages deploy.
 
 ### 8. devbox.json
 
@@ -108,7 +108,7 @@ Unchanged initially — opam remains as the dune bootstrap; the `eval $(opam env
 
 1. `dune build lib_theme/` produces `_build/default/lib_theme/hero.bc.js` using dune-pkg-provided js_of_ocaml.
 2. `dune pkg lock` succeeds; `dune.lock/` exists and is committed.
-3. Generated forester binary runs `forester .` and produces `output/`; spot-check index pages and hero route (`test/hero-route.sh` passes).
+3. Generated forester binary runs `forester build` and produces `output/`; spot-check index pages and hero route (`test/hero-route.sh` passes).
 4. Site output matches the pre-migration build (same forester 5.0 source → no content drift).
 5. CI (deploy.yml) deploys successfully from a clean checkout.
 
