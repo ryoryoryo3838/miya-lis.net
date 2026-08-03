@@ -12,24 +12,20 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup OCaml
-        uses: ocaml/setup-ocaml@v3
+      - name: Build with dune package management
+        uses: ocaml-dune/setup-dune@v2
         with:
-          ocaml-compiler: "5.2"
-
-      - name: Install dependencies
-        run: |
-          opam install forester js_of_ocaml
+          version: latest
+          steps: install-dune install-gpatch install-depexts build-deps build
 
       - name: Build hero.js
         run: |
-          opam exec -- dune build lib_theme/
           cp _build/default/lib_theme/hero.bc.js theme/hero.js
           cp _build/default/lib_theme/hero.bc.js assets/hero.js
 
       - name: Build forester site
         run: |
-          opam exec -- forester .
+          _build/install/default/bin/forester build
 
       - name: Mark home entry for HERO
         run: |
