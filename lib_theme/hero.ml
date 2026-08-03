@@ -18,43 +18,53 @@ let add_class el cls =
 let remove_class el cls =
   el##.classList##remove (Js.string cls)
 
-(* Helper: toggle CSS class *)
-let toggle_class el cls =
-  if has_class el cls then remove_class el cls else add_class el cls
+let is_home_mode () =
+  Js.to_string Dom_html.window##.location##.search = "?hero=1"
+
+let disable_hero () =
+  let hero = get_element "hero" in
+  let body = Dom_html.document##.body in
+  hero##.style##.display := Js.string "none";
+  remove_class body "hero-page"
 
 (* ── Nav panel toggle ── *)
 let setup_nav () =
-  let period = get_element "hero-period" in
   let panel = get_element "nav-panel" in
   let overlay = get_element "nav-overlay" in
-
-  let close_panel () =
-    remove_class panel "is-open";
-    remove_class overlay "is-visible";
-    remove_class period "is-open"
+  let toggles =
+    Dom.list_of_nodeList
+      (Dom_html.document##getElementsByClassName (Js.string "nav-toggle"))
   in
 
-  (* Click period → toggle *)
-  period##.onclick := Dom_html.handler (fun ev ->
-    Dom.preventDefault ev;
-    toggle_class panel "is-open";
-    toggle_class overlay "is-visible";
-    toggle_class period "is-open";
-    Js._false
-  );
+  let set_open open_ =
+    let update element class_name =
+      if open_ then add_class element class_name
+      else remove_class element class_name
+    in
+    update panel "is-open";
+    update overlay "is-visible";
+    List.iter (fun toggle -> update toggle "is-open") toggles
+  in
 
-  (* Click overlay → close *)
+  List.iter
+    (fun toggle ->
+      toggle##.onclick := Dom_html.handler (fun ev ->
+        Dom.preventDefault ev;
+        set_open (not (has_class panel "is-open"));
+        Js._false
+      ))
+    toggles;
+
   overlay##.onclick := Dom_html.handler (fun _ev ->
-    close_panel ();
+    set_open false;
     Js._false
   );
 
-  (* Escape key → close *)
   Dom_html.addEventListener
     Dom_html.document (Dom.Event.make "keydown")
     (Dom_html.handler (fun ev ->
       if ev##.keyCode = 27 then begin
-        close_panel ();
+        set_open false;
         Js._false
       end else
         Js._true
@@ -64,7 +74,6 @@ let setup_nav () =
 (* ── Period scroll pinning: stop naturally at viewport top ── *)
 let setup_period_pin () =
   let period = get_element "hero-period" in
-  let hero = get_element "hero" in
   let is_fixed = ref false in
 
   let on_scroll () =
@@ -73,7 +82,7 @@ let setup_period_pin () =
       let top = Js.to_float rect##.top in
       let height = Js.to_float rect##.height in
       (* Let .NET peek above viewport before pinning *)
-      let threshold = -. (height *. 0.15) in
+      let threshold = -. (height *. 0.7) in
       if top <= threshold then begin
         period##.style##.position := Js.string "fixed";
         (* 45° from top-left corner *)
@@ -84,15 +93,20 @@ let setup_period_pin () =
         is_fixed := true
       end
     end else begin
-      let hero_rect = hero##getBoundingClientRect in
-      if Js.to_float hero_rect##.bottom > 0. then begin
-        period##.style##.position := Js.string "";
-        period##.style##.top := Js.string "";
-        period##.style##.left := Js.string "";
-        period##.style##.zIndex := Js.string "";
-        period##.classList##remove (Js.string "is-fixed");
-        is_fixed := false
-      end
+      Js.Opt.iter
+        (Dom_html.document##getElementById (Js.string "hero-period-placeholder"))
+        (fun placeholder ->
+          let placeholder_rect = placeholder##getBoundingClientRect in
+          let placeholder_height = Js.to_float placeholder_rect##.height in
+          let threshold = -. (placeholder_height *. 0.7) in
+          if Js.to_float placeholder_rect##.top > threshold then begin
+            period##.style##.position := Js.string "";
+            period##.style##.top := Js.string "";
+            period##.style##.left := Js.string "";
+            period##.style##.zIndex := Js.string "";
+            period##.classList##remove (Js.string "is-fixed");
+            is_fixed := false
+          end)
     end
   in
 
@@ -144,8 +158,18 @@ let setup_header_observer () =
 (* ── Main ── *)
 let init () =
   setup_nav ();
-  setup_period_pin ();
-  setup_header_observer ()
+  let home_mode = is_home_mode () in
+  let hero_present = ref false in
+  Js.Opt.iter
+    (Dom_html.document##getElementById (Js.string "hero"))
+    (fun _ -> hero_present := true);
+  if !hero_present then begin
+    if home_mode then begin
+      setup_period_pin ();
+      setup_header_observer ()
+    end else
+      disable_hero ()
+  end
 
 let () =
   let ready = Js.to_string Dom_html.document##.readyState in
