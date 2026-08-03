@@ -370,7 +370,100 @@ let test_durability_barriers () =
     Alcotest.(check bool) "subdir output exists" true (exists (Filename.concat dir "sub/h.tree"));
     Alcotest.(check bool) "stage cleaned" false (is_dir (Filename.concat dir ".tree-md-stage/txn-barrier")))
 
-(* ── test runner ── *)
+(* ── regression tests ── *)
+
+(* C1: writer_active detects lock held by another process.  We spawn a child
+   that holds the lock, assert writer_active returns true, then wait for the
+   child to exit and assert writer_active returns false. *)
+let test_writer_active_cross_process () =
+  with_tmpdir (fun dir ->
+    lock dir;
+    (* release lock so child can acquire *)
+    (* we use a lock-unlock sandwich to set up the directory *)
+    let rec wait_read fd buf =
+      let n = Unix.read fd buf 0 (Bytes.length buf) in
+      if n = 0 then Bytes.sub_string buf 0 0
+      else Bytes.sub_string buf 0 n
+    in
+    let parent_rd, child_wr = Unix.pipe () in
+    let child_rd, parent_wr = Unix.pipe () in
+    match Unix.fork () with
+    | 0 ->
+      Unix.close parent_rd; Unix.close parent_wr;
+      (match Workspace_fs.with_build_lock ~output_root:dir (fun () ->
+         let _ = Unix.write child_wr (Bytes.of_string "locked") 0 6 in
+         let buf = Bytes.create 1 in
+         let _ = wait_read child_rd buf in
+         ()) with
+       | Ok () -> exit 0
+       | Error _ -> exit 1)
+    | child_pid ->
+      Unix.close child_wr; Unix.close child_rd;
+      let buf = Bytes.create 6 in
+      let _ = wait_read parent_rd buf in
+      (* child has the lock *)
+      let held = match Workspace_fs.writer_active ~output_root:dir with Ok v -> v | Error ds -> fail_errs ds in
+      Alcotest.(check bool) "writer_active true while child holds lock" true held;
+      (* release child *)
+      let _ = Unix.write parent_wr (Bytes.of_string "x") 0 1 in
+      ignore (Unix.waitpid [] child_pid);
+      let free = match Workspace_fs.writer_active ~output_root:dir with Ok v -> v | Error ds -> fail_errs ds in
+      Alcotest.(check bool) "writer_active false after child releases lock" false free)
+
+(* C3: symlink placed inside .tree-md-stage must trigger refusal (TM403)
+   from rmdir_rf_checked during orphan cleanup and Remove_stage. *)
+let test_symlink_in_stage_cleanup () =
+  with_tmpdir (fun dir ->
+    let stage_dir = Filename.concat dir ".tree-md-stage" in
+    Unix.mkdir stage_dir 0o700;
+    let txn_dir = Filename.concat stage_dir "orphan-txn" in
+    Unix.mkdir txn_dir 0o700;
+    (* Only create a symlink — no regular files to simplify debugging *)
+    let symlink_path = Filename.concat txn_dir "malicious-link" in
+    Unix.symlink "/etc/passwd" symlink_path;
+    let result = Workspace_fs.remove_orphan_stage ~output_root:dir in
+    Alcotest.(check bool) "orphan_stage refuses symlink" true (Result.is_error result);
+    (* Clean up manually — symlink should be untouched since cleanup refused it *)
+    Sys.remove symlink_path;
+    Unix.rmdir txn_dir;
+    Unix.rmdir stage_dir)
+
+(* I1: duplicate journal must be rejected *)
+let test_duplicate_journal () =
+  with_tmpdir (fun dir ->
+    lock dir;
+    let content = "dup out\n" in
+    let journal, manifest_bytes, _manifest = journal_for_files "txn-dup" [("dup.tree", content)] in
+    let files = [ rel ".tree-md-stage/txn-dup/dup.tree.tmp", content ] in
+    (* First stage should succeed *)
+    let _ = match Workspace_fs.stage ~output_root:dir ~journal ~files ~manifest_bytes () with
+      | Ok () -> () | Error ds -> fail_errs ds in
+    (* Second stage with same journal should fail *)
+    let dup_result = Workspace_fs.stage ~output_root:dir ~journal ~files ~manifest_bytes () in
+    Alcotest.(check bool) "duplicate journal rejected" true (Result.is_error dup_result))
+
+(* I3: symlink output file refused — test that symlink output is rejected *)
+let test_symlink_output_delete () =
+  with_tmpdir (fun dir ->
+    lock dir;
+    let content = "output content\n" in
+    let output_path = Filename.concat dir "out.tree" in
+    Unix.symlink "/etc/passwd" output_path;
+    let journal, manifest_bytes, _ = journal_for_files "txn-out" [("out.tree", content)] in
+    let files = [ rel ".tree-md-stage/txn-out/out.tree.tmp", content ] in
+    let _ = match Workspace_fs.stage ~output_root:dir ~journal ~files ~manifest_bytes () with
+      | Ok () -> () | Error ds -> fail_errs ds in
+    let rejected = match Transaction.roll_forward journal
+                          ~current_manifest:Transaction.Missing
+                          ~output:(obs_output dir) ~temporary:(obs_temp dir) with
+      | Ok actions ->
+        (match Workspace_fs.execute ~output_root:dir actions () with
+         | Ok () -> false
+         | Error _ -> true)
+      | Error _ -> true
+    in
+    Alcotest.(check bool) "symlink output refused" true rejected;
+    Sys.remove output_path)
 
 let () =
   let open Alcotest in
@@ -382,14 +475,18 @@ let () =
     ; "lock", [
         test_case "contention" `Quick test_lock_contention;
         test_case "writer_active_no_root" `Quick test_writer_active_no_root;
+        test_case "cross_process" `Quick test_writer_active_cross_process;
       ]
     ; "symlink_refusal", [
         test_case "output_root" `Quick test_symlink_refusal_output_root;
         test_case "ancestor" `Quick test_symlink_refusal_ancestor;
         test_case "in_stage" `Quick test_symlink_refusal_stage;
+        test_case "in_cleanup" `Quick test_symlink_in_stage_cleanup;
+        test_case "output_file" `Quick test_symlink_output_delete;
       ]
     ; "stage_execute", [
         test_case "normal" `Quick test_stage_and_execute_normal;
+        test_case "duplicate_journal" `Quick test_duplicate_journal;
       ]
     ; "fault_injection", [
         test_case "after_stage" `Quick test_fault_after_stage;

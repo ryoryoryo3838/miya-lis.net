@@ -94,17 +94,39 @@ let mkdir_parent output_root file_path =
   if parent <> output_root then
     mkdir_p_checked output_root parent
 
+(* rmdir_rf_checked removes a directory tree using lstat on every component.
+   Symlinks are refused (TM403) instead of followed.  Only regular files and
+   directories are traversed / removed. *)
+let rec rmdir_rf_checked path =
+  try
+    let st = Unix.lstat path in
+    match st.Unix.st_kind with
+    | Unix.S_LNK ->
+      fail_tm403 path (Printf.sprintf "refusing to traverse symlink inside stage dir: %s" path)
+    | Unix.S_DIR ->
+      let entries = Array.to_list (Sys.readdir path) in
+      let entries = List.filter (fun e -> e <> "." && e <> "..") entries in
+      let rec remove_all = function
+        | [] -> Ok ()
+        | entry :: rest ->
+          let child = Filename.concat path entry in
+          match rmdir_rf_checked child with
+          | Ok () -> remove_all rest
+          | Error e -> Error e
+      in
+      begin match remove_all entries with
+      | Ok () -> Unix.rmdir path; Ok ()
+      | Error e -> Error e
+      end
+    | _ ->
+      Sys.remove path;
+      Ok ()
+  with Unix.Unix_error (Unix.ENOENT, _, _) -> Ok ()
+
 let rec rmdir_rf path =
-  if Sys.is_directory path then begin
-    let entries = Sys.readdir path in
-    Array.iter (fun entry ->
-      if entry <> "." && entry <> ".." then
-        rmdir_rf (Filename.concat path entry))
-      entries;
-    Unix.rmdir path
-  end
-  else if Sys.file_exists path then
-    Sys.remove path
+  match rmdir_rf_checked path with
+  | Ok () -> ()
+  | Error _ -> ()  (* orphan cleanup; errors are non-fatal *)
 
 (* ── snapshot ── *)
 
@@ -170,7 +192,7 @@ let with_build_lock ~output_root f =
   match (try Unix.lockf lock_fd Unix.F_TLOCK 0; Ok ()
          with Unix.Unix_error (err, _, _) ->
            Unix.close lock_fd;
-           fail_tm404 lock (Printf.sprintf "cannot acquire lock: %s" (Unix.error_message err))) with
+           fail_tm403 lock (Printf.sprintf "cannot acquire lock: %s" (Unix.error_message err))) with
   | Error e -> Error e
   | Ok () ->
     Fun.protect
@@ -182,9 +204,13 @@ let with_build_lock ~output_root f =
         | result -> Ok result
         | exception e -> Error [ tm404 output_root (Printexc.to_string e) ])
 
+(* writer_active opens the lock file O_RDWR (no O_CREAT — this is a
+   non-mutating check).  On Linux, lockf F_TLOCK on a read-only fd always
+   yields EBADF; O_RDWR lets us distinguish EAGAIN (lock held by another
+   process) from success (lock is free). *)
 let writer_active ~output_root =
   let lock = lock_path output_root in
-  match Unix.openfile lock [ Unix.O_RDONLY ] 0o0 with
+  match Unix.openfile lock [ Unix.O_RDWR ] 0o0 with
   | fd ->
     let held =
       match Unix.lockf fd Unix.F_TLOCK 0 with
@@ -278,23 +304,29 @@ let stage ?(inject = fun (_ : fault_point) -> ()) ~output_root ~journal ~files
   inject After_stage;
   let journal_abs = journal_path output_root in
   let journal_str = Transaction.encode journal in
-  let journal_fd = Unix.openfile journal_abs [ Unix.O_CREAT; Unix.O_EXCL; Unix.O_WRONLY ] 0o600 in
-  (try
-     let bytes = Bytes.of_string journal_str in
-     let len = Bytes.length bytes in
-     let rec write offset remaining =
-       if remaining <= 0 then ()
-       else
-         let written = Unix.write journal_fd bytes offset remaining in
-         write (offset + written) (remaining - written)
-     in
-     write 0 len;
-     Unix.fsync journal_fd;
-     Unix.close journal_fd
-   with e ->
-     Unix.close journal_fd;
-     (try Sys.remove journal_abs with Sys_error _ -> ());
-     raise e);
+  let* () =
+    try
+      let journal_fd = Unix.openfile journal_abs [ Unix.O_CREAT; Unix.O_EXCL; Unix.O_WRONLY ] 0o600 in
+      (try
+         let bytes = Bytes.of_string journal_str in
+         let len = Bytes.length bytes in
+         let rec write offset remaining =
+           if remaining <= 0 then ()
+           else
+             let written = Unix.write journal_fd bytes offset remaining in
+             write (offset + written) (remaining - written)
+         in
+         write 0 len;
+         Unix.fsync journal_fd;
+         Unix.close journal_fd;
+         Ok ()
+       with e ->
+         Unix.close journal_fd;
+         (try Sys.remove journal_abs with Sys_error _ -> ());
+         fail_tm404 journal_abs (Printf.sprintf "cannot write journal: %s" (Printexc.to_string e)))
+    with Unix.Unix_error (Unix.EEXIST, _, _) ->
+       fail_tm403 journal_abs "journal already exists; a build may be in progress"
+  in
   fsync_path output_root;
   inject After_journal;
   Ok ()
@@ -307,11 +339,15 @@ let sha256_hex bytes =
   Digestif.SHA256.to_hex (Digestif.SHA256.digest_string bytes)
 
 let read_file_sha256 path =
-  let ic = open_in_bin path in
-  let len = in_channel_length ic in
-  let buf = Bytes.create len in
-  really_input ic buf 0 len; close_in ic;
-  sha256_hex (Bytes.to_string buf)
+  try
+    let ic = open_in_bin path in
+    let len = in_channel_length ic in
+    let buf = Bytes.create len in
+    really_input ic buf 0 len; close_in ic;
+    Ok (sha256_hex (Bytes.to_string buf))
+  with
+  | (Unix.Unix_error _ | Sys_error _) as e ->
+    fail_tm404 path (Printf.sprintf "cannot hash file: %s" (Printexc.to_string e))
 
 let same_filesystem a b =
   try
@@ -329,14 +365,12 @@ let execute ?(inject = fun (_ : fault_point) -> ()) ~output_root actions () =
   else begin
     inject After_journal;
     let output_count = ref 0 in
-    let seen_parents = Hashtbl.create 16 in
     let rec process = function
       | [] -> Ok ()
       | action :: rest ->
         match action with
         | Transaction.Ensure_parent parent ->
           let parent_abs = Filename.concat output_root (Path_safe.to_string parent) in
-          Hashtbl.replace seen_parents parent_abs ();
           begin match check_path_within output_root parent "output parent" with
           | Error e -> Error e
           | Ok () ->
@@ -344,7 +378,7 @@ let execute ?(inject = fun (_ : fault_point) -> ()) ~output_root actions () =
              with Unix.Unix_error (err, _, _) ->
                fail_tm404 parent_abs (Printf.sprintf "cannot create parent: %s" (Unix.error_message err)))
             |> function
-            | Ok () -> process rest
+            | Ok () -> fsync_path parent_abs; process rest
             | Error e -> Error e
           end
         | Transaction.Install_output { temporary; output; sha256 } ->
@@ -352,68 +386,88 @@ let execute ?(inject = fun (_ : fault_point) -> ()) ~output_root actions () =
           let output_abs = Filename.concat output_root (Path_safe.to_string output) in
           if not (Sys.file_exists temp_abs) then
             fail_tm404 temp_abs "temporary file missing"
-          else
-            let actual = read_file_sha256 temp_abs in
-            if actual <> sha256 then
-              fail_tm404 temp_abs
-                (Printf.sprintf "temporary sha256 mismatch: expected %s, got %s" sha256 actual)
-            else begin
-              match check_path_within output_root output "output file" with
-              | Error e -> Error e
-              | Ok () ->
-                if not (same_filesystem temp_abs (Filename.dirname output_abs)) then
-                  fail_tm404 temp_abs "cannot rename across filesystems"
-                else begin
-                  mkdir_parent output_root output_abs;
-                  (try Unix.rename temp_abs output_abs; Ok ()
-                   with Unix.Unix_error (err, _, _) ->
-                     fail_tm404 temp_abs (Printf.sprintf "rename failed: %s" (Unix.error_message err)))
-                  |> function
-                  | Ok () ->
-                    incr output_count;
-                    Hashtbl.replace seen_parents (Filename.dirname output_abs) ();
-                    inject (After_output !output_count);
-                    process rest
-                  | Error e -> Error e
-                end
-            end
+          else begin
+            match read_file_sha256 temp_abs with
+            | Error e -> Error e
+            | Ok actual ->
+              if actual <> sha256 then
+                fail_tm404 temp_abs
+                  (Printf.sprintf "temporary sha256 mismatch: expected %s, got %s" sha256 actual)
+              else begin
+                match check_path_within output_root output "output file" with
+                | Error e -> Error e
+                | Ok () ->
+                  if not (same_filesystem temp_abs (Filename.dirname output_abs)) then
+                    fail_tm404 temp_abs "cannot rename across filesystems"
+                  else begin
+                    mkdir_parent output_root output_abs;
+                    (try Unix.rename temp_abs output_abs; Ok ()
+                     with Unix.Unix_error (err, _, _) ->
+                       fail_tm404 temp_abs (Printf.sprintf "rename failed: %s" (Unix.error_message err)))
+                    |> function
+                    | Ok () ->
+                      incr output_count;
+                      (* fsync the output's parent immediately after rename,
+                         before Install_manifest commits the new state *)
+                      fsync_path (Filename.dirname output_abs);
+                      inject (After_output !output_count);
+                      process rest
+                    | Error e -> Error e
+                  end
+              end
+          end
         | Transaction.Delete_output { output; old_sha256 } ->
           let output_abs = Filename.concat output_root (Path_safe.to_string output) in
-          if Sys.file_exists output_abs then begin
-            let actual = read_file_sha256 output_abs in
-            if actual <> old_sha256 then
-              fail_tm404 output_abs
-                (Printf.sprintf "delete sha256 mismatch: expected %s, got %s" old_sha256 actual)
-            else begin
-              Sys.remove output_abs;
-              Hashtbl.replace seen_parents (Filename.dirname output_abs) ();
-              process rest
+          begin match check_path_within output_root output "output file" with
+          | Error e -> Error e
+          | Ok () ->
+            if Sys.file_exists output_abs then begin
+              match read_file_sha256 output_abs with
+              | Error e -> Error e
+              | Ok hash ->
+                if hash <> old_sha256 then
+                  fail_tm404 output_abs
+                    (Printf.sprintf "delete sha256 mismatch: expected %s, got %s" old_sha256 hash)
+                else begin
+                  Sys.remove output_abs;
+                  (* fsync parent after delete *)
+                  fsync_path (Filename.dirname output_abs);
+                  process rest
+                end
             end
+            else process rest
           end
-          else process rest
         | Transaction.Install_manifest { temporary; sha256 } ->
           let temp_abs = Filename.concat output_root (Path_safe.to_string temporary) in
           let final_abs = manifest_path output_root in
-          let actual = read_file_sha256 temp_abs in
-          if actual <> sha256 then
-            fail_tm404 temp_abs
-              (Printf.sprintf "manifest sha256 mismatch: expected %s, got %s" sha256 actual)
-          else if not (same_filesystem temp_abs (Filename.dirname final_abs)) then
-            fail_tm404 temp_abs "cannot rename manifest across filesystems"
-          else begin
-            (try Unix.rename temp_abs final_abs; Ok ()
-             with Unix.Unix_error (err, _, _) ->
-               fail_tm404 temp_abs (Printf.sprintf "manifest rename failed: %s" (Unix.error_message err)))
-            |> function
-            | Ok () ->
-              fsync_path output_root;
-              inject After_manifest;
-              process rest
-            | Error e -> Error e
-          end
+          let hash_result = read_file_sha256 temp_abs in
+          (match hash_result with
+           | Error e -> Error e
+           | Ok actual ->
+             if actual <> sha256 then
+               fail_tm404 temp_abs
+                 (Printf.sprintf "manifest sha256 mismatch: expected %s, got %s" sha256 actual)
+             else if not (same_filesystem temp_abs (Filename.dirname final_abs)) then
+               fail_tm404 temp_abs "cannot rename manifest across filesystems"
+             else
+               let rename_result =
+                 try Ok (Unix.rename temp_abs final_abs)
+                 with Unix.Unix_error (err, _, _) ->
+                   fail_tm404 temp_abs (Printf.sprintf "manifest rename failed: %s" (Unix.error_message err))
+               in
+               match rename_result with
+               | Ok () ->
+                 fsync_path output_root;
+                 inject After_manifest;
+                 process rest
+               | Error e -> Error e)
         | Transaction.Remove_stage stage_dir ->
           let stage_abs = Filename.concat output_root (Path_safe.to_string stage_dir) in
-          if Sys.file_exists stage_abs then rmdir_rf stage_abs;
+          if Sys.file_exists stage_abs then begin
+            match rmdir_rf_checked stage_abs with
+            | Ok () -> ()
+            | Error _ -> ()
+          end;
           let stage_parent = Filename.dirname stage_abs in
           if stage_parent <> output_root then fsync_path stage_parent;
           process rest
@@ -424,12 +478,7 @@ let execute ?(inject = fun (_ : fault_point) -> ()) ~output_root actions () =
           end;
           process rest
     in
-    let result = process actions in
-    match result with
-    | Ok () ->
-      Hashtbl.iter (fun dir () -> fsync_path dir) seen_parents;
-      Ok ()
-    | Error e -> Error e
+    process actions
   end
   with Injected_fault (_ : fault_point) ->
     Error [ tm404 output_root "fault injected during execute" ]
@@ -440,10 +489,11 @@ let remove_orphan_stage ~output_root =
   let journal_abs = journal_path output_root in
   let stage_base = stage_root output_root in
   if Sys.file_exists journal_abs then Ok ()
-  else if Sys.file_exists stage_base then begin
-    rmdir_rf stage_base;
-    let parent = Filename.dirname stage_base in
-    fsync_path parent;
-    Ok ()
-  end
+  else if Sys.file_exists stage_base then
+    match rmdir_rf_checked stage_base with
+    | Ok () ->
+      let parent = Filename.dirname stage_base in
+      fsync_path parent;
+      Ok ()
+    | Error e -> Error e
   else Ok ()
