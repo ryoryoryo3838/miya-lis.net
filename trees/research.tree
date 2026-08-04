@@ -1,5 +1,10 @@
 \title{研究}
+\taxon{Research}
 \p{専門分野と研究テーマ・関心について}
+\subtree[research-interest]{
+
+}
+
 \subtree[grad-researh]{
     \title{卒業研究}
 
@@ -7,4 +12,14 @@
 
     \p{本研究は、[2026年度日本図書館情報学会春季研究集会](https://jslis.jp/wp-content/uploads/2026/06/202606-Spring-research-meeting-papers.pdf)で口頭発表を行い、[優秀発表奨励賞](https://jslis.jp/2026/06/10/2026s-presentation-award/)を受賞している.}
     }
-
+\subtree[research-interest]{
+    \ul{
+        \li{専門は図書館情報学の理論的側面や同分野における情報概念 (...のつもり)}
+        \li{具体的には以下の問い・研究テーマに関心があります:}
+		\ol{
+			\li{図書館情報学分野全体をまとめる共通の理論的基盤はありうるのか}
+			\li{図書館情報学における情報概念}
+			\li{図書館情報学と情報の哲学の関係}
+		}
+	}
+    }

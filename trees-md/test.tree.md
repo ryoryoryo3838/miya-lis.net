@@ -4,6 +4,7 @@ taxon: Diary
 tags:
     - drived_md
 ---
+<!-- title: sec1 -->
 # Test article derived from md
 
 本文。[[research]]へのlink。

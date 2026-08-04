@@ -9,7 +9,8 @@
     "init_hook": [
       "echo 'Welcome to devbox!' > /dev/null",
       "export DEVBOX_PROMPT_NAME='miya-lis.net(forester)'",
-      "source ~/.zshrc"
+      "source ~/.zshrc",
+      "export PATH=\"$HOME/.cargo/bin:$PWD/_build/default/forester/bin/forester:$PWD/_build/install/default/bin:$PATH\""
     ],
     "scripts": {
       "test": [
