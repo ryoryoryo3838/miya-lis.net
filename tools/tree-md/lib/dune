@@ -1,0 +1,4 @@
+(library
+ (name tree_md)
+ (public_name tree-md)
+ (libraries cmarkit yaml unix otoml digestif yojson cmdliner))

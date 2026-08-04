@@ -2,3 +2,6 @@ output/
 /devbox.lock
 /theme
 _build/
+/generated/.tree-md.lock
+/generated/.tree-md-transaction.json
+/generated/.tree-md-stage/
