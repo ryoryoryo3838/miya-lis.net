@@ -247,6 +247,17 @@ let test_subtree_directive () =
     let msgs = List.map (fun d -> d.Tree_md.Diagnostic.message) diags |> String.concat "; " in
     Alcotest.fail ("expected Ok, got: " ^ msgs)
 
+let test_subtree_directive_invalid_id () =
+  match parse "<!-- subtree: bad id -->" with
+  | Ok doc ->
+    let has_directive = List.exists (fun b ->
+      match b.Tree_md.Ir.bnode with
+      | Tree_md.Ir.Subtree_directive _ -> true
+      | _ -> false) doc.blocks in
+    Alcotest.(check bool) "no Subtree_directive block for invalid id" false has_directive
+  | Error diags ->
+    Alcotest.(check bool) "invalid id TM104" true (has_diag_code diags "TM104")
+
 (* ── Embed normalization ── *)
 
 let test_embed_normalization () =
@@ -530,6 +541,7 @@ let () =
     ; "setext_heading", [ test_case "setext_heading" `Quick test_setext_heading ]
     ; "comment_discarded", [ test_case "comment_discarded" `Quick test_comment_discarded ]
     ; "subtree_directive", [ test_case "subtree_directive" `Quick test_subtree_directive ]
+    ; "subtree_directive_invalid_id", [ test_case "subtree_directive_invalid_id" `Quick test_subtree_directive_invalid_id ]
     ; "embed_normalization", [ test_case "embed_normalization" `Quick test_embed_normalization ]
     ; "display_math_normalization", [ test_case "display_math_normalization" `Quick test_display_math_normalization ]
     ; "raw_html_block_rejected", [ test_case "raw_html_block_rejected" `Quick test_raw_html_block_rejected ]

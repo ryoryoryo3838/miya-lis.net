@@ -259,9 +259,14 @@ let rec lower_inlines source_path base_byte defs inline acc_inlines acc_diags =
       "unsupported Markdown extension" in
     (acc_inlines, diag :: acc_diags)
 
-(* Filter out Text nodes that are fully contained within wiki/embed spans.
-   These are the `[` and `]` wrapper characters from the raw source
-   that surround wiki shortcut links in the Cmarkit AST. *)
+(* Remove wiki envelope brackets from Text nodes.
+   Cmarkit merges the outermost `[`/`]` of a wiki shortcut envelope into
+   adjacent Text runs (e.g. `Plain wiki: [[manual]].` lowers to
+   Text "Plain wiki: [" + Wiki_link + Text "]."), so a Text node may only
+   partially overlap a wiki whole-span. Fully contained Text nodes (the
+   bare `[` and `]` wrappers) are dropped; partially overlapping Text
+   nodes are split and only the bracket bytes that fall inside a wiki
+   whole-span are stripped. *)
 let filter_wiki_wrappers inlines =
   let wiki_spans = List.filter_map (fun i ->
     match i.Ir.node with
@@ -274,11 +279,55 @@ let filter_wiki_wrappers inlines =
       && span.Span.end_byte <= ws.Span.end_byte
     ) wiki_spans
   in
-  List.filter (fun i ->
+  let in_wiki_span byte =
+    List.exists (fun ws ->
+      byte >= ws.Span.start_byte && byte < ws.Span.end_byte
+    ) wiki_spans
+  in
+  let strip_envelope (i : Ir.inline) =
+    match i.Ir.node with
+    | Ir.Text s ->
+      let span = i.Ir.span in
+      let len = String.length s in
+      (* Keep every byte except `[`/`]` bytes that fall inside a wiki
+         whole-span: those are the envelope brackets Cmarkit merged into
+         the adjacent text run. *)
+      let keep = Array.make len true in
+      for k = 0 to len - 1 do
+        if in_wiki_span (span.Span.start_byte + k)
+           && (s.[k] = '[' || s.[k] = ']')
+        then keep.(k) <- false
+      done;
+      (* Split into runs of kept bytes *)
+      let runs = ref [] in
+      let pos = ref 0 in
+      while !pos < len do
+        if keep.(!pos) then begin
+          let start = !pos in
+          while !pos < len && keep.(!pos) do incr pos done;
+          runs := (start, !pos) :: !runs
+        end else
+          incr pos
+      done;
+      List.rev_map (fun (start, stop) ->
+        let text = String.sub s start (stop - start) in
+        let nspan =
+          match Span.make ~path:span.Span.path
+                  ~start_byte:(span.Span.start_byte + start)
+                  ~end_byte:(span.Span.start_byte + stop) with
+          | Ok sp -> sp
+          | Error _ -> span
+        in
+        { Ir.node = Ir.Text text; span = nspan }
+      ) !runs
+    | _ -> [i]
+  in
+  List.concat_map (fun i ->
     match i.Ir.node with
     | Ir.Text _ ->
-      not (is_within_wiki i.Ir.span)
-    | _ -> true
+      if is_within_wiki i.Ir.span then []
+      else strip_envelope i
+    | _ -> [i]
   ) inlines
 
 (* Walk block-level AST to extract all inlines *)
@@ -500,7 +549,7 @@ let rec lower_blocks source_path depth defs block acc_blocks acc_diags =
       let inline = Cmarkit.Block.Heading.inline h in
       let inlines_rev, diags = lower_inlines source_path 0 defs inline [] [] in
       let all_diags = acc_diags @ diags in
-      let title = List.rev inlines_rev in
+      let title = filter_wiki_wrappers (List.rev inlines_rev) in
       let node = Ir.Heading { level; title } in
       ({ Ir.bnode = node; bspan = span } :: acc_blocks, all_diags)
 
@@ -602,9 +651,13 @@ let rec lower_blocks source_path depth defs block acc_blocks acc_diags =
        && String.sub trimmed (String.length trimmed - 3) 3 = "-->"
     then
       (match is_subtree_directive trimmed with
-       | Some id ->
+       | Some id when Metadata.valid_id id ->
          let node = Ir.Subtree_directive id in
          ({ Ir.bnode = node; bspan = span } :: acc_blocks, acc_diags)
+       | Some id ->
+         let diag = Diagnostic.make TM104 (Span.Source_span span)
+           ("invalid subtree directive ID: \"" ^ id ^ "\"") in
+         (acc_blocks, diag :: acc_diags)
        | None ->
          (acc_blocks, acc_diags))
     else

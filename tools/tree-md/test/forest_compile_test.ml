@@ -93,10 +93,10 @@ let test_multi_document_forest () =
          ~source_config_relative:"trees-md/index.tree.md"
          ~output_relative:"index.tree"
          ~bytes:
-           "\\title{Index}\n\\date{2026-08-04}\n\\author{manual}\n\n\
-            \\p{Link to \\verbFMD|[FMD[[child]]\\verbFMD|]FMD.}\n\n\
-            \\transclude{child}\n\n\
-            \\p{\\<html:img>[src]{\\route-asset{assets/images/x.png}}[alt]{Plot}{}}\n";
+            "\\title{Index}\n\\date{2026-08-04}\n\\author{manual}\n\n\
+             \\p{Link to [[child]].}\n\n\
+             \\transclude{child}\n\n\
+             \\p{\\<html:img>[src]{\\route-asset{assets/images/x.png}}[alt]{Plot}{}}\n";
        Alcotest.(check bool) "routed asset path emitted" true
          (contains second.bytes "\\route-asset{assets/images/x.png}");
        (* determinism: byte-identical output across two calls *)

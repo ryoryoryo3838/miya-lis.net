@@ -158,6 +158,13 @@ Wiki targets follow `[A-Za-z0-9][A-Za-z0-9._-]*`. `[[target]]` resolves only
 against the known local identity index (generated roots, generated named
 subtrees, and handwritten tree roots); this is a closed-world rule.
 
+#### Thematic breaks and YAML front matter
+
+A `---` thematic break is consumed as the YAML front-matter closing delimiter
+when a document has front matter, so a `---` line inside the body is not a
+thematic break. Use `***` (or `___`) for thematic breaks in documents with
+YAML front matter.
+
 ### Rejected syntax
 
 Raw inline or block HTML (other than comments), GFM tables, task lists,

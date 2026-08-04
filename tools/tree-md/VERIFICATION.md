@@ -13,13 +13,15 @@ fixture.
 
 ## Full-suite status
 
-- 18 Alcotest suites, **431 tests, all passing** (`dune runtest`).
+- 18 Alcotest suites, **434 tests, all passing** (`dune runtest`).
 - Cram scenario `cli.t` runs under `dune runtest` and passes.
 - All 26 stable diagnostic codes (`TM001`–`TM500`) are exercised by at least
   one test (verified by code search; see the Diagnostics section).
 - The checked-in golden fixture `test/fixtures/markdown/complete.tree.md` and
-  its expected `test/fixtures/forester/complete.tree` are unchanged since the
-  review baseline `b694545`.
+  its expected `test/fixtures/forester/complete.tree` were regenerated in the
+  final-fix commit to drop the stray `\verbFMD|[FMD`/`\verbFMD|]FMD` bracket
+  escapes that the inline-wiki overlap fix removes (see the whole-branch
+  review findings 1–2).
 - Existing handwritten tree hashes are unchanged after the fresh verification
   (see Acceptance Criteria below).
 
@@ -79,7 +81,7 @@ fixture.
 | H2–H6 nesting; skipped level error; closing semantics | `outline_test.ml` (`hierarchy`, `same_level_closes`, `shallower_closes_deeper`, `skipped`); `TM103` |
 | Headings nested in lists/blockquotes are errors | `block_test.ml` (`nested_heading_rejected`) |
 | Anonymous vs named (`<!-- subtree: ID -->`) sections; directive grammar | `outline_test.ml` (`named`, `multiple_definitions`, `definition_span_points_to_directive`); `block_test.ml` (`subtree_directive`); `TM104` |
-| Orphan directive, directive before H1, invalid ID, global collision | `outline_test.ml` (`orphan`, `orphan_directive_in_section`, `directive_at_end`, `directive_then_para`, `errors`); `TM104`; `forest_index_test.ml` (`root_versus_named_subtree`) |
+| Orphan directive, directive before H1, invalid ID, global collision | `outline_test.ml` (`orphan`, `orphan_directive_in_section`, `directive_at_end`, `directive_then_para`, `errors`); `block_test.ml` (`subtree_directive_invalid_id`); `compiler_test.ml` (`subtree_directive_invalid_id`); `TM104`; `forest_index_test.ml` (`root_versus_named_subtree`) |
 
 ### Obsidian Links and Embeds (lines 330–368)
 
@@ -202,7 +204,7 @@ All 26 stable codes are exercised:
 | `TM101` | `frontmatter_test.ml`, `cli_test.ml` |
 | `TM102` | `block_test.ml`, `inline_test.ml`, `forest_compile_test.ml`, `cli.t/run.t` |
 | `TM103` | `outline_test.ml`, `block_test.ml`, `diagnostic_test.ml`, `cli_test.ml` |
-| `TM104` | `outline_test.ml`, `cli_test.ml` |
+| `TM104` | `outline_test.ml`, `block_test.ml`, `compiler_test.ml`, `cli_test.ml` |
 | `TM105` | `wiki_test.ml`, `inline_test.ml`, `cli_test.ml` |
 | `TM106` | `block_test.ml`, `forester_6_test.ml`, `cli_test.ml` |
 | `TM107` | `block_test.ml`, `inline_test.ml`, `forester_6_test.ml`, `cli_test.ml` |

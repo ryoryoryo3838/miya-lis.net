@@ -137,6 +137,61 @@ let test_html_comment_block_discarded () =
   Alcotest.(check (list string)) "definitions has sec"
     ["sec"] (List.map (fun (d : Outline.definition) -> d.Outline.id) doc.Parsed_document.definitions)
 
+(* ── Inline wiki links with surrounding text: no stray bracket literals ──
+   Cmarkit merges the wiki envelope's outermost `[`/`]` into adjacent Text
+   runs; the wrapper filter must strip exactly those bracket bytes so the
+   emitted paragraph is the raw wiki link with clean surrounding text. *)
+
+let test_wiki_link_clean_surrounding_text () =
+  let source = source_from_string "---
+date: 2026-08-04
+---
+
+# Wiki Cleanliness
+
+Plain wiki: [[manual]].
+
+Prefix [[manual]] and [[notes]] suffix.
+
+**bold** before [[manual]] after.
+" in
+  let doc = match Compiler.parse ~root_id:"test" source with
+    | Ok d -> d
+    | Error diags ->
+      let msgs = List.map (fun d ->
+        Printf.sprintf "%s: %s" (Diagnostic.code_string d.Diagnostic.code) d.Diagnostic.message
+      ) diags |> String.concat "\n" in
+      failwith ("parse failed:\n" ^ msgs)
+  in
+  let result = match Compiler.emit ~resolution:Resolution.empty doc with
+    | Ok s -> s
+    | Error diags ->
+      let msgs = List.map (fun d -> d.Diagnostic.message) diags |> String.concat "; " in
+      failwith ("emit failed: " ^ msgs)
+  in
+  (* No stray escaped bracket fragments anywhere in the emitted output *)
+  Alcotest.(check bool) "no stray open bracket escape"
+    false (str_contains result "\\verbFMD|[FMD");
+  Alcotest.(check bool) "no stray close bracket escape"
+    false (str_contains result "\\verbFMD|]FMD");
+  (* The wiki links are emitted raw and the surrounding text is intact *)
+  Alcotest.(check bool) "first paragraph clean"
+    true (str_contains result "\\p{Plain wiki: [[manual]].}");
+  Alcotest.(check bool) "middle paragraph clean"
+    true (str_contains result "\\p{Prefix [[manual]] and [[notes]] suffix.}");
+  Alcotest.(check bool) "emphasis paragraph clean"
+    true (str_contains result "\\p{\\strong{bold} before [[manual]] after.}")
+
+let test_subtree_directive_invalid_id () =
+  (* An invalid directive ID is a TM104 source error: the document fails to
+     parse, so no `\subtree[...]` section is ever emitted. *)
+  let source = source_from_string "# Root\n\n<!-- subtree: bad id -->\n## Section\n" in
+  match Compiler.parse ~root_id:"test" source with
+  | Ok _ -> Alcotest.fail "expected TM104 for invalid subtree directive ID"
+  | Error diags ->
+    Alcotest.(check bool) "TM104 present" true
+      (List.exists (fun d -> Diagnostic.code_string d.Diagnostic.code = "TM104") diags)
+
 let () =
   let open Alcotest in
   run "Compiler"
@@ -149,5 +204,11 @@ let () =
     ; "html_comments", [
         test_case "html_comment_inline_discarded" `Quick test_html_comment_inline_discarded;
         test_case "html_comment_block_discarded" `Quick test_html_comment_block_discarded;
+      ]
+    ; "wiki_cleanliness", [
+        test_case "wiki_link_clean_surrounding_text" `Quick test_wiki_link_clean_surrounding_text;
+      ]
+    ; "subtree_directives", [
+        test_case "subtree_directive_invalid_id" `Quick test_subtree_directive_invalid_id;
       ]
     ]

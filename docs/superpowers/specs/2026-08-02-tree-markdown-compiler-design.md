@@ -230,7 +230,9 @@ the same byte-span model. Output always uses LF.
 Front matter is optional. When present, the first line is exactly `---`, and a later
 unindented line exactly equal to `---` closes it. The `...` YAML document terminator
 is not a compiler delimiter. An opening delimiter without a closing delimiter is an
-error.
+error. Because the closing delimiter is a `---` line, a thematic break in a document
+with front matter must use `***` (or `___`); a `---` line in the body is consumed as
+the front-matter closing delimiter and never becomes a thematic break.
 
 The YAML document must contain one top-level mapping. Mapping keys must be scalar
 strings. Duplicate keys, anchors, aliases, custom tags, multiple YAML documents, and
