@@ -12,11 +12,24 @@ jobs:
         with:
           submodules: true
 
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.3.0"
+
       - name: Build with dune package management
         uses: ocaml-dune/setup-dune@v2
         with:
           version: 3.22.2
           steps: install-dune install-gpatch install-depexts build-deps build
+
+      - name: Install tree-md dependencies
+        run: opam install ./tools/tree-md --deps-only
+
+      - name: Compile Markdown trees
+        run: |
+          opam exec -- dune exec ./bin/main.exe -- build \
+            --config "$GITHUB_WORKSPACE/tree-md.toml"
+        working-directory: tools/tree-md
 
       # hero.bc.js is compiled by setup-dune's 'build' step above (dune build)
       - name: Build hero.js
@@ -26,7 +39,7 @@ jobs:
 
       - name: Build forester site
         run: |
-          _build/install/default/bin/forester build
+          _build/install/default/bin/forester build forest.toml
 
       - name: Mark home entry for HERO
         run: |

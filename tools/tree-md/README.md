@@ -52,6 +52,23 @@ $ tree-md build --config tree-md.toml      # "build: 1 created, 0 replaced, 0 de
 $ tree-md check                            # uses ./tree-md.toml, no parent search
 ```
 
+## Building the Existing Forest Site
+
+Run this sequence from the repository root:
+
+```bash
+# Run from the repository root.
+dune exec --root tools/tree-md ./bin/main.exe -- build \
+  --config "$PWD/tree-md.toml"
+_build/install/default/bin/forester build forest.toml
+```
+
+The first command writes `generated/*.tree`, and the second command writes
+`output/**`. `tree-md check` is read-only and should be used after
+`tree-md build` to confirm the generated state. Do not replace the production
+site command with `forester build`, because an opam switch may provide an older
+CLI.
+
 ## Configuration
 
 ```toml

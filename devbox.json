@@ -1,16 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.5/.schema/devbox.schema.json",
   "packages": [
-    "opam@latest",
+    "github:nixos/nixpkgs/nixpkgs-unstable#dune",
     "pnpm@latest",
     "cargo@latest"
   ],
   "shell": {
     "init_hook": [
       "echo 'Welcome to devbox!' > /dev/null",
-      "export DEVBOX_PROMPT_NAME='forester'",
-      "export PATH=\"$HOME/.cargo/bin:$PATH\"",
-      "eval $(opam env)"
+      "export DEVBOX_PROMPT_NAME='miya-lis.net(forester)'",
+      "source ~/.zshrc"
     ],
     "scripts": {
       "test": [
