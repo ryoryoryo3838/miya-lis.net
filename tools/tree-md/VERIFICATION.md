@@ -13,8 +13,8 @@ fixture.
 
 ## Full-suite status
 
-- 18 Alcotest suites, **434 tests, all passing** (`dune runtest`).
-- Cram scenario `cli.t` runs under `dune runtest` and passes.
+- 18 Alcotest suites, **434 tests, all passing** (`dune runtest --root .`).
+- Cram scenario `cli.t` runs under `dune runtest --root .` and passes.
 - All 26 stable diagnostic codes (`TM001`–`TM500`) are exercised by at least
   one test (verified by code search; see the Diagnostics section).
 - The checked-in golden fixture `test/fixtures/markdown/complete.tree.md` and

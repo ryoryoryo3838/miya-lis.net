@@ -207,7 +207,7 @@ directives are errors.
 ## Development
 
 ```bash
-dune runtest          # 431 Alcotest cases + cram scenarios
+dune runtest --root .    # 434 Alcotest cases + cram scenarios
 opam lock tree-md.opam   # regenerate tree-md.opam.locked
 ```
 
