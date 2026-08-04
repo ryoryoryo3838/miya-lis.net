@@ -328,6 +328,31 @@ let test_build_missing_output_recreated () =
     Alcotest.(check (list int)) "created 1" [1; 0; 0; 0] (counts r);
     Alcotest.(check string) "output restored" golden_output (read_file (output_file ws)))
 
+(* I1 regression: a nested output whose parent subtree was manually removed
+   (rm -rf of generated/a) must be restored; restore creates the output's
+   parent directory (with symlink refusal and parent fsync) before the
+   rename, mirroring Ensure_parent semantics. *)
+let test_build_nested_output_parent_restored () =
+  with_workspace (fun ws ->
+    let nested_dir = Filename.concat ws "trees-md/a" in
+    Unix.mkdir nested_dir 0o700;
+    write_file (Filename.concat nested_dir "page.tree.md") "# Page\n\nNested body.\n";
+    let golden_nested = "\\title{Page}\n\\p{Nested body.}\n" in
+    let r1 = expect_ok "nested first build" (Workspace.build ~config_path:(config_path ws)) in
+    Alcotest.(check (list int)) "created 2" [2; 0; 0; 0] (counts r1);
+    Alcotest.(check bool) "nested output exists" true
+      (exists (Filename.concat (output_root ws) "a/page.tree"));
+    (* simulate rm -rf of the whole generated subdirectory *)
+    rm_rf (Filename.concat (output_root ws) "a");
+    let r2 = expect_ok "nested restore build" (Workspace.build ~config_path:(config_path ws)) in
+    Alcotest.(check (list int)) "restored 1 unchanged 1" [1; 0; 0; 1] (counts r2);
+    Alcotest.(check string) "nested output restored" golden_nested
+      (read_file (Filename.concat (output_root ws) "a/page.tree"));
+    Alcotest.(check string) "root output untouched" golden_output
+      (read_file (output_file ws));
+    let r3 = Workspace.check ~config_path:(config_path ws) in
+    Alcotest.(check (list string)) "check clean after restore" [] (codes r3))
+
 let test_build_manually_modified_protection () =
   with_workspace (fun ws ->
     let _ = expect_ok "first build" (Workspace.build ~config_path:(config_path ws)) in
@@ -503,6 +528,7 @@ let () =
         test_case "source_edit_replacement" `Quick test_build_source_edit_replacement;
         test_case "source_deletion_stale_cleanup" `Quick test_build_source_deletion_stale_cleanup;
         test_case "missing_output_recreated" `Quick test_build_missing_output_recreated;
+        test_case "nested_output_parent_restored" `Quick test_build_nested_output_parent_restored;
         test_case "manually_modified_protection" `Quick test_build_manually_modified_protection;
         test_case "unknown_collision_rejected" `Quick test_build_unknown_collision_rejected;
         test_case "malformed_manifest" `Quick test_build_malformed_manifest;

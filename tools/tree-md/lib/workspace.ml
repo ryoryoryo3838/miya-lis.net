@@ -417,8 +417,10 @@ let verify_managed output_root old_manifest expecteds =
     (Ok ()) expecteds
 
 (* mkdir_p_checked creates every directory from the output root down to
-   [full_path]'s parent, refusing to create below a symlink, mirroring the
-   reserved-stage creation Workspace_fs performs during staging. *)
+   [full_path]'s parent, refusing to create below a symlink, and flushes the
+   parent of every newly created directory so the new entry is durable
+   before any file is placed inside, mirroring the reviewed Workspace_fs
+   staging semantics. *)
 let rec mkdir_p_checked output_root full_path =
   let parent = Filename.dirname full_path in
   let at_root =
@@ -430,6 +432,7 @@ let rec mkdir_p_checked output_root full_path =
     else
       (try
          Unix.mkdir full_path 0o700;
+         fsync_path parent;
          Ok ()
        with Unix.Unix_error (error, _, _) ->
          Error
@@ -445,6 +448,7 @@ let rec mkdir_p_checked output_root full_path =
       else
         (try
            Unix.mkdir full_path 0o700;
+           fsync_path parent;
            Ok ()
          with Unix.Unix_error (error, _, _) ->
            Error
@@ -493,7 +497,9 @@ let write_staged_atomic temp_abs output_abs bytes =
    under the same transaction id, so the transaction's Remove_stage action
    (or the next build's orphan-stage cleanup) removes any leftover; a crash
    leaves either a missing output or a staged temporary, never partial
-   content. *)
+   content. The output's parent directory is created (with symlink refusal
+   and parent fsync) before the rename, so a manually removed parent subtree
+   is rebuilt, mirroring Ensure_parent semantics. *)
 let restore_missing_atomic output_root txn_dir (entry : Manifest.entry) bytes =
   let output_abs =
     Filename.concat output_root (Path_safe.to_string entry.Manifest.output)
@@ -504,6 +510,9 @@ let restore_missing_atomic output_root txn_dir (entry : Manifest.entry) bytes =
   in
   let temp_abs = Filename.concat output_root (Path_safe.to_string temp_rel) in
   let* () = mkdir_p_checked output_root (Filename.dirname temp_abs) in
+  (* the root-level output parent is the output root itself and already
+     exists; any deeper parent is created safely before the rename *)
+  let* () = mkdir_p_checked output_root (Filename.dirname output_abs) in
   write_staged_atomic temp_abs output_abs bytes
 
 (* A managed output that is absent while its manifest content is unchanged is
