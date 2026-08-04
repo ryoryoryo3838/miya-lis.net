@@ -5,3 +5,4 @@ _build/
 /generated/.tree-md.lock
 /generated/.tree-md-transaction.json
 /generated/.tree-md-stage/
+/.omo/run-continuation
