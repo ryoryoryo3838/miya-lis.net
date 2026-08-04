@@ -53,6 +53,25 @@ fixtures are available next to the cram directory.
   
   Tree-md 0.1.0                                                       TREE-MD(1)
 
+Usage errors (missing command, unknown command, unknown option) print
+cmdliner's usage text to stderr and exit 2. TERM=dumb keeps the error
+formatter's output plain across environments.
+
+  $ TERM=dumb tree-md
+  Usage: tree-md [--help] COMMAND …
+  tree-md: required COMMAND name is missing, must be either 'build' or 'check'
+  [2]
+
+  $ TERM=dumb tree-md frobnicate
+  Usage: tree-md [--help] COMMAND …
+  tree-md: unknown command 'frobnicate'. Must be either 'build' or 'check'
+  [2]
+
+  $ TERM=dumb tree-md check --bogus
+  Usage: tree-md check [--help] [--config=PATH] [OPTION]…
+  tree-md: unknown option '--bogus'
+  [2]
+
 A pristine workspace reports each missing generated output as TM301 and
 exits 1 without writing.
 
@@ -106,6 +125,33 @@ exit 1.
      | <div>raw block html</div>
      | ^^^^^^^^^^^^^^^^^^^^^^^^^
   [1]
+
+A build with source diagnostics prints the same diagnostics to stderr,
+prints no summary line, and exits 1 without writing any output.
+
+  $ tree-md build --config source-bad/tree-md.toml
+  TM202: error: unresolved wiki link "missing"
+    --> $TESTCASE_ROOT/source-bad/trees-md/alpha.tree.md:3:1
+     |
+     | [[missing]]
+     | ^^^^^^^^^^^
+  TM204: error: ambiguous asset "images/shared.png" (matches multiple asset roots)
+    --> $TESTCASE_ROOT/source-bad/trees-md/alpha.tree.md:5:1
+     |
+     | ![Shared](images/shared.png)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  TM203: error: missing asset "images/absent.png"
+    --> $TESTCASE_ROOT/source-bad/trees-md/alpha.tree.md:7:1
+     |
+     | ![Absent](images/absent.png)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  TM102: error: raw block HTML is not supported
+    --> $TESTCASE_ROOT/source-bad/trees-md/bad.tree.md:3:1
+     |
+     | <div>raw block html</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^
+  [1]
+  $ test ! -e source-bad/generated
 
 A generated output modified after a build is reported by check as TM302
 and exits 1.
