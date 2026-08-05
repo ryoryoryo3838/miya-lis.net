@@ -225,7 +225,7 @@ directives are errors.
 
 ```bash
 dune runtest --root .    # 434 Alcotest cases + cram scenarios
-opam lock tree-md.opam   # regenerate tree-md.opam.locked
+dune pkg lock            # refresh the independent Dune package lock
 ```
 
 See [`VERIFICATION.md`](./VERIFICATION.md) for the mapping of design

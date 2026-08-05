@@ -22,14 +22,10 @@ jobs:
           version: 3.22.2
           steps: install-dune install-gpatch install-depexts build-deps build
 
-      - name: Install tree-md dependencies
-        run: opam install ./tools/tree-md --deps-only
-
       - name: Compile Markdown trees
         run: |
-          opam exec -- dune exec ./bin/main.exe -- build \
+          dune exec --root tools/tree-md ./bin/main.exe -- build \
             --config "$GITHUB_WORKSPACE/tree-md.toml"
-        working-directory: tools/tree-md
 
       # hero.bc.js is compiled by setup-dune's 'build' step above (dune build)
       - name: Build hero.js

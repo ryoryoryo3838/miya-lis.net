@@ -19,8 +19,11 @@ jobs:
       - uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: "5.3.0"
-      - run: opam install ./tools/tree-md --deps-only --with-test
-      - run: opam exec -- dune runtest --root .
+      - uses: ocaml-dune/setup-dune@v2
+        with:
+          version: 3.22.2
+          steps: install-dune
+      - run: dune runtest --root .
         working-directory: tools/tree-md
       - run: opam pin add -yn forester git+https://git.sr.ht/~jonsterling/ocaml-forester#30b73641cef02433ee158db6ddc77f7b49de60be
       - run: opam install -y forester

@@ -3,7 +3,8 @@
   "packages": [
     "github:nixos/nixpkgs/nixpkgs-unstable#dune",
     "pnpm@latest",
-    "cargo@latest"
+    "cargo@latest",
+    "watchexec@latest"
   ],
   "shell": {
     "init_hook": [
