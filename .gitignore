@@ -7,3 +7,4 @@ _build/
 /generated/.tree-md-stage/
 /.omo/run-continuation
 /docs/superpowers/plans
+/tools/tree-md/dune.lock
