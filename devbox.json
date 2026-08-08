@@ -4,7 +4,8 @@
     "github:nixos/nixpkgs/nixpkgs-unstable#dune",
     "pnpm@latest",
     "cargo@latest",
-    "watchexec@latest"
+    "watchexec@latest",
+    "opam@latest"
   ],
   "shell": {
     "init_hook": [

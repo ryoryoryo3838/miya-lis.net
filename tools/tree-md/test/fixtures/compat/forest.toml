@@ -1,5 +1,0 @@
-[forest]
-trees = ["generated", "trees"]
-assets = ["assets"]
-home = "index"
-url = "http://forest.local/"
