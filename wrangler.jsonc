@@ -1,0 +1,10 @@
+// wrangler.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "miya-lis-forest",
+  "compatibility_date": "2026-08-09",
+  "assets": {
+    "directory": "./site/output",
+    "not_found_handling": "single-page-application"
+  }
+}
