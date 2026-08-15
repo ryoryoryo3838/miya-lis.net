@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare Workers
 
 on:
   push:
@@ -7,6 +7,12 @@ on:
   repository_dispatch:
     types: [content-updated]
   workflow_dispatch:
+
+# A push and a note edit can land within seconds of each other, and each run
+# rebuilds the whole forest to deploy the same site. Only the last one matters.
+concurrency:
+  group: deploy
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -75,9 +81,12 @@ jobs:
           sh site/mark-hero-entry.sh
           (cd site && sh ../test/hero-route.sh)
 
-      - name: Deploy to Cloudflare Pages
+      # The project is a Worker serving static assets, configured by
+      # wrangler.jsonc at the repository root; `pages deploy` targets a
+      # different Cloudflare product and ignores that file.
+      - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site/output/ --project-name=miya-lis-forest
+          command: deploy
