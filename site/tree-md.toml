@@ -1,5 +1,7 @@
 version = 1
 forest = "forest.toml"
+# The output root must not overlap a source root, and must be listed in
+# forest.toml's [forest].trees.
 sources = ["contents"]
-output = "contents"
+output = "generated"
 target = "forester-6.0-dev@30b73641cef02433ee158db6ddc77f7b49de60be"

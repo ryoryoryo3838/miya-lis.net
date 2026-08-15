@@ -1,0 +1,12 @@
+\title{研究}
+\taxon{Research}
+
+\p{専門分野と研究テーマ・関心について}
+
+\transclude{research-interest}
+
+\subtree[grad-research]{
+\title{卒業研究}
+\p{卒業論文のテーマは「[図書館情報学における情報概念について —Marcia J. BatesとBirger Hjørlandの対立に注目して—](https://ronbun.klis/tsukuba.ac.jp/abstracts/2025/202311466a.pdf)」}
+\p{本研究は、[2026年度日本図書館情報学会春季研究集会](https://jslis.jp/wp-content/uploads/2026/06/202606-Spring-research-meeting-papers.pdf)で口頭発表を行い、[優秀発表奨励賞](https://jslis.jp/2026/06/10/2026s-presentation-award/)を受賞している.}
+}

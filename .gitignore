@@ -1,10 +1,13 @@
 output/
 /devbox.lock
-/theme
+/site/theme/hero.js
 _build/
 /generated/.tree-md.lock
 /generated/.tree-md-transaction.json
 /generated/.tree-md-stage/
+/site/generated/.tree-md.lock
+/site/generated/.tree-md-transaction.json
+/site/generated/.tree-md-stage/
 /.omo/run-continuation
 /docs/superpowers/plans
 /tools/tree-md/dune.lock

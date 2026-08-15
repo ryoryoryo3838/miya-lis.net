@@ -2,7 +2,7 @@
 (name miya-forest)
 
 (pin
- (url "forester")
+ (url "git+https://git.sr.ht/~jonsterling/ocaml-forester#5.0")
  (package (name forester) (version "5.0")))
 
 (package

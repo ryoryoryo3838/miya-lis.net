@@ -18,8 +18,19 @@ let add_class el cls =
 let remove_class el cls =
   el##.classList##remove (Js.string cls)
 
+(* The root entry (/index.html) lands on /index/index.xml#hero; internal links
+   to [index] land on /index/ without the fragment and stay on Home content. *)
 let is_home_mode () =
-  Js.to_string Dom_html.window##.location##.search = "?hero=1"
+  Js.to_string Dom_html.window##.location##.hash = "#hero"
+
+(* Drop the marker from the visible URL once it has been read. *)
+let clear_hero_fragment () =
+  let location = Dom_html.window##.location in
+  let url =
+    Js.to_string location##.pathname ^ Js.to_string location##.search
+  in
+  Dom_html.window##.history##replaceState
+    Js.null (Js.string "") (Js.some (Js.string url))
 
 let disable_hero () =
   let hero = get_element "hero" in
@@ -165,6 +176,7 @@ let init () =
     (fun _ -> hero_present := true);
   if !hero_present then begin
     if home_mode then begin
+      clear_hero_fragment ();
       setup_period_pin ();
       setup_header_observer ()
     end else

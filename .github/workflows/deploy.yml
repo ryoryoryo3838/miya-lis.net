@@ -9,8 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
 
       - uses: ocaml/setup-ocaml@v3
         with:
@@ -22,35 +20,28 @@ jobs:
           version: 3.22.2
           steps: install-dune install-gpatch install-depexts build-deps build
 
-      - name: Compile Markdown trees
-        run: |
-          dune exec --root tools/tree-md ./bin/main.exe -- build \
-            --config "$GITHUB_WORKSPACE/tree-md.toml"
+      # contents/*.tree.md are compiled by `tree-md build --config
+      # site/tree-md.toml` locally (see site/build.sh); site/generated/*.tree is
+      # committed, so this job needs no tree-md executable.
 
       # hero.bc.js is compiled by setup-dune's 'build' step above (dune build)
       - name: Build hero.js
         run: |
-          cp _build/default/lib_theme/hero.bc.js theme/hero.js
+          cp _build/default/lib_theme/hero.bc.js site/theme/hero.js
           cp _build/default/lib_theme/hero.bc.js assets/hero.js
 
       - name: Build forester site
-        run: |
-          _build/install/default/bin/forester build forest.toml
+        run: _build/install/default/bin/forester build forest.toml
+        working-directory: site
 
       - name: Mark home entry for HERO
         run: |
-          printf '%s\n' \
-            '<!DOCTYPE html>' \
-            '<html>' \
-            '  <head>' \
-            '    <meta http-equiv="refresh" content="0;url=/index/index.xml?hero=1" />' \
-            '  </head>' \
-            '</html>' > output/index.html
-          sh test/hero-route.sh
+          sh site/mark-hero-entry.sh
+          (cd site && sh ../test/hero-route.sh)
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy output/ --project-name=miya-lis-forest
+          command: pages deploy site/output/ --project-name=miya-lis-forest

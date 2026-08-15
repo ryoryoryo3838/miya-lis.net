@@ -1,0 +1,49 @@
+(version 5.0)
+
+(build
+ (all_platforms ((dune))))
+
+(depends
+ (all_platforms
+  (menhir
+   ocamlgraph
+   ocaml
+   dune
+   dune-site
+   ocaml-index
+   ppx_deriving
+   cmdliner
+   dune-build-info
+   uucp
+   eio_main
+   ptime
+   asai
+   yuujinchou
+   bwd
+   algaeff
+   yojson
+   toml
+   repr
+   ppx_repr
+   uri
+   pure-html
+   base64
+   datalog
+   cid
+   lsp
+   jsonrpc
+   ppx_yojson_conv
+   logs
+   bisect_ppx
+   cohttp-eio
+   routes
+   brr
+   spelll
+   alcotest)))
+
+(source
+ (fetch
+  (url
+   git+https://git.sr.ht/~jonsterling/ocaml-forester#5ceee0e7d20febc0552caad0f71aa01750574d43)))
+
+(dev)

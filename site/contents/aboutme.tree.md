@@ -1,0 +1,19 @@
+---
+date: 2026-08-02
+taxon: Person
+authors:
+  - 清宮亮太郎
+meta:
+  external: https://miya-lis.net
+  institution: "[筑波大学 大学院 情報学学位プログラム](https://informatics.tsukuba.ac.jp/)"
+  orcid: 0009-0000-4771-5212
+---
+# 清宮亮太郎
+
+[清宮亮太郎](aboutme)は[筑波大学 大学院 人間総合科学学術院 人間総合科学研究群 情報学学位プログラム](https://informatics.tsukuba.ac.jp/)の大学院生です.
+
+2026年度[春日ラーニングコモンズ](https://www.tulips.tsukuba.ac.jp/wsp/klc.html)代表(の一人).
+[知識と言葉のコンピューティング研究室](https://kalc.slis.tsukuba.ac.jp/ja/)リサーチアシスタント.
+研究テーマは[専門用語辞典の自動構築による全学術分野の知の統合](https://kalc.slis.tsukuba.ac.jp/ja/projects/termatlas/)での「専門用語辞典中の文献に関する計量書誌学的分析」
+
+![[research-interest]]
