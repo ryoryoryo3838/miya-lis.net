@@ -41,11 +41,17 @@
                 <span id="hero-period-placeholder" class="hero-period-placeholder">.</span>NET
               </span>
             </div>
+            <a class="hero-home" href="#grid-wrapper" title="Home">
+              <xsl:text>&#x25BC; HOME</xsl:text>
+            </a>
           </section>
 
-          <!-- Persistent Header -->
+          <!-- Persistent Header. The pinned period supplies the leading dot,
+               and the whole bar is the way back up to the hero. -->
           <header id="persistent-header" class="persistent-header">
-            <a class="nav-toggle" href="#" aria-label="Open navigation">.</a>&#160;MIYA-LIS.NET
+            <a class="persistent-header-link" href="#hero" title="Top">
+              <xsl:text>MIYA-LIS.NET&#160;&#x25B2;</xsl:text>
+            </a>
           </header>
         </xsl:if>
         <a class="nav-toggle nav-toggle--global" href="#" aria-label="Open navigation">.</a>
@@ -59,26 +65,21 @@
           </xsl:if>
         </nav>
         <ninja-keys placeholder="Start typing a note title or ID"></ninja-keys>
-        <header class="header">
-          <nav class="nav">
-            <div class="logo">
-              <xsl:choose>
-                <xsl:when test="/f:tree[@root='true']">
-                  <a href="#" title="Top">
-                    <xsl:text>︽ Top</xsl:text>
-                  </a>
-                </xsl:when>
-                <xsl:otherwise>
-                  <!-- The tree route, not the site root entry: the root entry
-                       carries the hero marker, internal Home does not. -->
-                  <a href="{/f:tree/@base-url}index/" title="Home">
-                    <xsl:text>« Home</xsl:text>
-                  </a>
-                </xsl:otherwise>
-              </xsl:choose>
-            </div>
-          </nav>
-        </header>
+        <!-- The root page navigates through the hero and the persistent
+             header instead, so this is only for the other trees. -->
+        <xsl:if test="not(/f:tree[@root='true'])">
+          <header class="header">
+            <nav class="nav">
+              <div class="logo">
+                <!-- The tree route, not the site root entry: the root entry
+                     carries the hero marker, internal Home does not. -->
+                <a href="{/f:tree/@base-url}index/" title="Home">
+                  <xsl:text>« Home</xsl:text>
+                </a>
+              </div>
+            </nav>
+          </header>
+        </xsl:if>
         <div id="grid-wrapper">
           <article>
             <xsl:apply-templates select="f:tree">

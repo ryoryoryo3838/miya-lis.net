@@ -3,12 +3,41 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main, miya, hero-theme]
+  # Sent by the Markdown repository (the Obsidian vault) when a note changes.
+  repository_dispatch:
+    types: [content-updated]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # The Markdown sources are versioned separately from the site. Only the
+      # notes directory is fetched; the rest of the vault is personal.
+      # GITHUB_TOKEN is scoped to this repository alone, so reading another
+      # private repository needs CONTENT_TOKEN even under the same account.
+      - name: Check out the Markdown sources
+        uses: actions/checkout@v4
+        with:
+          repository: ryoryoryo3838/wiki.miya-lis.net
+          ref: main
+          token: ${{ secrets.CONTENT_TOKEN }}
+          sparse-checkout: MIYA-LIS.NET
+          sparse-checkout-cone-mode: false
+          path: .content
+
+      - name: Stage the Markdown sources
+        run: |
+          rm -rf site/trees-md
+          mkdir -p site/trees-md
+          (cd .content/MIYA-LIS.NET && find . -type f -name '*.tree.md') |
+            while IFS= read -r rel; do
+              mkdir -p "site/trees-md/$(dirname "$rel")"
+              cp ".content/MIYA-LIS.NET/$rel" "site/trees-md/$rel"
+            done
+          find site/trees-md -type f | sort
 
       - uses: ocaml/setup-ocaml@v3
         with:
@@ -20,9 +49,16 @@ jobs:
           version: 3.22.2
           steps: install-dune install-gpatch install-depexts build-deps build
 
-      # contents/*.tree.md are compiled by `tree-md build --config
-      # site/tree-md.toml` locally (see site/build.sh); site/generated/*.tree is
-      # committed, so this job needs no tree-md executable.
+      # tree-md is developed in its own public repository, so the pin needs no
+      # credentials.
+      - name: Install tree-md
+        run: |
+          opam pin add -yn tree-md git+https://github.com/ryoryoryo3838/tree-md#main
+          opam install -y tree-md
+
+      - name: Compile the Markdown sources
+        run: opam exec -- tree-md build --config tree-md.toml
+        working-directory: site
 
       # hero.bc.js is compiled by setup-dune's 'build' step above (dune build)
       - name: Build hero.js

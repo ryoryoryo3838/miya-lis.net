@@ -1,9 +1,10 @@
 #!/bin/sh
+# Compile contents/*.tree.md into generated/*.tree whenever a Markdown source
+# changes. Run alongside watch.sh, which rebuilds the forest from the result.
 set -eu
 
 site_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-repo_dir=$(CDPATH= cd -- "$site_dir/.." && pwd)
-cd "$repo_dir"
+cd "$site_dir"
 
 exec watchexec \
   --watch "$site_dir/contents" \
@@ -11,6 +12,4 @@ exec watchexec \
   --debounce 200ms \
   --on-busy-update queue \
   --shell=none \
-  -- \
-  tree-md build \
-    --config "$site_dir/tree-md.toml"
+  -- sh "$site_dir/build.sh" md

@@ -1,5 +1,0 @@
-# HOME
-
-![[aboutme]]
-
-![[research]]

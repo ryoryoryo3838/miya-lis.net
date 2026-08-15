@@ -87,6 +87,19 @@
   --radius: 5px;
   --nav-panel-width: 200px;
   --nav-clearance: clamp(3rem, 5vw, 5rem);
+  /* Hero wordmark scale. The pinned period keeps --hero-type-size, so
+     --hero-mark-size matches a cap height to that period's ink and
+     --hero-mark-offset starts the wordmark clear of it: ". MIYA-LIS.NET". */
+  --hero-type-size: clamp(6rem, 19.5vw, 28rem);
+  --hero-mark-size: calc(var(--hero-type-size) * 0.14);
+  --hero-mark-offset: calc(var(--hero-type-size) * 0.28);
+}
+
+/* "︾ HOME" and "︽ Top" move between the hero and the content. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 h1,
@@ -244,6 +257,8 @@ body>header {
 
 body.hero-page #grid-wrapper {
   margin-left: var(--nav-clearance);
+  /* Clear the fixed persistent header, including when "︾ HOME" scrolls here. */
+  padding-top: calc(var(--hero-mark-size) + 1.5rem);
 }
 
 #grid-wrapper>nav {
@@ -659,6 +674,7 @@ body.hero-page {
 }
 
 .hero {
+  position: relative;
   height: 100vh;
   width: 100vw;
   display: flex;
@@ -666,11 +682,29 @@ body.hero-page {
   box-sizing: border-box;
 }
 
+/* Counterpart to the "︽ Top" link that the Home content carries. */
+.hero-home {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 1.5rem;
+  font-family: "Inria Sans", sans-serif;
+  font-weight: 1000;
+  font-size: 24px;
+  line-height: 1;
+  color: #666;
+  text-decoration: none;
+}
+
+.hero-home:hover,
+.hero-home:focus-visible {
+  color: #aaa;
+}
+
 .hero-title {
   margin: 0;
   width: 100%;
   font-family: "Inria Sans", sans-serif;
-  font-size: clamp(6rem, 19.5vw, 28rem);
+  font-size: var(--hero-type-size);
   font-weight: 900;
   line-height: 0.85;
   text-align: left;
@@ -710,7 +744,7 @@ body.hero-page {
   left: 0.5rem;
   z-index: 11;
   font-family: "Inria Sans", sans-serif;
-  font-size: clamp(6rem, 19.5vw, 28rem);
+  font-size: var(--hero-type-size);
   font-weight: 900;
   line-height: 0.85;
   transform: translate(0, -0.64em);
@@ -735,25 +769,46 @@ body.hero-page .nav-toggle--global {
 }
 
 /* ── Persistent Header ── */
+/* Sits behind the pinned period (z-index 11) and starts to its right, so the
+   two read as one lockup at the same optical size. */
 .persistent-header {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem 0.5rem calc(0.5rem + var(--hero-mark-offset));
   background: #fff;
   z-index: 10;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--hero-mark-size) + 1rem);
   font-family: "Inria Sans", sans-serif;
-  font-size: 0.9rem;
+  font-size: var(--hero-mark-size);
+  font-weight: 900;
+  line-height: 0.85;
 }
 
 .persistent-header.is-visible {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* The whole bar is the link back to the hero. */
+.persistent-header-link {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+}
+
+.persistent-header-link:hover,
+.persistent-header-link:focus-visible {
+  color: #555;
 }
 
 /* ── Nav Panel ── */

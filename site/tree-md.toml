@@ -2,6 +2,9 @@ version = 1
 forest = "forest.toml"
 # The output root must not overlap a source root, and must be listed in
 # forest.toml's [forest].trees.
-sources = ["contents"]
+# trees-md/ is not tracked here: it is populated from the Markdown repository
+# (the Obsidian vault) by build.sh locally and by deploy.yml in CI. tree-md's
+# source roots must live under this directory, so the notes are copied in.
+sources = ["trees-md"]
 output = "generated"
 target = "forester-6.0-dev@30b73641cef02433ee158db6ddc77f7b49de60be"
