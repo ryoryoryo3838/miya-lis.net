@@ -16,11 +16,12 @@ moves, move the other: `target` in [`../tree-md.toml`](../tree-md.toml).
 | `default.xsl` | byte-identical to upstream |
 | `links.xsl` | byte-identical to upstream |
 | `metadata.xsl` | byte-identical to upstream |
-| `tree.xsl` | +74 / −4 — hero section, persistent header, nav panel and overlay, the `hero.js` and hot-reload script tags |
-| `style.css` | +229 / −10 — Inria Sans and Honoka Shin Mincho `@font-face`, hero / nav-panel / persistent-header rules; upstream's `nav.nav` docs-button styling dropped |
+| `tree.xsl` | +72 / −4 — hero section, persistent header, nav panel and overlay, the `fonts-biz-udmincho.css` link, the `hero.js` and hot-reload script tags |
+| `style.css` | +236 / −10 — Inria Sans `@font-face`, BIZ UDMincho as the body face, hero / nav-panel / persistent-header rules; upstream's `nav.nav` docs-button styling dropped |
 
 Every file upstream ships is present here. `forester.js`, `javascript-source/`,
-`bundle-js.sh` and `fonts/` are additions of ours.
+`bundle-js.sh`, `fonts/`, `fonts-biz-udmincho.css` and `fetch-biz-udmincho.sh`
+are additions of ours.
 
 ## Why vendored rather than forked
 
