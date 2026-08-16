@@ -116,9 +116,14 @@ jobs:
       # The project is a Worker serving static assets, configured by
       # wrangler.jsonc at the repository root; `pages deploy` targets a
       # different Cloudflare product and ignores that file.
+      # wranglerVersion is not optional here. The action defaults to wrangler 3,
+      # which requires a `main` entry point and rejects an assets-only Worker
+      # with "Missing entry-point"; serving a directory with no script of its
+      # own is a wrangler 4 feature.
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
           command: deploy
