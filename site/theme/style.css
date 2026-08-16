@@ -705,16 +705,15 @@ body.hero-page {
 }
 
 /* Counterpart to the "︽ Top" link that the Home content carries. */
-/* One lockup with the persistent header: same optical size, same left edge.
-   The size is --hero-mark-size, so this cap, the header's cap and the pinned
-   period's ink are all the same height. The inset puts this arrow's ink where
-   the header's "M" sits — the arrow carries 0.20em of side bearing and a cap
-   0.09em, so the box starts 0.11em further left to land the ink in the same
-   column. */
+/* One lockup with the persistent header: same optical size, and "HOME" set in
+   the same column as "MIYA-LIS.NET". The size is --hero-mark-size, so this
+   cap, the header's cap and the pinned period's ink are all the same height.
+   Backing the box off by the advance of "▼ " (0.9897em + a 0.20em space) puts
+   the H where the M is; the two side bearings cancel, both being 0.09em. */
 .hero-home {
   align-self: flex-start;
   margin-bottom: 1.5rem;
-  margin-left: calc(0.5rem + var(--hero-mark-offset) - 0.11em);
+  margin-left: calc(0.5rem + var(--hero-mark-offset) - 1.1897em);
   font-family: "Inria Sans", sans-serif;
   font-weight: 900;
   font-size: var(--hero-mark-size);
