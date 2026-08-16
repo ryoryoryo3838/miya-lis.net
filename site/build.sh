@@ -70,7 +70,7 @@ build_forest() {
   fi
 
   "$forester" build forest.toml
-  sh "$site_dir/mark-hero-entry.sh"
+  sh "$site_dir/write-entries.sh"
 }
 
 case "${1:-all}" in

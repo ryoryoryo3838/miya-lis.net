@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!-- Source for og.png, the card every page is shared with.
+
+     Rendered at 1200x630 by make-og-card.sh. It pulls the real style.css so
+     the wordmark here is the hero's wordmark — same face, same weight, same
+     tight leading — rather than a second drawing of it that drifts.
+
+     There is one card for the whole site, not one per note: the note's own
+     title, description and URL travel as text in the page metadata, which is
+     what a reader actually reads in the preview, and the picture is the
+     site's mark. -->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+      }
+
+      .card {
+        width: 1200px;
+        height: 630px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0 96px;
+        background: #fff;
+      }
+
+      /* The hero sizes itself to the viewport; here the box is fixed, so the
+         type is stated outright. At 230px the wordmark fills the card's width
+         the way the hero fills a window's, and two lines at 0.85 leading come
+         to 391px, which sits inside 630 with room above and below. */
+      .card-mark {
+        font-family: "Inria Sans", sans-serif;
+        font-weight: 900;
+        font-size: 230px;
+        line-height: 0.85;
+        color: #000;
+        letter-spacing: -0.01em;
+      }
+
+      .card-line {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="card-mark">
+        <span class="card-line">MIYA-LIS</span>
+        <span class="card-line">.NET</span>
+      </div>
+    </div>
+  </body>
+</html>
