@@ -8,11 +8,17 @@ on:
     types: [content-updated]
   workflow_dispatch:
 
-# A push and a note edit can land within seconds of each other, and each run
-# rebuilds the whole forest to deploy the same site. Only the last one matters.
+# One deploy at a time: each run rebuilds the whole forest to publish the same
+# site, so overlapping them is waste.
+#
+# Not cancel-in-progress. obsidian-git backs the vault up every 3 minutes and a
+# full run takes ~15, so cancelling would kill every build before it finished
+# and nothing would ever deploy while notes are being edited. Queueing instead
+# lets the running build finish; GitHub keeps at most one pending run per group
+# and supersedes it, so a burst of edits still collapses to one deploy.
 concurrency:
   group: deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
