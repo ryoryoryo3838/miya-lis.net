@@ -135,9 +135,12 @@ def document(page, canonical, target, page_title, og_type, share_title=None):
         '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />',
         '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />',
         '<link rel="apple-touch-icon" href="/apple-touch-icon.png" />',
+        # Names the 192 and 512 icons, which nothing else points at, so a page
+        # kept on a phone's home screen shows the M rather than a screenshot.
+        '<link rel="manifest" href="/site.webmanifest" />',
     ]
 
-    lines += meta("name", "description", page["description"])
+    lines += meta("name", "description", "miya の portfolio site")
     lines += meta("name", "author", ", ".join(page["authors"]))
 
     lines += meta("property", "og:type", og_type)

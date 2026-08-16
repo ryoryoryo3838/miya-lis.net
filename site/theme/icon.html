@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!-- Source for the site icons: one M, drawn the same way at every size.
+
+     make-icons.sh loads this with the wanted pixel size in the fragment
+     (icon.html#512) and screenshots the viewport, so what the file draws is
+     exactly what is written.
+
+     The letter is placed by its ink, not by its line box. A glyph's ascent and
+     side bearings are not symmetric, so centring the box it sits in leaves the
+     letter itself off-centre — visibly so at 16 pixels. Measuring the ink and
+     centring that is the difference between an icon that looks placed and one
+     that looks nudged. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      /* Weight 900 comes from synthesising 700, which is what the hero and the
+         share card do too. Declaring the file as 900 here would draw a lighter
+         M than the wordmark it stands for. */
+      @font-face {
+        font-family: "Inria Sans";
+        font-style: normal;
+        font-weight: 700;
+        font-display: block;
+        src: url("fonts/inria-sans-v14-latin_latin-ext-700.woff2") format("woff2");
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+      }
+
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // The reference these are drawn to puts the cap height at this fraction
+      // of the square and centres it. An M is wider than the H measured there,
+      // so it keeps less air at the sides — matched by eye, as letters are.
+      const CAP_FRACTION = 0.7;
+      const LETTER = "M";
+      const INK = "#000";
+      const PAPER = "#fff";
+
+      const size = Number(location.hash.slice(1)) || 512;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      canvas.style.width = size + "px";
+      canvas.style.height = size + "px";
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext("2d");
+
+      function draw() {
+        ctx.fillStyle = PAPER;
+        ctx.fillRect(0, 0, size, size);
+
+        // Measure at a round size, then scale: the ratios are what matter and
+        // they are the same at any size.
+        const probe = 1000;
+        ctx.font = `900 ${probe}px "Inria Sans"`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        const m = ctx.measureText(LETTER);
+
+        const capRatio = m.actualBoundingBoxAscent / probe;
+        const fontSize = (CAP_FRACTION * size) / capRatio;
+
+        ctx.font = `900 ${fontSize}px "Inria Sans"`;
+        const n = ctx.measureText(LETTER);
+
+        // Relative to the drawing origin the ink runs from -left to +right and
+        // from -ascent to +descent, so this puts its middle at the middle.
+        const inkWidth = n.actualBoundingBoxLeft + n.actualBoundingBoxRight;
+        const inkHeight = n.actualBoundingBoxAscent + n.actualBoundingBoxDescent;
+        const x = (size - inkWidth) / 2 + n.actualBoundingBoxLeft;
+        const y = (size - inkHeight) / 2 + n.actualBoundingBoxAscent;
+
+        ctx.fillStyle = INK;
+        ctx.fillText(LETTER, x, y);
+      }
+
+      document.fonts.load('900 100px "Inria Sans"').then(() => {
+        document.fonts.ready.then(draw);
+      });
+    </script>
+  </body>
+</html>
