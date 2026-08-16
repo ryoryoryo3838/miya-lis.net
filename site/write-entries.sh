@@ -107,7 +107,7 @@ def read(xml_path):
         "taxon": child_text(front, "taxon"),
         "authors": [text_of(a) for a in front.iter(FR + "author")],
         "published": published,
-        "description": shorten(first_paragraph(tree), DESCRIPTION_LIMIT),
+        "description": "miyaのwebsite",
         "is_root": tree.get("root") == "true",
     }
 
@@ -140,7 +140,7 @@ def document(page, canonical, target, page_title, og_type, share_title=None):
         '<link rel="manifest" href="/site.webmanifest" />',
     ]
 
-    lines += meta("name", "description", "miya の portfolio site")
+    lines += meta("name", "description", page["description"])
     lines += meta("name", "author", ", ".join(page["authors"]))
 
     lines += meta("property", "og:type", og_type)
