@@ -133,9 +133,20 @@ let setup_period_pin () =
   |> ignore
 
 (* ── Intersection Observer: persistent header ── *)
+(* The header is what HOME turns into on the way up, so it arrives exactly as
+   HOME leaves. Watching the whole hero instead made it arrive later, once the
+   last of the wordmark had gone, leaving a stretch with neither on screen.
+   Falls back to the hero if the link is ever absent. *)
 let setup_header_observer () =
-  let hero = get_element "hero" in
   let header = get_element "persistent-header" in
+  let hero =
+    match
+      Dom.list_of_nodeList
+        (Dom_html.document##getElementsByClassName (Js.string "hero-home"))
+    with
+    | home :: _ -> home
+    | [] -> get_element "hero"
+  in
 
   (* Create IntersectionObserver via js_of_ocaml *)
   let callback entries _observer =
