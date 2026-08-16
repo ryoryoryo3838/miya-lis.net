@@ -417,6 +417,14 @@
           <xsl:value-of select="f:frontmatter/f:taxon" />
         </xsl:attribute>
       </xsl:if>
+      <!-- The tree's address, so a stylesheet can reach one particular tree.
+           It is otherwise only in the slug's link text, which CSS cannot
+           match on. -->
+      <xsl:if test="f:frontmatter/f:display-uri">
+        <xsl:attribute name="data-tree">
+          <xsl:value-of select="f:frontmatter/f:display-uri" />
+        </xsl:attribute>
+      </xsl:if>
 
       <xsl:choose>
         <xsl:when test="not(@show-heading='false')">

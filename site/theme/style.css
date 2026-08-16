@@ -109,6 +109,16 @@
      1440 and 1920px wide: -0.01198, -0.01202, -0.01197, -0.01196 of the
      display size. One constant therefore corrects every viewport. */
   --hero-mark-shift: calc(var(--hero-type-size) * 0.012);
+  /* A tree that carries a picture shows it at three times the period's ink,
+     square. The period is the site's smallest fixed mark and everything else
+     on the page is already measured against it, so the picture grows and
+     shrinks with the wordmark instead of drifting away from it at some
+     widths.
+
+     The floor is not the period's: --hero-type-size stops falling at 6rem, so
+     on a phone this would land at 35px, small for a line drawing. 3rem holds
+     the same proportion to the rest as the desktop size does. */
+  --tree-mark-size: max(3rem, calc(var(--hero-type-size) * var(--hero-period-ink) * 3));
 }
 
 /* "︾ HOME" and "︽ Top" move between the hero and the content. */
@@ -893,4 +903,36 @@ body.hero-page .nav-toggle--global {
 .nav-overlay.is-visible {
   opacity: 0.3;
   pointer-events: auto;
+}
+
+/* ── A tree's own picture ─────────────────────────────────────────────────── */
+
+/* 0000 is the tree about the person this site belongs to, and the drawing is
+   of him, so this is addressed to that one tree rather than to `Person` — a
+   rule on the taxon would put his portrait on everyone's card. tree.xsl puts
+   the address in data-tree for exactly this.
+
+   Scoped to the article, because the same tree is rendered again in the
+   context panel beside it, at half the width and as a reference rather than
+   as itself. A portrait in a list of backlinks is noise.
+
+   The block reserves a column the width of the picture plus a gutter, so the
+   prose stops short of it rather than running underneath: the picture is
+   taken out of flow, and out-of-flow boxes are not something block text moves
+   aside for on its own. */
+article .block[data-tree="0000"] {
+  position: relative;
+  padding-right: calc(var(--tree-mark-size) + var(--content-gap));
+}
+
+article .block[data-tree="0000"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--tree-mark-size);
+  height: var(--tree-mark-size);
+  /* The drawing is taller than the square it is shown in; `cover` fills the
+     square from the top, which is where the head is. */
+  background: url("icon.svg") no-repeat top center / cover;
 }
