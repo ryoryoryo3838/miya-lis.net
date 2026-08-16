@@ -101,14 +101,17 @@ jobs:
           cp _build/default/lib_theme/hero.bc.js site/theme/hero.js
           cp _build/default/lib_theme/hero.bc.js assets/hero.js
 
+      # build.sh already locates the forester executable — it handles both the
+      # installed layout and the one dune's package management produces — and
+      # writes the hero entry afterwards. CI had reimplemented that with a
+      # single hardcoded relative path, which resolved under site/ and was not
+      # there.
       - name: Build forester site
-        run: _build/install/default/bin/forester build forest.toml
-        working-directory: site
+        run: sh site/build.sh forest
 
-      - name: Mark home entry for HERO
-        run: |
-          sh site/mark-hero-entry.sh
-          (cd site && sh ../test/hero-route.sh)
+      - name: Check the hero route
+        run: sh ../test/hero-route.sh
+        working-directory: site
 
       # The project is a Worker serving static assets, configured by
       # wrangler.jsonc at the repository root; `pages deploy` targets a
