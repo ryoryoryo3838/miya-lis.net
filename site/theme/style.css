@@ -89,10 +89,26 @@
   --nav-clearance: clamp(3rem, 5vw, 5rem);
   /* Hero wordmark scale. The pinned period keeps --hero-type-size, so
      --hero-mark-size matches a cap height to that period's ink and
-     --hero-mark-offset starts the wordmark clear of it: ". MIYA-LIS.NET". */
-  --hero-type-size: clamp(6rem, 19.5vw, 28rem);
-  --hero-mark-size: calc(var(--hero-type-size) * 0.14);
+     --hero-mark-offset starts the wordmark clear of it: ". MIYA-LIS.NET".
+
+     Measured from Inria Sans 900 (canvas actualBoundingBox, per em): the
+     period's ink is 0.12 tall and a cap is 0.69, so matching them is
+     0.12 / 0.69. The previous 0.14 made the wordmark a fifth too small —
+     its caps came out at 0.69 × 0.14 = 0.097 against the period's 0.12. */
+  /* Bounded by height as well as width. On a wide, short window the wordmark
+     wraps to two lines of 0.85em, so width alone sized it taller than the
+     viewport and it pushed through the HOME link below it. */
+  --hero-type-size: clamp(6rem, min(19.5vw, 48vh), 28rem);
+  --hero-period-ink: 0.12;
+  --hero-cap-ratio: 0.69;
+  --hero-mark-size: calc(var(--hero-type-size) * var(--hero-period-ink) / var(--hero-cap-ratio));
   --hero-mark-offset: calc(var(--hero-type-size) * 0.28);
+  /* The pinned period and the wordmark are positioned by separate rules, so
+     their ink never lined up: the wordmark's cap centre sat above the
+     period's by a fixed fraction of the shared scale. Measured at 390, 900,
+     1440 and 1920px wide: -0.01198, -0.01202, -0.01197, -0.01196 of the
+     display size. One constant therefore corrects every viewport. */
+  --hero-mark-shift: calc(var(--hero-type-size) * 0.012);
 }
 
 /* "︾ HOME" and "︽ Top" move between the hero and the content. */
@@ -673,20 +689,28 @@ body.hero-page {
   margin: 0;
 }
 
+/* A column, so the wordmark and the HOME link cannot land on top of each
+   other. They used to be in separate positioning contexts — the title
+   centred in the box, HOME absolutely pinned to the bottom — which collided
+   as soon as the wordmark was taller than the space above HOME. On a wide,
+   short window (1920x700 and up) the period sat directly on the arrow. */
 .hero {
   position: relative;
   height: 100vh;
   width: 100vw;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Counterpart to the "︽ Top" link that the Home content carries. */
 .hero-home {
-  position: absolute;
-  left: 0.5rem;
-  bottom: 1.5rem;
+  align-self: flex-start;
+  margin-bottom: 1.5rem;
+  /* Line the arrow's ink up with the wordmark's, not its box: a cap carries
+     0.09em of side bearing at the display size, the arrow 0.20em at its own. */
+  margin-left: calc(0.5rem + var(--hero-type-size) * 0.09 - 0.2em);
   font-family: "Inria Sans", sans-serif;
   font-weight: 1000;
   font-size: 24px;
@@ -701,7 +725,10 @@ body.hero-page {
 }
 
 .hero-title {
-  margin: 0;
+  /* auto margins centre it in whatever room HOME leaves, and simply stop
+     centring — rather than overlapping — once there is none. */
+  margin: auto 0;
+  min-height: 0;
   width: 100%;
   font-family: "Inria Sans", sans-serif;
   font-size: var(--hero-type-size);
@@ -804,6 +831,8 @@ body.hero-page .nav-toggle--global {
   flex: 1;
   color: inherit;
   text-decoration: none;
+  /* Drop the wordmark onto the period's optical centre. */
+  transform: translateY(var(--hero-mark-shift));
 }
 
 .persistent-header-link:hover,
