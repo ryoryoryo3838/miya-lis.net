@@ -39,7 +39,8 @@ sync_md() {
 # Markdown sources are compiled into generated/*.tree, which is committed.
 # Without a tree-md executable the previously generated trees are reused.
 compile_md() {
-  tree_md=${TREE_MD:-$(command -v tree-md || true)}
+  # tree_md=${TREE_MD:-$(command -v tree-md || true)}
+  tree_md=~/Documents/OCaml/tree-md/_build/default/bin/main.exe
   if [ -z "$tree_md" ]; then
     echo "build.sh: no tree-md executable found; reusing generated/" >&2
     return 0

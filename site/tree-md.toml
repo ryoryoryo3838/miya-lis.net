@@ -8,3 +8,13 @@ forest = "forest.toml"
 sources = ["trees-md"]
 output = "generated"
 target = "forester-6.0-dev@30b73641cef02433ee158db6ddc77f7b49de60be"
+
+[id]
+# Addresses are minted in Obsidian, by the plugin, into the vault — where the
+# note is actually kept. This build must not mint: trees-md/ is a copy that
+# build.sh deletes and repopulates, so an address written here would be thrown
+# away before the next build, and a fresh random one put in its place. Since
+# the output is named by the identity, that would rename every published page
+# on every build. A tree that states no id is addressed by its file name,
+# which is stable.
+mint = "off"

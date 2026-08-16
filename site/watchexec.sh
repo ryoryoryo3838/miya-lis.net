@@ -6,6 +6,8 @@ set -eu
 site_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cd "$site_dir"
 
+TREE_MD=~/Documents/OCaml/tree-md/_build/bin/main.exe
+
 exec watchexec \
   --watch "$site_dir/contents" \
   --filter '**/*.tree.md' \
