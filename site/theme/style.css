@@ -102,7 +102,13 @@
   --hero-period-ink: 0.12;
   --hero-cap-ratio: 0.69;
   --hero-mark-size: calc(var(--hero-type-size) * var(--hero-period-ink) / var(--hero-cap-ratio));
-  --hero-mark-offset: calc(var(--hero-type-size) * 0.28);
+  /* Where the wordmark starts, measured so the mark ahead of it clears the
+     period. The period's ink ends at 0.17 of the display size. On the hero the
+     arrow sits 0.9897em of its own size ahead of the wordmark, which is
+     0.172 of the display size, so the wordmark cannot start before
+     0.17 + 0.172 = 0.342 without the arrow landing on the period's column.
+     0.42 leaves 0.078 of clear space between them. */
+  --hero-mark-offset: calc(var(--hero-type-size) * 0.42);
   /* The pinned period and the wordmark are positioned by separate rules, so
      their ink never lined up: the wordmark's cap centre sat above the
      period's by a fixed fraction of the shared scale. Measured at 390, 900,
