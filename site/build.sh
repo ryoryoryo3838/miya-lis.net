@@ -19,8 +19,14 @@ cd "$site_dir"
 # that notes are edited and versioned independently of the site. tree-md rejects
 # absolute and `..` source roots, so the notes are copied into trees-md/ rather
 # than referenced in place. Set FOREST_CONTENT to point at a different checkout.
+#
+# The whole vault is synced, not the published folder alone, because a page may
+# link to a note kept anywhere in it — MIYA-LIS.NET/notes links to notes/frege.
+# What is published is settled by tree-md.toml's [publish].from rather than by
+# what is copied: it names MIYA-LIS.NET/** and pulls in whatever those reach,
+# so nothing else in the vault reaches the site.
 sync_md() {
-  content=${FOREST_CONTENT:-$HOME/wiki.miya-lis.net/MIYA-LIS.NET}
+  content=${FOREST_CONTENT:-$HOME/wiki.miya-lis.net}
   if [ ! -d "$content" ]; then
     echo "build.sh: Markdown sources not found at $content" >&2
     echo "build.sh: set FOREST_CONTENT to the directory holding *.tree.md" >&2
