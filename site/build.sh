@@ -42,14 +42,22 @@ sync_md() {
   done
 }
 
-# Markdown sources are compiled into generated/*.tree, which is committed.
-# Without a tree-md executable the previously generated trees are reused.
+# generated/*.tree is not committed — it is rebuilt from trees-md/ on every
+# build, here and in CI — so there is nothing to fall back on: without an
+# executable there is no forest at all, and carrying on would build a site with
+# no pages in it. TREE_MD names the one to use, and CI sets it to the binary it
+# installed; failing that whatever is on PATH; failing that the working copy
+# this is developed against, so a local build picks up an uncommitted change in
+# tree-md without being told about it.
 compile_md() {
-  # tree_md=${TREE_MD:-$(command -v tree-md || true)}
-  tree_md=~/Documents/OCaml/tree-md/_build/default/bin/main.exe
+  tree_md=${TREE_MD:-$(command -v tree-md || true)}
   if [ -z "$tree_md" ]; then
-    echo "build.sh: no tree-md executable found; reusing generated/" >&2
-    return 0
+    dev=$HOME/Documents/OCaml/tree-md/_build/default/bin/main.exe
+    [ -x "$dev" ] && tree_md=$dev || true
+  fi
+  if [ -z "$tree_md" ]; then
+    echo "build.sh: no tree-md executable found; set TREE_MD" >&2
+    exit 1
   fi
   sync_md
   "$tree_md" build --config tree-md.toml

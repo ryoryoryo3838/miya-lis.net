@@ -26,8 +26,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The Markdown sources are versioned separately from the site. Only the
-      # notes directory is fetched; the rest of the vault is personal.
+      # The Markdown sources are versioned separately from the site.
+      #
+      # The whole vault is checked out, not the published folder alone. A
+      # published page may link to a note kept anywhere in it —
+      # MIYA-LIS.NET/notes embeds notes/frege — and a note that was never
+      # fetched cannot be resolved. Fetching it is not publishing it: what
+      # reaches the site is settled by tree-md.toml's [publish].from, which
+      # names MIYA-LIS.NET/** and pulls in whatever those trees reach. The rest
+      # of the vault is never compiled, never emitted, and never leaves the
+      # runner.
+      #
       # GITHUB_TOKEN is scoped to this repository alone, so reading another
       # private repository needs CONTENT_TOKEN even under the same account.
       - name: Check out the Markdown sources
@@ -36,20 +45,7 @@ jobs:
           repository: ryoryoryo3838/wiki.miya-lis.net
           ref: main
           token: ${{ secrets.CONTENT_TOKEN }}
-          sparse-checkout: MIYA-LIS.NET
-          sparse-checkout-cone-mode: false
           path: .content
-
-      - name: Stage the Markdown sources
-        run: |
-          rm -rf site/trees-md
-          mkdir -p site/trees-md
-          (cd .content/MIYA-LIS.NET && find . -type f -name '*.tree.md') |
-            while IFS= read -r rel; do
-              mkdir -p "site/trees-md/$(dirname "$rel")"
-              cp ".content/MIYA-LIS.NET/$rel" "site/trees-md/$rel"
-            done
-          find site/trees-md -type f | sort
 
       - uses: ocaml/setup-ocaml@v3
         with:
@@ -91,9 +87,20 @@ jobs:
           mkdir -p "$HOME/.local/bin"
           cp "$(opam var bin)/tree-md" "$HOME/.local/bin/tree-md"
 
+      # build.sh owns the sync as well as the compile, so that CI and a local
+      # build stage the vault the same way. They did not: CI had its own copy
+      # of the loop that copied from .content/MIYA-LIS.NET and so dropped that
+      # prefix from every path. [publish].from is matched against the path
+      # below the source root, so `MIYA-LIS.NET/**` then named nothing, the
+      # build published nothing, and forester built a forest with no trees in
+      # it — a failure that only surfaced two steps later, as a site with no
+      # root.
       - name: Compile the Markdown sources
-        run: "$HOME/.local/bin/tree-md build --config tree-md.toml"
-        working-directory: site
+        run: |
+          FOREST_CONTENT="$GITHUB_WORKSPACE/.content" \
+          TREE_MD="$HOME/.local/bin/tree-md" \
+            sh site/build.sh md
+          find site/trees-md -type f | sort
 
       # hero.bc.js is compiled by setup-dune's 'build' step above (dune build)
       - name: Build hero.js
