@@ -35,8 +35,19 @@ sync_md() {
 
   rm -rf trees-md
   mkdir -p trees-md
-  # Only .tree.md is a source; the vault also holds notes that are not trees.
-  (cd "$content" && find . -type f -name '*.tree.md') | while IFS= read -r rel; do
+  # Everything, not only *.tree.md. A note embeds the image kept beside it —
+  # ![[CYCL-01.jpg]] finds DAILY/assets/CYCL-01.jpg — and an attachment that
+  # was never copied here cannot be resolved, let alone published. Copying it
+  # is not publishing it: tree-md.toml's [assets].into is what carries the
+  # attachments a published tree embeds into assets/, and nothing else in the
+  # vault reaches the site.
+  #
+  # Hidden paths are pruned: .git is the checkout's own history and .obsidian
+  # is the editor's settings. tree-md ignores both, so copying them is waste,
+  # and `.?*` rather than `.*` is what keeps find from pruning the directory
+  # it starts in.
+  (cd "$content" && find . -name '.?*' -prune -o -type f -print) |
+  while IFS= read -r rel; do
     mkdir -p "trees-md/$(dirname "$rel")"
     cp "$content/$rel" "trees-md/$rel"
   done

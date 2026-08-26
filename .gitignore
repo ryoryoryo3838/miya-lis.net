@@ -7,6 +7,9 @@ _build/
 /generated/.tree-md-stage/
 # Populated from the Markdown repository by build.sh / deploy.yml.
 /site/trees-md/
+# Copies of the attachments the published trees embed, written by tree-md from
+# the vault on every build. Owned by its manifest, not by git.
+/site/assets/vault/
 # Compiled from trees-md/ on every build, locally and in CI, so it is no longer
 # committed: keeping it tracked would make every note edit produce a second,
 # hand-committed diff.

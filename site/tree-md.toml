@@ -19,6 +19,15 @@ target = "forester-6.0-dev@30b73641cef02433ee158db6ddc77f7b49de60be"
 # which is stable.
 mint = "off"
 
+# An attachment lives in the vault beside the note that embeds it, and
+# Forester serves an asset only from a directory forest.toml names. This is
+# where a copy goes: only what a published tree embeds is copied, the copy
+# keeps the path it had in the vault, and tree-md owns it — it is replaced
+# when the image changes and deleted when nothing embeds it any more. The
+# directory is not committed; every build repopulates it.
+[assets]
+into = "assets/vault"
+
 # The vault is the source; the site is what MIYA-LIS.NET/ reaches. Everything
 # those trees link to is published because it is linked to — notes/frege is
 # carried by the embed in notes — and the rest of the vault is not compiled at
