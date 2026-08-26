@@ -136,7 +136,15 @@ let setup_period_pin () =
 (* The header is what HOME turns into on the way up, so it arrives exactly as
    HOME leaves. Watching the whole hero instead made it arrive later, once the
    last of the wordmark had gone, leaving a stretch with neither on screen.
-   Falls back to the hero if the link is ever absent. *)
+   Falls back to the hero if the link is ever absent.
+
+   What the observer is asked is where HOME is, not whether it can be seen.
+   "Not intersecting" is true of a link that has scrolled off the top and
+   equally of one a phone's toolbar is sitting on top of — Safari measures
+   against the unobscured part of the window — so on a phone the header
+   arrived over a hero that had not moved. The rect says which of the two it
+   is: HOME has left upwards only when its bottom edge is at or above the top
+   of the viewport. *)
 let setup_header_observer () =
   let header = get_element "persistent-header" in
   let hero =
@@ -151,10 +159,11 @@ let setup_header_observer () =
   (* Create IntersectionObserver via js_of_ocaml *)
   let callback entries _observer =
     let entry = Js.Optdef.get (Js.array_get entries 0) (fun () -> failwith "no entry") in
-    if Js.to_bool (entry##.isIntersecting) then
-      remove_class header "is-visible"
-    else
+    let bottom = Js.to_float entry##.boundingClientRect##.bottom in
+    if bottom <= 0. then
       add_class header "is-visible"
+    else
+      remove_class header "is-visible"
   in
 
   let options =

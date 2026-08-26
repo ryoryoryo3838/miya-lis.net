@@ -709,7 +709,14 @@ body.hero-page {
    short window (1920x700 and up) the period sat directly on the arrow. */
 .hero {
   position: relative;
+  /* svh, not vh: on a phone vh is the viewport with the browser's toolbars
+     hidden, so a 100vh hero hangs its last inch — the HOME link — behind the
+     toolbar that is actually on screen when the page opens. svh is the
+     viewport with the toolbars shown, which is the one the reader has, and it
+     does not resize as they slide away, so nothing reflows mid-scroll. vh
+     first, for anything too old to know svh. */
   height: 100vh;
+  height: 100svh;
   width: 100vw;
   display: flex;
   flex-direction: column;
@@ -935,4 +942,100 @@ article .block[data-tree="0000"]::after {
   /* The drawing is taller than the square it is shown in; `cover` fills the
      square from the top, which is where the head is. */
   background: url("icon.svg") no-repeat top center / cover;
+}
+
+/* ── Link cards ───────────────────────────────────────────────────────────── */
+
+/* A `cardlink` block in the vault — what Obsidian's card plugin wrote down
+   after fetching a page's Open Graph metadata — compiles to an anchor whose
+   parts tree-md classes and leaves unstyled, because what a card looks like
+   is this theme's business and not the note's. */
+
+.card-link {
+  display: flex;
+  align-items: stretch;
+  gap: var(--content-gap);
+  margin: var(--content-gap) 0;
+  border: 1px solid var(--secondary);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.card-link:hover {
+  background-color: rgba(0, 100, 255, .1);
+}
+
+/* The picture is decoration, not the point: it takes a fixed column and the
+   words take whatever is left, so a tall cover cannot set the card's height. */
+.card-link-image {
+  flex: 0 0 auto;
+  width: clamp(5rem, 25%, 10rem);
+  align-self: stretch;
+  object-fit: cover;
+}
+
+.card-link-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: calc(var(--content-gap) / 2) 0;
+  padding-inline-end: calc(var(--content-gap) / 2);
+  min-width: 0;
+}
+
+/* Without an image the words would sit against the border. */
+.card-link-image + .card-link-body {
+  padding-inline-start: 0;
+}
+
+.card-link-body:first-child {
+  padding-inline-start: calc(var(--content-gap) / 2);
+}
+
+.card-link-title {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/* Two lines of the page's own words. A description is a paragraph on some
+   sites and a sentence on others, and a card is neither place to read one. */
+.card-link-description {
+  color: var(--secondary);
+  font-size: 0.9em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.card-link-host {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--secondary);
+  font-size: 0.85em;
+  margin-top: auto;
+}
+
+.card-link-favicon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+}
+
+/* Side by side needs room for two columns; a phone has room for one. */
+@media (max-width: 30rem) {
+  .card-link {
+    flex-direction: column;
+  }
+
+  .card-link-image {
+    width: 100%;
+    height: clamp(6rem, 40vw, 10rem);
+  }
+
+  .card-link-image + .card-link-body {
+    padding-inline-start: calc(var(--content-gap) / 2);
+  }
 }

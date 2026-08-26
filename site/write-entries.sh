@@ -26,6 +26,7 @@ cd "$site_dir"
 
 python3 - "$site_dir" <<'PY'
 import html
+import json
 import os
 import re
 import sys
@@ -170,9 +171,25 @@ def document(page, canonical, target, page_title, og_type, share_title=None):
     # meets the instruction to go elsewhere.
     lines += ['<meta http-equiv="refresh" content="0;url=%s" />' % html.escape(target, quote=True)]
 
+    # A refresh of 0 is not instant: the browser finishes the document and
+    # paints what it has while the next one is on its way, so every link
+    # followed inside the site flashed this page's fallback link — an unstyled
+    # "私について — MIYA-LIS.NET" on white — before the tree arrived.
+    # location.replace() leaves during the head, before the body is parsed, so
+    # there is nothing to paint; it replaces rather than pushes, so the entry
+    # does not become a history stop the Back button has to walk through.
+    lines += ["<script>location.replace(%s)</script>" % json.dumps(target)]
+
     # Something to land on if the redirect does not happen — a reader with
-    # scripting or refreshes turned off would otherwise get a blank page.
+    # scripting or refreshes turned off would otherwise get a blank page. It
+    # is held back a second so that it appears only when it is the answer,
+    # rather than in front of every reader on the way past.
     lines += [
+        "<style>",
+        "body { margin: 0; padding: 2rem; font-family: sans-serif }",
+        "p { opacity: 0; animation: entry-fallback 0.2s linear 1s forwards }",
+        "@keyframes entry-fallback { from { opacity: 0 } to { opacity: 1 } }",
+        "</style>",
         "</head>",
         "<body>",
         '<p><a href="%s">%s</a></p>' % (html.escape(target, quote=True), html.escape(page_title)),

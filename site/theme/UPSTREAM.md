@@ -16,8 +16,8 @@ moves, move the other: `target` in [`../tree-md.toml`](../tree-md.toml).
 | `default.xsl` | byte-identical to upstream |
 | `links.xsl` | byte-identical to upstream |
 | `metadata.xsl` | byte-identical to upstream |
-| `tree.xsl` | +80 / −4 — hero section, persistent header, nav panel and overlay, the `fonts-biz-udmincho.css` link, `data-tree` on each block, the `hero.js` and hot-reload script tags |
-| `style.css` | +271 / −10 — Inria Sans `@font-face`, BIZ UDMincho as the body face, hero / nav-panel / persistent-header rules, the picture on tree 0000; upstream's `nav.nav` docs-button styling dropped |
+| `tree.xsl` | +83 / −4 — hero section, persistent header, nav panel and overlay, the `fonts-biz-udmincho.css` link, `data-tree` on each block, the `hero.js` and hot-reload script tags |
+| `style.css` | +409 / −10 — Inria Sans `@font-face`, BIZ UDMincho as the body face, hero / nav-panel / persistent-header rules, the picture on tree 0000, link cards; upstream's `nav.nav` docs-button styling dropped |
 
 Every file upstream ships is present here. `forester.js`, `javascript-source/`,
 `bundle-js.sh`, `fonts/`, `fonts-biz-udmincho.css`, `fetch-biz-udmincho.sh`,
