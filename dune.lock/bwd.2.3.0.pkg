@@ -10,4 +10,5 @@
 (source
  (fetch
   (url https://github.com/RedPRL/ocaml-bwd/archive/refs/tags/2.3.0.tar.gz)
-  (checksum md5=5ccdce66e6ccc2b2e11bab3c17fecc8c)))
+  (checksum
+   sha512=bb544e50bfa778c5ea763e2676df2b609090be28d976de1bd90ec62608defe9a866481b9e68baa38bb7148070250041c7d1f6ba11f3c5ec16c72d8d25a30b2bc)))

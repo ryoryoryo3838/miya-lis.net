@@ -31,4 +31,4 @@
   (url
    https://github.com/patricoferris/ocaml-multihash/releases/download/v0.1.0/multihash-0.1.0.tbz)
   (checksum
-   sha256=cb6887fa2e31dc06d95b15d678ca9a0fa258be4c32d06db9df0b7981bdb8a5f6)))
+   sha512=364de8a501ae3a10cb9d12693c985546bb2a43ee8e229d12e6a120b1a666c54af976f08727f39f6bea62728a7499b302bd8d4641da92ab0eeef419e77738be1a)))

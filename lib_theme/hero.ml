@@ -37,7 +37,7 @@ let setup_nav () =
   let overlay = get_element "nav-overlay" in
   let toggles =
     Dom.list_of_nodeList
-      (Dom_html.document##getElementsByClassName (Js.string "nav-toggle"))
+      (Dom_html.document##querySelectorAll (Js.string ".nav-toggle"))
   in
 
   let set_open open_ =
@@ -150,7 +150,7 @@ let setup_header_observer () =
   let hero =
     match
       Dom.list_of_nodeList
-        (Dom_html.document##getElementsByClassName (Js.string "hero-home"))
+        (Dom_html.document##querySelectorAll (Js.string ".hero-home"))
     with
     | home :: _ -> home
     | [] -> get_element "hero"

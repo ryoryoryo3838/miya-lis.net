@@ -1,0 +1,19 @@
+(version 0.4.1)
+
+(build
+ (all_platforms
+  ((action
+    (progn
+     (when %{pkg-self:dev} (run dune subst))
+     (run dune build -p %{pkg-self:name} -j %{jobs} @install))))))
+
+(depends
+ (all_platforms
+  (ocaml dune yojson fmt iter sexplib ppx_sexp_conv)))
+
+(source
+ (fetch
+  (url
+   https://github.com/johnyob/grace/releases/download/0.4.1/grace-0.4.1.tbz)
+  (checksum
+   sha512=2984b5a6284bf8bbd05419cf850c15c34bc19c19f0c8928b83cc1be1c0bfc84aafef6d992e7435c2f48ba361a6f3aab679abd02f0e6472361c8cec7d497bc405)))

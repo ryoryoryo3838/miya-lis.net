@@ -31,4 +31,4 @@
   (url
    https://github.com/anuragsoni/routes/releases/download/2.0.0/routes-2.0.0.tbz)
   (checksum
-   sha256=3b629d698c2b00e504c13b4cd783548063719dcf01580c9c3f5104b81eb0d688)))
+   sha512=428f88812f76c4d99198cea42c5d60a7924fd71acf87def6278544c391b9586a10ce2e34485b83b249f639c15776f30d0efd5bb145775eb49118ea8662005eb3)))

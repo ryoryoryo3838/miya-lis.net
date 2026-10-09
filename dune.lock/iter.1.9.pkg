@@ -1,0 +1,15 @@
+(version 1.9)
+
+(build
+ (all_platforms
+  ((action (run dune build @install -p %{pkg-self:name} -j %{jobs})))))
+
+(depends
+ (all_platforms
+  (ocaml dune base-bigarray)))
+
+(source
+ (fetch
+  (url https://github.com/c-cube/iter/releases/download/v1.9/iter-1.9.tbz)
+  (checksum
+   sha512=6c8e0fd57ebca9db642ef6105cb23353fb4f4aa2a37b49ceb61adc9881d0d42e0212326efddea183fae7e27313321680036c3932863004b1853b5fbf37c521de)))

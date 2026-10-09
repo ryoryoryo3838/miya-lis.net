@@ -31,4 +31,4 @@
   (url
    https://github.com/patricoferris/ocaml-multicodec/releases/download/v0.1.0/multicodec-0.1.0.tbz)
   (checksum
-   sha256=56aeb4ea2d2a8a473c4d75a83e119bf1151636cd3f469ea29f179810e40b22cb)))
+   sha512=c933b19b437dc87e455b4b7e94f29953bc8b52bcb10f49dec4b614d9261560e6d7ce82a5b577ab99278238550b38f2e480d048339e868b592e9cf337fdf5ba29)))
