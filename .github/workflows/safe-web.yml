@@ -1,0 +1,115 @@
+name: Safe public snapshot (build only, BLOCKED pending reviewed converter pin)
+
+on:
+  workflow_dispatch:
+    inputs:
+      CONTENT_REV:
+        description: Reviewed public snapshot full 40-character Git commit
+        required: true
+        type: string
+      SNAPSHOT_SHA256:
+        description: SHA-256 of exact manifest.json bytes (64 lowercase hex characters)
+        required: true
+        type: string
+      HOME_ID:
+        description: Existing approved public home ID (preserve its spelling)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: safe-web-build-only
+  cancel-in-progress: false
+
+jobs:
+  public-html:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CONTENT_REV: ${{ inputs.CONTENT_REV }}
+      SNAPSHOT_SHA256: ${{ inputs.SNAPSHOT_SHA256 }}
+      HOME_ID: ${{ inputs.HOME_ID }}
+    steps:
+      - name: Checkout trusted site tooling, never a vault
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+
+      - name: Validate immutable inputs and reviewed pins before content access
+        id: pins
+        run: >-
+          python3 scripts/safe-web.py ci-config
+          --pins .github/safe-web-pins.json
+          --content-rev "$CONTENT_REV"
+          --manifest-sha256 "$SNAPSHOT_SHA256"
+          --github-output "$GITHUB_OUTPUT"
+
+      # The checked-in null converter pin deliberately stops above with SW_PIN.
+      # Filling it requires a reviewed commit AND a verified locked build driver.
+      - name: Checkout only the preapproved public snapshot repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ryoryoryo3838/miya-lis-public
+          ref: ${{ inputs.CONTENT_REV }}
+          token: ${{ secrets.PUBLIC_CONTENT_TOKEN }}
+          path: approved-content
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+
+      - name: Checkout reviewed tree_of_md converter source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ryoryoryo3838/tree-md
+          ref: ${{ steps.pins.outputs.converter_revision }}
+          path: reviewed-converter
+          persist-credentials: false
+          fetch-depth: 1
+          submodules: false
+          lfs: false
+
+      - name: Install Nix without an Actions cache
+        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
+        with:
+          nix_path: nixpkgs=channel:nixos-24.11
+
+      - name: Realize the fixed native Forester 6 package
+        run: >-
+          nix build --option allow-import-from-derivation true
+          'git+https://tangled.org/jonmsterling.com/ocaml-forester?ref=forester-6.0-dev&rev=f8fb5f5d88923db36643cf9c20c662adff969c98#legacyPackages.x86_64-linux.forester'
+          --out-link "$RUNNER_TEMP/pinned-forester"
+
+      - name: Run synthetic schema, digest, path and leak gate regressions
+        run: python3 -m unittest discover -s test -p test_safe_web.py -v
+
+      - name: Fresh snapshot to tree_of_md to audited native HTML
+        run: >-
+          python3 scripts/safe-web.py ci-run
+          --pins .github/safe-web-pins.json
+          --content-rev "$CONTENT_REV"
+          --manifest-sha256 "$SNAPSHOT_SHA256"
+          --snapshot-repository approved-content
+          --converter-repository reviewed-converter
+          --forester "$RUNNER_TEMP/pinned-forester/bin/forester"
+          --home "$HOME_ID"
+          --out-dir "$RUNNER_TEMP/approved-public-html"
+
+      - name: Upload only the audited public web artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: approved-public-html
+          path: ${{ runner.temp }}/approved-public-html/
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 1
+          compression-level: 6
+
+      # No deploy, Pages, Wrangler invocation, vault checkout or cache step.
+      # Future deployment remains Workers + Wrangler 4 and a separate approval.
