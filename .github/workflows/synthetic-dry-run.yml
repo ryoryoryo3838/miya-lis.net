@@ -43,7 +43,7 @@ jobs:
           nix_path: nixpkgs=github:NixOS/nixpkgs/70ce234312134a463ba7728e94da2486a1d237ac
 
       - name: Compile trusted source-only site client with fixed Nix and existing dune.lock
-        run: python3 scripts/build-theme-client.py --site-root .
+        run: python3 scripts/build-theme-client.py --site-root . --diagnostics
 
       - name: Run synthetic gate and theme regressions
         run: |

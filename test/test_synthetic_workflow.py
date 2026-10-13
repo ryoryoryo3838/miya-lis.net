@@ -209,6 +209,19 @@ class SyntheticWorkflowTests(unittest.TestCase):
         self.assertIn('retention-days: 1', upload)
         self.assertIn('include-hidden-files: false', upload)
         self.assertIn('if-no-files-found: error', upload)
+    def test_client_diagnostics_optin_is_fixed_before_content_and_keeps_budgets(self):
+        text = WORKFLOW.read_text(encoding='utf-8')
+        client = text.split('      - name: Compile trusted source-only site client', 1)[1].split('\n      - name:', 1)[0]
+        self.assertIn('run: python3 scripts/build-theme-client.py --site-root . --diagnostics', client,
+                      'one hosted re-observation must explicitly opt into bounded stderr diagnostics')
+        self.assertEqual(text.count('--diagnostics'), 1)
+        self.assertIn('timeout-minutes: 40', text)
+        self.assertIn("PYTHONDONTWRITEBYTECODE: '1'", text)
+        self.assertLess(text.index('--diagnostics'), text.index('repository: ryoryoryo3838/miya-lis-public'))
+        self.assertNotIn('${{ secrets.', client)
+        self.assertNotIn('env:', client)
+        for forbidden in ['tee ', '2>&1', 'set -x', 'continue-on-error', 'always()']:
+            self.assertNotIn(forbidden, client)
 
 
 if __name__ == '__main__':
