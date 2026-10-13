@@ -1,0 +1,19 @@
+(version 0.1.0)
+
+(build
+ (all_platforms
+  ((action
+    (progn
+     (when %{pkg-self:dev} (run dune subst))
+     (run dune build -p %{pkg-self:name} -j %{jobs} @install))))))
+
+(depends
+ (all_platforms
+  (dune multibase multicodec multihash-digestif)))
+
+(source
+ (fetch
+  (url
+   https://github.com/patricoferris/ocaml-cid/releases/download/v0.1.0/cid-0.1.0.tbz)
+  (checksum
+   sha512=0db58f25180158ae0fd2b0539ab645f5cd316965d3c014abfc6f13d1ded88da348919713f3518316fbb04e4c25bc5978f24dfff4ea5bb2b92d3f0f55bd870c59)))

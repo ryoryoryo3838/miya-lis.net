@@ -1,0 +1,15 @@
+// wrangler.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "miya-lis-forest",
+  "compatibility_date": "2026-08-09",
+  "assets": {
+    "directory": "./dist",
+    // The forest is a real multi-page tree: every route is a directory with an
+    // index.html, and the default html_handling already maps /aboutme to
+    // /aboutme/index.html. Serving the root entry for anything missing would
+    // answer 200 with the hero page for every dead link, and there is no
+    // 404.html to point at, so misses stay misses.
+    "not_found_handling": "none"
+  }
+}

@@ -1,0 +1,14 @@
+(version 0.2.6)
+
+(build
+ (all_platforms ((action (run dune build -p %{pkg-self:name} -j %{jobs})))))
+
+(depends
+ (all_platforms
+  (dune base-unix ocaml)))
+
+(source
+ (fetch
+  (url https://github.com/ocaml-community/ISO8601.ml/archive/0.2.6.tar.gz)
+  (checksum
+   sha512=82b5cbbb636346e8d010ee569c0fad2f00bef31c3177cfee80fc02a081c5fcfb7880bf2670fe4f46423e3ae99370626c7efffc9d332cae5cbd6377c975517b3f)))

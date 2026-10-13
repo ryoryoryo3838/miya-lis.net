@@ -1,0 +1,40 @@
+output/
+/devbox.lock
+/site/theme/hero.js
+/legacy/site/theme/hero.js
+_build/
+/dist/
+.wrangler/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+/generated/.tree-md.lock
+/generated/.tree-md-transaction.json
+/generated/.tree-md-stage/
+# Retired generated/input paths: never recreate the old vault-copy build.
+/site/trees-md/
+/site/assets/vault/
+/site/generated/
+/site/generated/.tree-md.lock
+/site/generated/.tree-md-transaction.json
+/site/generated/.tree-md-stage/
+/legacy/site/trees-md/
+/legacy/site/assets/vault/
+/legacy/site/generated/
+# Local publication inputs and whole-note copies are not trusted site code.
+# Ignoring them is an accidental-add guard, not publication authorization or
+# removal of already-tracked archived data.
+/public-forest.json
+/manifest.json
+/snapshot/
+/snapshots/
+/public-snapshot/
+/public-snapshots/
+/content/
+/vault/
+/wiki/
+/wiki.miya-lis.net/
+/.omo/run-continuation
+/docs/superpowers/plans
+/tools/tree-md/dune.lock
+/.hermes/plans
