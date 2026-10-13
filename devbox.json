@@ -1,24 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.5/.schema/devbox.schema.json",
   "packages": [
-    "github:nixos/nixpkgs/nixpkgs-unstable#dune",
-    "pnpm@latest",
-    "cargo@latest",
-    "watchexec@latest",
-    "opam@latest"
-  ],
-  "shell": {
-    "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null",
-      "export DEVBOX_PROMPT_NAME='miya-lis.net(forester)'",
-      "source ~/.zshrc",
-      "export PATH=\"$HOME/.cargo/bin:$PWD/_build/default/forester/bin/forester:$PWD/_build/install/default/bin:$PATH\""
-    ],
-    "scripts": {
-      "test": [
-        "echo \"Error: no test specified\" && exit 1"
-      ],
-      "setup": "cargo install forest-server"
-    }
-  }
+    "github:NixOS/nixpkgs/70ce234312134a463ba7728e94da2486a1d237ac#dune"
+  ]
 }
