@@ -1,0 +1,72 @@
+{
+  "name": "Cloudflare read-only readiness",
+  "on": {
+    "push": {
+      "branches": ["ci/cloudflare-readiness-20261015-142216"]
+    }
+  },
+  "permissions": {"contents": "read"},
+  "concurrency": {
+    "group": "cloudflare-readiness-20261015-142216-${{ github.ref }}",
+    "cancel-in-progress": false
+  },
+  "jobs": {
+    "readiness": {
+      "if": "${{ github.repository == 'ryoryoryo3838/miya-lis.net' && github.event_name == 'push' && github.ref == 'refs/heads/ci/cloudflare-readiness-20261015-142216' && github.sha == github.event.after && !github.event.deleted }}",
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 5,
+      "env": {"PYTHONDONTWRITEBYTECODE": "1"},
+      "steps": [
+        {
+          "name": "Checkout only this reviewed source revision",
+          "uses": "actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "with": {
+            "repository": "ryoryoryo3838/miya-lis.net",
+            "ref": "${{ github.sha }}",
+            "persist-credentials": false,
+            "fetch-depth": 1,
+            "submodules": false,
+            "lfs": false
+          }
+        },
+        {
+          "name": "Offline source contract tests without credentials",
+          "shell": "bash",
+          "run": "python3 -I -B -m unittest discover -s test -p 'test_cloudflare_readiness.py' -v"
+        },
+        {
+          "name": "Read only fixed Cloudflare metadata",
+          "id": "probe",
+          "continue-on-error": true,
+          "timeout-minutes": 2,
+          "shell": "bash",
+          "env": {
+            "CLOUDFLARE_ACCOUNT_ID": "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}",
+            "CLOUDFLARE_API_TOKEN": "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          },
+          "run": "set +e\ntimeout --signal=TERM --kill-after=5s 75s python3 -I -B scripts/cloudflare-readiness.py\nstatus=$?\nif [ \"$status\" -eq 0 ] || [ \"$status\" -eq 2 ]; then\n  if ! { printf '%s\\n' 'artifact_ready=true' >> \"$GITHUB_OUTPUT\"; } 2>/dev/null; then\n    exit 3\n  fi\nfi\nexit \"$status\"\n"
+        },
+        {
+          "name": "Upload only sanitized readiness JSON",
+          "if": "${{ !cancelled() && steps.probe.outputs.artifact_ready == 'true' }}",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "cloudflare-readiness-${{ github.run_id }}-${{ github.run_attempt }}",
+            "path": "${{ runner.temp }}/cloudflare-readiness/result.json",
+            "if-no-files-found": "error",
+            "include-hidden-files": false,
+            "retention-days": 1,
+            "compression-level": 6,
+            "overwrite": false
+          }
+        },
+        {
+          "name": "Enforce fail-closed verdict after sanitized upload",
+          "if": "${{ !cancelled() && steps.probe.outcome != 'success' }}",
+          "shell": "bash",
+          "run": "exit 1"
+        }
+      ]
+    }
+  }
+}
