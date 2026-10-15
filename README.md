@@ -6,7 +6,7 @@
 
 The infrastructure audit observed default `miya` revision `34f440fe0c275c177add4ca678d4900450725641` and separately reviewed local site revision `555a616cfa4bb826fbfd2b60e0ee2b15d30c866e`. Both configurations name Worker **`miya-lis-forest`**, hostname **`miya-lis.net`**. These are repository facts, not an authenticated account/domain/deployment association. The old config is assets-only; the probe does not read code/settings/version resources/secret bindings to prove that model. Unsupported legacy responses stay partial.
 
-Never check out the default branch: its tree/history contains tracked local state and legacy/private content. The parent must prepare a reviewed parentless commit from the four-file allowlist, without object alternates, and independently authorize the first push. No Git, hosted execution or live Cloudflare probe has been performed for this candidate.
+Never check out the default branch: its tree/history contains tracked local state and legacy/private content. This four-file candidate derives from the reviewed parentless code revision `b5dfda97e1b4d1c5a3e8f3486699385d5044a584`; the parent owns independent review, cold Git-copy rehearsal, exact-tree verification and any separately authorized fast-forward publication. No Git, hosted execution or live Cloudflare probe has been performed for this diagnostic candidate.
 
 ## Exact read contract
 
@@ -28,7 +28,34 @@ Unknown schema, insufficient authorization, invalid IDs/traffic totals, missing 
 - ≤256 KiB/response, ≤1 MiB aggregate body bytes; bounded initial headers; strict UTF-8 JSON, duplicate/nonfinite rejection, no compression. Any `Transfer-Encoding` header (including empty, duplicate or mixed-case fields) is unsupported and refused as `RESPONSE_INVALID` **before body reads**, so chunk extensions/trailers cannot bypass those counters. Ordinary bounded JSON with `Content-Length` remains supported. This is a conservative framing compatibility limit, not evidence of invalid credentials. No redirects/error-body reads, retries, proxy/CA environment override, caller URLs or endpoint/file/token CLI options.
 - Socket/process timer ≤5 seconds/request; 60-second overall process/monotonic deadline. Workflow outer timeout 75 seconds plus bounded kill grace, job limit 5 minutes.
 - CLI accepts **no arguments**. Before credentials/network, exclusively reserve `$RUNNER_TEMP/cloudflare-readiness/result.json`: existing UID-owned, non-group/other-writable, symlink/dot-traversal-free temp base; fresh 0700 directory and 0600 regular file. Never delete/overwrite stale paths. Held descriptors, pre/post namespace/ownership/link/mode checks, fsync and byte readback guard the write. This is not an atomic-defense claim against a hostile concurrent same-UID process.
-- Stdout is one closed-shape sanitized JSON record. Exit **0** = metadata verified + durable report; **2** = refusal/partial + durable report; **3**/timeout = not uploadable, even if a partial file remains. The workflow uploads the **one exact sanitized file** only after 0/2 **and a successful artifact-marker append**; a failed `$GITHUB_OUTPUT` append exits 3 without a marker or raw path/error diagnostics. A successful append preserves probe exit 2; 1/3/124/137 never append a marker. The final gate fails the job for every nonzero probe-step verdict.
+- Stdout is one closed-shape sanitized JSON record. Exit **0** = metadata verified + durable report; **2** = refusal/partial + durable report; both require exact file/stdout byte consistency. Exit **3**/timeout is not uploadable: as in the baseline, a late guard-exit deadline or close failure can leave already-written file bytes different from the refusal stdout. The workflow uploads the **one exact sanitized file** only after 0/2 **and a successful artifact-marker append**; a failed `$GITHUB_OUTPUT` append exits 3 without a marker or raw path/error diagnostics. A successful append preserves probe exit 2; 1/3/124/137 never append a marker. The final gate fails the job for every nonzero probe-step verdict.
+
+## Opt-in closed observation (not a compatibility fix)
+
+Only the exact string `CF_READINESS_DIAGNOSTICS=1` enables observation. Without it, the probe retains the original nine report keys, stdout serialization, exit codes and fail-closed decisions. Only the workflow's probe step sets this flag; the offline-test step still has no credentials or diagnostic opt-in. No request, timeout, header/body/page/record cap, endpoint, schema, pagination, active-state/domain/rollback check or output/upload gate is relaxed or retried.
+
+When `probe` runs with that flag, the same report gains an optional `diagnostics` list (empty if no observation was available). Its closed record shape is:
+
+```json
+{"phase":"framing","event":"transfer_encoding","status":"200","transfer_encoding":"chunked"}
+```
+
+- Required `phase`: `http`, `headers`, `framing`, `body`, `json`, `schema`, `other`.
+- Required `event`, grouped by boundary:
+  - HTTP: `status`, `response_shape`.
+  - Headers: `http_parse`, `header_count`, `header_shape`, `header_budget`, `content_type_missing`, `content_type_other`, `content_encoding_unsupported`.
+  - Framing: `transfer_encoding`, `length_invalid`, `length_limit`.
+  - Body: `read_error`, `body_type`, `body_limit`, `total_body_limit`, `length_mismatch`.
+  - JSON: `utf8_invalid`, `json_invalid`, `object_required` (syntax, duplicate members, nonfinite values and BOM stay rejected, without keys/prefixes/errors).
+  - Schema: `api_unsuccessful`, `result_missing`, `schema_unsupported`; fallback: `other`.
+- Optional `status`: only `200`, `401`, `403`, `3xx`, `other`, `invalid`; omitted when no code was observed. Non-integer status values map to `invalid`, never a dynamic type name. A status class is not proof of usable credentials, complete metadata or production readiness.
+- Optional `transfer_encoding`: only `none`, `chunked`, `other`, `duplicate`, `empty`. Emitted only at the existing transfer-encoding refusal; other rejections do not imply absence. A duplicate transfer field is observed at the existing header-duplicate rejection. Any transfer field still refuses **before reading the body**. No raw header names/values are recorded. Content-type/encoding distinctions are the fixed rejection events above, not separate raw fields.
+
+Unknown classifications map to closed `other`/`invalid` constants. No response payload, prefix, arbitrary JSON key, exception text/repr, environment/argv/path/account/token/hash/secret length or dynamic type is recorded. Only the original sanitized report core can contain the already-validated metadata identifiers. These are per-invocation observations, not a global log or an alternative HTTP parser.
+
+Before final report attachment, an independent trusted snapshot accepts only exact built-in lists/dicts/strings, the fixed keys and enums above, and creates a new list and new record dicts. Collector-owned mutable containers are never attached directly. Invalid records are dropped, with independent ceilings of **64 records**, **16384 serialized ASCII bytes** including brackets/commas, and **256 bytes per record** (compact JSON); lower configured limits still apply. The list remains inside the unchanged 256 KiB whole-report limit. If a record call fails, the collector is disabled and all its state (including partial mutation) is discarded. Ordinary snapshot/diagnostic-serialization failure drops only the optional observations, leaving an empty list and preserving the primary verdict and the 0/2 durable/stdout contract. Genuine process deadlines still propagate and actual output I/O failures still refuse with exit 3; cleanup and default-off behavior are unchanged. These guarantees cover the scoped collector-replacement/append-then-raise fault fixtures, not unrestricted arbitrary code execution, and do not demonstrate a remote-response exploit against the ordinary collector. Missing observations prove nothing. Invocation/output failures can omit the optional field and remain non-uploadable under the original rules.
+
+The prior hosted run `38698902153` remains failed with sanitized `PARTIAL/RESPONSE_INVALID`; its actual HTTP/format subcause and real credential validity are **unknown**. Synthetic classification tests do not establish transfer framing, header, authorization or other causes for that run, and are not a readiness success. Independent review and parent-owned authorization/accounting are still required before any additional hosted execution; this implementation performs none.
 
 ## Workflow / offline tests
 

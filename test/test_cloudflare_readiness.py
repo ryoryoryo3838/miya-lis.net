@@ -497,10 +497,10 @@ class MemorySocket:
 
 class MeteredHTTPResponse(http.client.HTTPResponse):
     """Run the real HTTP parser without a socket or response-object replacement."""
-    def __init__(self, body, pairs=None, wire_body=None):
+    def __init__(self, body, pairs=None, wire_body=None, *, status=200):
         if pairs is None:
             pairs = [("Content-Type", "application/json"), ("Content-Length", str(len(body)))]
-        head = b"HTTP/1.1 200 OK\r\n" + b"".join(
+        head = ("HTTP/1.1 " + str(status) + " Synthetic\r\n").encode("ascii") + b"".join(
             (key + ": " + value + "\r\n").encode("ascii") for key, value in pairs) + b"\r\n"
         wire = head + (body if wire_body is None else wire_body)
         self.stream = MeteredBytes(wire)
@@ -513,6 +513,16 @@ class MeteredHTTPResponse(http.client.HTTPResponse):
     def read(self, amt=None):
         self.read_sizes.append(amt)
         return super().read(amt)
+
+
+class DeferredHTTPResponse(MeteredHTTPResponse):
+    """Parse malformed synthetic status/headers inside getresponse, not fixture setup."""
+    begin_on_get = True
+
+    def __init__(self, wire):
+        self.stream = MeteredBytes(wire)
+        self.read_sizes = []
+        http.client.HTTPResponse.__init__(self, MemorySocket(self.stream))
 
 
 def transfer_encoding_cases(body):
@@ -545,20 +555,26 @@ class HTTPSBoundaryTests(unittest.TestCase):
             def request(self, method, path, body=None, headers=None):
                 self.record["requests"].append((method, path, body, headers))
             def getresponse(self):
-                return responses.pop(0)
+                response = responses.pop(0)
+                if getattr(response, "begin_on_get", False):
+                    response.begin()
+                return response
             def close(self):
                 self.record["closed"] = True
         return Connection
 
-    def invoke_real_http(self, module, responses):
+    def invoke_real_http(self, module, responses, *, diagnostics=False):
         calls, out, err = [], io.StringIO(), io.StringIO()
         with tempfile.TemporaryDirectory(dir=os.environ["RUNNER_TEMP"]) as base:
             env = environment()
             env["RUNNER_TEMP"] = base
+            if diagnostics:
+                env["CF_READINESS_DIAGNOSTICS"] = "1"
             with patch.object(module.http.client, "HTTPSConnection", self.connection_factory(list(responses), calls)), \
                     redirect_stderr(err):
                 status = module.main(argv=[], environ=env, stdout=out)
             result = json.loads(out.getvalue())
+            self.assertIn(status, (0, 2), "synthetic HTTP outcome must retain a durable report")
             self.assertEqual(json.loads((Path(base) / "cloudflare-readiness/result.json").read_text()), result)
             self.assertEqual(err.getvalue(), "")
             for forbidden in (TOKEN, ACCOUNT, base, "Traceback"):
@@ -877,6 +893,560 @@ class FinalBoundaryTests(unittest.TestCase):
             self.assertNotIn(ACCOUNT, json.dumps(result))
 
 
+class DiagnosticTests(unittest.TestCase):
+    connection_factory = HTTPSBoundaryTests.connection_factory
+    invoke_real_http = HTTPSBoundaryTests.invoke_real_http
+
+    def invoke_collector_fault(self, module, collector, *, negative=False, before_write=None):
+        """Exercise the real main/file/stdout boundary, not just a collector method."""
+        calls, owned, out, err = [], [], io.StringIO(), io.StringIO()
+        bodies = [deployments_page(), versions_page(), domains_page(), deployments_page()]
+        responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in bodies]
+        if negative:
+            responses[0].close()
+            responses[0] = MeteredHTTPResponse(b"{}", [("Content-Type", "application/json"),
+                                                      ("Transfer-Encoding", "chunked")])
+        class TrackedOutput(module._Output):
+            def __init__(self, base):
+                super().__init__(base)
+                owned.append(self)
+            def write(self, result, deadline):
+                if before_write is not None:
+                    before_write(result)
+                return super().write(result, deadline)
+        try:
+            with tempfile.TemporaryDirectory(dir=os.environ["RUNNER_TEMP"]) as base:
+                env = {**environment(), "RUNNER_TEMP": base, "CF_READINESS_DIAGNOSTICS": "1"}
+                with patch.object(module, "_Diagnostics", collector), patch.object(module, "_Output", TrackedOutput), \
+                        patch.object(module.http.client, "HTTPSConnection", self.connection_factory(list(responses), calls)), \
+                        redirect_stderr(err):
+                    status = module.main(argv=[], environ=env, stdout=out)
+                result = json.loads(out.getvalue())
+                self.assertEqual((status, result["code"]),
+                                 (2, "RESPONSE_INVALID") if negative else (0, "METADATA_VERIFIED"))
+                target = Path(base) / "cloudflare-readiness/result.json"
+                self.assertEqual(target.read_bytes(), out.getvalue().encode("ascii"))
+                self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
+                self.assertEqual(stat.S_IMODE(target.parent.stat().st_mode), 0o700)
+                self.assertEqual(err.getvalue(), "")
+                for secret in (TOKEN, ACCOUNT, base, "PRIVATE_DIAGNOSTIC_CANARY", "Traceback"):
+                    self.assertNotIn(secret, out.getvalue())
+            self.assertTrue(all((x.file, x.directory, x.base) == (None, None, None) for x in owned))
+            self.assertTrue(all(call["closed"] for call in calls))
+            self.assertEqual(len(calls), 1 if negative else 4)
+            if negative:
+                self.assertEqual(responses[0].read_sizes, [])
+                self.assertEqual(responses[0].stream.consumed, responses[0].initial_bytes)
+            return result
+        finally:
+            for response in responses:
+                response.close()
+
+    def test_collector_records_need_closed_snapshot_at_durable_stdout_boundary(self):
+        module = load_probe(self)
+        for kind in ("poisoned", "nonserializable"):
+            for negative in (False, True):
+                with self.subTest(kind=kind, negative=negative):
+                    class Collector:
+                        def __init__(self):
+                            self.records = [{"phase": "http", "event": "status", "status": TOKEN,
+                                             "private_path": "PRIVATE_DIAGNOSTIC_CANARY"}] if kind == "poisoned" else [object()]
+                        def record(self, *_args, **_kwargs):
+                            pass
+                    result = self.invoke_collector_fault(module, Collector, negative=negative)
+                    self.assertEqual(result["diagnostics"], [])
+
+    def test_failed_record_mutation_is_discarded_and_collector_disabled(self):
+        module = load_probe(self)
+        for failure_type in (RuntimeError, lambda message: module._Failure("OUTPUT_REFUSED")):
+            for negative in (False, True):
+                with self.subTest(failure_type=failure_type, negative=negative):
+                    calls = []
+                    class Collector:
+                        def __init__(self):
+                            self.records = []
+                        def record(self, *_args, **_kwargs):
+                            calls.append(1)
+                            self.records.append({"phase": "http", "event": "status", "status": "200"})
+                            raise failure_type("PRIVATE_DIAGNOSTIC_CANARY")
+                    result = self.invoke_collector_fault(module, Collector, negative=negative)
+                    self.assertEqual(result["diagnostics"], [])
+                    self.assertEqual(len(calls), 1, "a failed collector must not be retried or trusted")
+
+    def test_snapshot_rejects_untrusted_types_keys_and_values_without_hooks(self):
+        module = load_probe(self)
+        hooks = []
+        class Trap:
+            def __repr__(self):
+                hooks.append("repr")
+                raise AssertionError("untrusted representation must not be called")
+            __str__ = __repr__
+        class ForgedList(list):
+            def __iter__(self):
+                hooks.append("iter")
+                raise AssertionError("list subclass must not be read")
+        class ForgedDict(dict):
+            def items(self):
+                hooks.append("items")
+                raise AssertionError("dict subclass must not be read")
+        class ForgedStr(str):
+            def __eq__(self, _other):
+                hooks.append("eq")
+                raise AssertionError("string subclass must not be compared")
+            __hash__ = str.__hash__
+        safe = {"phase": "http", "event": "status", "status": "200"}
+        cases = [object(), (safe,), ForgedList([safe]), [Trap()], [ForgedDict(safe)],
+                 [{"phase": "http", "event": "status", "status": Trap()}],
+                 [{"phase": ForgedStr("http"), "event": "status"}],
+                 [{ForgedStr("phase"): "http", "event": "status"}],
+                 [{"phase": "http", "event": "status", "unknown": "PRIVATE_DIAGNOSTIC_CANARY"}],
+                 [{"phase": "http", "event": "unknown"}], [{"phase": "http"}],
+                 [{"phase": "http", "event": "status", "status": 200}],
+                 [{"phase": "http", "event": "status", "transfer_encoding": "unknown"}],
+                 [{"phase": "http", "event": "status", "status": "x" * 20545}]]
+        for index, records in enumerate(cases):
+            for negative in (False, True):
+                with self.subTest(case=index, negative=negative):
+                    class Collector:
+                        def __init__(self):
+                            self.records = records
+                        def record(self, *_args, **_kwargs):
+                            pass
+                    result = self.invoke_collector_fault(module, Collector, negative=negative)
+                    self.assertEqual(result["diagnostics"], [])
+        self.assertEqual(hooks, [])
+
+    def test_snapshot_detaches_list_and_each_record_before_durable_write(self):
+        module = load_probe(self)
+        for negative in (False, True):
+            with self.subTest(negative=negative):
+                held = []
+                safe = {"phase": "http", "event": "status", "status": "200"}
+                class Collector:
+                    def __init__(self):
+                        self.records = [dict(safe)] * 2
+                        held.append(self)
+                    def record(self, *_args, **_kwargs):
+                        pass
+                def mutate_aliases(result):
+                    records = result["diagnostics"]
+                    self.assertIsNot(records, held[0].records)
+                    self.assertEqual(records, [safe, safe])
+                    self.assertIsNot(records[0], held[0].records[0])
+                    self.assertIsNot(records[0], records[1])
+                    held[0].records[0]["status"] = TOKEN
+                    held[0].records[0]["private_path"] = "PRIVATE_DIAGNOSTIC_CANARY"
+                    held[0].records.append(object())
+                result = self.invoke_collector_fault(module, Collector, negative=negative, before_write=mutate_aliases)
+                self.assertEqual(result["diagnostics"], [safe, safe])
+
+    def test_snapshot_caps_do_not_trust_collector_or_expanded_limits(self):
+        module = load_probe(self)
+        safe = {"phase": "http", "event": "status", "status": "200"}
+        class Collector:
+            def __init__(self):
+                self.records = [safe] * 65
+            def record(self, *_args, **_kwargs):
+                pass
+        def encode(value):
+            return json.dumps(value, sort_keys=True, separators=(",", ":")).encode("ascii")
+        for changes, count in [({"MAX_DIAGNOSTIC_RECORDS": 1000, "MAX_DIAGNOSTIC_BYTES": 100000,
+                                "MAX_DIAGNOSTIC_RECORD_BYTES": 100000}, 64),
+                               ({"MAX_DIAGNOSTIC_RECORDS": 1}, 1), ({"MAX_DIAGNOSTIC_BYTES": 2}, 0),
+                               ({"MAX_DIAGNOSTIC_RECORD_BYTES": 1}, 0), ({"MAX_DIAGNOSTIC_BYTES": 100}, 2)]:
+            for negative in (False, True):
+                with self.subTest(changes=changes, negative=negative), patch.multiple(module, **changes):
+                    result = self.invoke_collector_fault(module, Collector, negative=negative)
+                    self.assertEqual(len(result["diagnostics"]), count)
+                    self.assertLessEqual(len(encode(result["diagnostics"])), 16384)
+                    self.assertTrue(all(len(encode(record)) <= 256 for record in result["diagnostics"]))
+
+    def test_snapshot_attachment_and_serialization_faults_drop_only_observations(self):
+        module = load_probe(self)
+        safe = {"phase": "http", "event": "status", "status": "200"}
+        dumps = json.dumps
+        for site in ("attachment", "serialization"):
+            for error in (OSError("PRIVATE_DIAGNOSTIC_CANARY"), module._Failure("OUTPUT_REFUSED")):
+                for negative in (False, True):
+                    with self.subTest(site=site, error_type=type(error), negative=negative):
+                        encoded = []
+                        class Collector:
+                            @property
+                            def records(self):
+                                if site == "attachment":
+                                    raise error
+                                return [safe, safe]
+                            def record(self, *_args, **_kwargs):
+                                pass
+                        def failing_dumps(value, *args, **kwargs):
+                            if type(value) is dict and value.get("phase") == "http":
+                                encoded.append(1)
+                                if len(encoded) == 2:
+                                    raise error
+                            return dumps(value, *args, **kwargs)
+                        with patch.object(module.json, "dumps", failing_dumps):
+                            result = self.invoke_collector_fault(module, Collector, negative=negative)
+                        self.assertEqual(result["diagnostics"], [])
+                        self.assertEqual(len(encoded), 2 if site == "serialization" else 0)
+
+    def test_real_process_alarm_in_snapshot_or_final_encoding_is_not_observation_failure(self):
+        module = load_probe(self)
+        dumps = json.dumps
+        for site in ("attachment", "snapshot-encoding", "final-encoding"):
+            with self.subTest(site=site), tempfile.TemporaryDirectory(dir=os.environ["RUNNER_TEMP"]) as base:
+                owned, entered = [], []
+                class Collector:
+                    @property
+                    def records(self):
+                        if site == "attachment":
+                            entered.append(site)
+                            time.sleep(0.5)
+                        return [{"phase": "http", "event": "status", "status": "200"}]
+                    def record(self, *_args, **_kwargs):
+                        pass
+                class TrackedOutput(module._Output):
+                    def __init__(self, path):
+                        super().__init__(path)
+                        owned.append(self)
+                def slow_dumps(value, *args, **kwargs):
+                    if type(value) is dict and ((site == "snapshot-encoding" and "phase" in value) or
+                                               (site == "final-encoding" and "diagnostics" in value)):
+                        entered.append(site)
+                        time.sleep(0.5)
+                    return dumps(value, *args, **kwargs)
+                env = {**environment(), "RUNNER_TEMP": base, "CF_READINESS_DIAGNOSTICS": "1"}
+                out, err = io.StringIO(), io.StringIO()
+                started = time.monotonic()
+                with patch.object(module, "TOTAL_SECONDS", 0.03), patch.object(module, "_Diagnostics", Collector), \
+                        patch.object(module, "_Output", TrackedOutput), patch.object(module.json, "dumps", slow_dumps), \
+                        redirect_stderr(err):
+                    status = module.main(argv=[], environ=env, transport=happy_transport(), stdout=out)
+                self.assertEqual((status, json.loads(out.getvalue())["code"]), (3, "DEADLINE_EXCEEDED"))
+                self.assertEqual(entered, [site])
+                self.assertLess(time.monotonic() - started, 0.4)
+                self.assertEqual(err.getvalue(), "")
+                self.assertNotIn(TOKEN, out.getvalue())
+                self.assertTrue(all((x.file, x.directory, x.base) == (None, None, None) for x in owned))
+
+    def test_real_http_auth_statuses_are_observed_without_error_body_reads(self):
+        module = load_probe(self)
+        for status_code, status_class, code in [(401, "401", "AUTH_UNAUTHORIZED"),
+                                                (403, "403", "AUTH_FORBIDDEN"),
+                                                (307, "3xx", "REDIRECT_REFUSED"),
+                                                (429, "other", "HTTP_REFUSED")]:
+            with self.subTest(status_class=status_class):
+                response = MeteredHTTPResponse((TOKEN + ACCOUNT).encode(),
+                                               [("Location", "https://" + TOKEN + ".invalid/"),
+                                                ("Content-Type", TOKEN)], status=status_code)
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, code))
+                self.assertEqual(result["diagnostics"], [{"phase": "http", "event": "status", "status": status_class}])
+                self.assertEqual(response.read_sizes, [])
+                self.assertEqual(response.stream.consumed, response.initial_bytes)
+                self.assertEqual(len(calls), 1)
+
+    def test_optin_preserves_valid_looking_secret_identifier_refusal(self):
+        module = load_probe(self)
+        for secret in (D1, V1, DOMAIN):
+            with self.subTest(secret_kind="synthetic-identifier"):
+                env = {**environment(), "CLOUDFLARE_API_TOKEN": secret, "CF_READINESS_DIAGNOSTICS": "1"}
+                result = module.probe(env, transport=happy_transport())
+                self.assertEqual(result["code"], "IDENTIFIER_INVALID")
+                self.assertNotIn(secret, json.dumps(result))
+                self.assertTrue(all(record == {"phase": "http", "event": "status", "status": "200"}
+                                    for record in result["diagnostics"]))
+
+    def test_process_timer_is_not_swallowed_inside_observation(self):
+        module = load_probe(self)
+        module.TOTAL_SECONDS = 0.02
+        with tempfile.TemporaryDirectory(dir=os.environ["RUNNER_TEMP"]) as base:
+            env = {**environment(), "RUNNER_TEMP": base, "CF_READINESS_DIAGNOSTICS": "1"}
+            out = io.StringIO()
+            started = time.monotonic()
+            with patch.object(module._Diagnostics, "record", side_effect=lambda *_a, **_k: time.sleep(0.5)):
+                status = module.main(argv=[], environ=env, transport=happy_transport(), stdout=out)
+            self.assertEqual((status, json.loads(out.getvalue())["code"]), (3, "DEADLINE_EXCEEDED"))
+            self.assertLess(time.monotonic() - started, 0.4)
+            self.assertNotIn(TOKEN, out.getvalue())
+
+    def test_classifier_sink_uses_only_typed_closed_classes_without_source_reads(self):
+        import ast
+        module = load_probe(self)
+        tree = ast.parse(SCRIPT.read_text())
+        boundaries = [node for node in tree.body if isinstance(node, (ast.ClassDef, ast.FunctionDef))
+                      and node.name in ("_Diagnostics", "_observe", "_status_class")]
+        self.assertEqual(len(boundaries), 3)
+        for boundary in boundaries:
+            for node in ast.walk(boundary):
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                    self.assertNotIn(node.func.id, {"str", "repr", "print", "open", "eval", "exec", "getattr"})
+                if isinstance(node, ast.Attribute):
+                    self.assertNotIn(node.attr, {"environ", "argv", "__name__", "__class__", "getenv"})
+        unknown = object()
+        sink = module._Diagnostics()
+        sink.record(unknown, unknown, status=unknown, transfer_encoding=unknown)
+        self.assertEqual(sink.records, [{"phase": "other", "event": "other", "status": "invalid",
+                                         "transfer_encoding": "other"}])
+        for transfer in ("none", "chunked", "other", "duplicate", "empty"):
+            sink.record("framing", "transfer_encoding", status="200", transfer_encoding=transfer)
+            self.assertEqual(sink.records[-1]["transfer_encoding"], transfer)
+        self.assertEqual(module.MAX_RESPONSE_BYTES, 256 * 1024)
+        self.assertEqual(module.MAX_TOTAL_BYTES, 1024 * 1024)
+        self.assertEqual((module.MAX_REQUESTS, module.MAX_PAGES, module.TOTAL_SECONDS), (8, 5, 60))
+
+    def test_injected_boundary_shapes_and_total_body_budget_are_closed(self):
+        module = load_probe(self)
+        env = {**environment(), "CF_READINESS_DIAGNOSTICS": "1"}
+        class PrivateDynamicType:
+            def __repr__(self):
+                raise AssertionError("diagnostics must not inspect dynamic types or representations")
+            __str__ = __repr__
+        for response, expected in [((200,), {"phase": "http", "event": "response_shape"}),
+                                   ((200, None, b"{}"), {"phase": "headers", "event": "header_shape", "status": "200"}),
+                                   ((200, {"Content-Type": "application/json"}, PrivateDynamicType()),
+                                    {"phase": "body", "event": "body_type", "status": "200"})]:
+            with self.subTest(event=expected["event"]):
+                result = module.probe(env, transport=lambda *_args: response)
+                self.assertEqual(result["code"], "RESPONSE_INVALID")
+                self.assertIn(expected, result["diagnostics"])
+                self.assertNotIn("PrivateDynamicType", json.dumps(result))
+        first, second = history_two_pages()
+        bodies = [first, second, versions_page(), domains_page(), first]
+        for body in bodies:
+            body[TOKEN] = "x" * 240000
+        transport = ScriptedTransport(*bodies)
+        result = module.probe(env, transport=transport)
+        self.assertEqual(result["code"], "TOTAL_RESPONSE_LIMIT")
+        self.assertIn({"phase": "body", "event": "total_body_limit", "status": "200"}, result["diagnostics"])
+        self.assertEqual(len(transport.calls), 5)
+        self.assertNotIn(TOKEN, json.dumps(result))
+
+    def test_parser_and_body_read_failures_have_only_closed_boundary_events(self):
+        module = load_probe(self)
+        wires = [("status", ("HTTP/1.1 " + TOKEN + "\r\n\r\n").encode()),
+                 ("line", b"HTTP/1.1 200 OK\r\nX-" + TOKEN.encode() + b": " + b"x" * 65536 + b"\r\n\r\n"),
+                 ("count", b"HTTP/1.1 200 OK\r\n" + b"X-Canary: x\r\n" * 101 + b"\r\n")]
+        for name, wire in wires:
+            with self.subTest(parser=name):
+                response = DeferredHTTPResponse(wire)
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "TRANSPORT_REFUSED"))
+                self.assertEqual(result["diagnostics"], [{"phase": "headers", "event": "http_parse"}])
+                self.assertEqual(response.read_sizes, [])
+                self.assertEqual(len(calls), 1)
+        response = MeteredHTTPResponse(b"{}")
+        with patch.object(response.stream, "read", side_effect=OSError(TOKEN + ACCOUNT + "/READ_PATH")):
+            status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+        self.assertEqual((status, result["code"]), (2, "TRANSPORT_REFUSED"))
+        self.assertEqual(result["diagnostics"], [{"phase": "body", "event": "read_error", "status": "200"}])
+        self.assertEqual(response.read_sizes, [module.MAX_RESPONSE_BYTES + 1])
+        self.assertEqual(len(calls), 1)
+
+    def test_observer_failures_preserve_primary_verdict_and_owned_output_cleanup(self):
+        module = load_probe(self)
+        owned = []
+        class TrackedOutput(module._Output):
+            def __init__(self, base):
+                super().__init__(base)
+                owned.append(self)
+        collector_type = module._Diagnostics
+        for failure_site in ("init", "record"):
+            for negative in (True, False):
+                with self.subTest(site=failure_site, negative=negative):
+                    failure = RuntimeError(TOKEN + ACCOUNT + "/PRIVATE_EXCEPTION_PATH")
+                    fault = patch.object(module, "_Diagnostics", side_effect=failure) if failure_site == "init" else \
+                        patch.object(collector_type, "record", side_effect=failure)
+                    bodies = [deployments_page(), versions_page(), domains_page(), deployments_page()]
+                    responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in bodies]
+                    if negative:
+                        responses[0].close()
+                        responses[0] = MeteredHTTPResponse(b"{}", [("Content-Type", "application/json"),
+                                                                  ("Transfer-Encoding", "chunked")])
+                    with fault, patch.object(module, "_Output", TrackedOutput):
+                        status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+                    self.assertEqual((status, result["code"]),
+                                     (2, "RESPONSE_INVALID") if negative else (0, "METADATA_VERIFIED"))
+                    self.assertEqual(result["diagnostics"], [])
+                    self.assertEqual(len(calls), 1 if negative else 4)
+                    if negative:
+                        self.assertEqual(responses[0].read_sizes, [])
+        for output in owned:
+            self.assertEqual((output.file, output.directory, output.base), (None, None, None))
+        with tempfile.TemporaryDirectory(dir=os.environ["RUNNER_TEMP"]) as base:
+            out, err = io.StringIO(), io.StringIO()
+            env = {**environment(), "RUNNER_TEMP": base, "CF_READINESS_DIAGNOSTICS": "1"}
+            with patch.object(collector_type, "record", side_effect=OSError(TOKEN)), \
+                    patch.object(module, "_Output", TrackedOutput), \
+                    patch.object(module.os, "fsync", side_effect=OSError(TOKEN + "/PRIVATE_IO_PATH")), redirect_stderr(err):
+                status = module.main(argv=[], environ=env, transport=happy_transport(), stdout=out)
+            self.assertEqual((status, json.loads(out.getvalue())["code"]), (3, "OUTPUT_REFUSED"))
+            self.assertEqual((owned[-1].file, owned[-1].directory, owned[-1].base), (None, None, None))
+            self.assertEqual(err.getvalue(), "")
+            self.assertNotIn(TOKEN, out.getvalue())
+            self.assertNotIn(base, out.getvalue())
+
+    def test_diagnostic_limits_drop_observations_without_changing_verdict_or_io(self):
+        module = load_probe(self)
+        collector = module._Diagnostics()
+        for _ in range(100):
+            collector.record(TOKEN, ACCOUNT, status=TOKEN, transfer_encoding=TOKEN)
+        self.assertEqual(len(collector.records), 64, "diagnostics must stop at the closed record cap")
+        self.assertEqual(collector.records, [{"phase": "other", "event": "other", "status": "invalid",
+                                              "transfer_encoding": "other"}] * 64)
+        def encode(value):
+            return json.dumps(value, sort_keys=True, separators=(",", ":")).encode("ascii")
+        self.assertLessEqual(len(encode(collector.records)), 16384)
+        self.assertTrue(all(len(encode(record)) <= 256 for record in collector.records))
+        with patch.object(module, "MAX_DIAGNOSTIC_BYTES", 2, create=True):
+            limited = module._Diagnostics()
+            limited.record("http", "status", status="200")
+            self.assertEqual(limited.records, [])
+        body = json.dumps(deployments_page()).encode()
+        for field, limit in (("MAX_DIAGNOSTIC_RECORDS", 0), ("MAX_DIAGNOSTIC_BYTES", 2),
+                             ("MAX_DIAGNOSTIC_RECORD_BYTES", 1)):
+            with self.subTest(budget=field), patch.object(module, field, limit, create=True):
+                response = MeteredHTTPResponse(body, [("Content-Type", "application/json"),
+                                                      ("Transfer-Encoding", "chunked")])
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+                self.assertEqual(result["diagnostics"], [])
+                self.assertEqual(response.read_sizes, [])
+                self.assertEqual(len(calls), 1)
+                clean = module.probe({**environment(), "CF_READINESS_DIAGNOSTICS": "1"}, transport=happy_transport())
+                self.assertEqual((clean["status"], clean["diagnostics"]), ("METADATA_VERIFIED", []))
+        fresh = module.probe({**environment(), "CF_READINESS_DIAGNOSTICS": "1"}, transport=happy_transport())
+        self.assertEqual(len(fresh["diagnostics"]), 4)
+        self.assertIsNot(fresh["diagnostics"], collector.records)
+        with patch.object(module._Diagnostics, "record", side_effect=AssertionError("default observer must be unused")):
+            self.assertEqual(module.probe(environment(), transport=happy_transport())["status"], "METADATA_VERIFIED")
+
+    def test_real_response_format_rejections_are_phase_classified_without_payloads(self):
+        module = load_probe(self)
+        json_headers = [("Content-Type", "application/json")]
+        duplicate = ('{"success":true,"result":{},"' + TOKEN + '":0,"' + TOKEN + '":1}').encode()
+        cases = [("utf8", b"\xff", None, "json", "utf8_invalid", "RESPONSE_INVALID"),
+                 ("malformed", ("{" + TOKEN).encode(), None, "json", "json_invalid", "RESPONSE_INVALID"),
+                 ("duplicate", duplicate, None, "json", "json_invalid", "RESPONSE_INVALID"),
+                 ("nonfinite", b'{"success":true,"result":NaN}', None, "json", "json_invalid", "RESPONSE_INVALID"),
+                 ("bom", b'\xef\xbb\xbf{"success":true,"result":{}}', None, "json", "json_invalid", "RESPONSE_INVALID"),
+                 ("root", b"[]", None, "json", "object_required", "RESPONSE_INVALID"),
+                 ("api", json.dumps({"success": False, "errors": [{TOKEN: ACCOUNT}]}).encode(), None,
+                  "schema", "api_unsuccessful", "API_UNSUCCESSFUL"),
+                 ("result", json.dumps({"success": True, TOKEN: ACCOUNT}).encode(), None,
+                  "schema", "result_missing", "SCHEMA_UNSUPPORTED"),
+                 ("metadata", json.dumps(envelope([])).encode(), None,
+                  "schema", "schema_unsupported", "SCHEMA_UNSUPPORTED"),
+                 ("length", b"{}", json_headers + [("Content-Length", "3")],
+                  "body", "length_mismatch", "RESPONSE_INVALID"),
+                 ("body-large", b"x" * (module.MAX_RESPONSE_BYTES + 1), json_headers,
+                  "body", "body_limit", "RESPONSE_TOO_LARGE"),
+                 ("header-controls", b"{}", json_headers + [("X-" + TOKEN, "value\r\n " + TOKEN)],
+                  "headers", "header_shape", "RESPONSE_INVALID")]
+        for name, body, pairs, phase, event, code in cases:
+            with self.subTest(case=name):
+                response = MeteredHTTPResponse(body, pairs)
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, code))
+                observation = {"phase": phase, "event": event}
+                if event != "schema_unsupported":
+                    observation["status"] = "200"
+                self.assertIn(observation, result["diagnostics"])
+                self.assertEqual(response.read_sizes, [module.MAX_RESPONSE_BYTES + 1])
+                self.assertEqual(len(calls), 1)
+                for forbidden in (TOKEN, ACCOUNT, "Content-Type", "X-", '"success"', '"errors"', "NaN"):
+                    self.assertNotIn(forbidden, json.dumps(result["diagnostics"]))
+
+    def test_initial_http_rejections_identify_closed_header_or_framing_category(self):
+        module = load_probe(self)
+        body = ("{" + TOKEN + ACCOUNT).encode()
+        content_type = [("Content-Type", "application/json")]
+        cases = [("missing-type", [], "headers", "content_type_missing", "RESPONSE_INVALID"),
+                 ("other-type", [("Content-Type", TOKEN)], "headers", "content_type_other", "RESPONSE_INVALID"),
+                 ("encoding", content_type + [("Content-Encoding", TOKEN)], "headers",
+                  "content_encoding_unsupported", "RESPONSE_INVALID"),
+                 ("duplicate", content_type + [("X-" + TOKEN, ACCOUNT), ("x-" + TOKEN, ACCOUNT)],
+                  "headers", "header_shape", "RESPONSE_INVALID"),
+                 ("count", content_type + [("X-" + str(n), "x") for n in range(40)],
+                  "headers", "header_count", "RESPONSE_INVALID"),
+                 ("aggregate", content_type + [("X-" + str(n), "x" * 3000) for n in range(6)],
+                  "headers", "header_budget", "RESPONSE_INVALID"),
+                 ("single", content_type + [("X-Long", "x" * 4097)],
+                  "headers", "header_budget", "RESPONSE_INVALID"),
+                 ("length-invalid", content_type + [("Content-Length", TOKEN)],
+                  "framing", "length_invalid", "RESPONSE_INVALID"),
+                 ("length-large", content_type + [("Content-Length", str(module.MAX_RESPONSE_BYTES + 1))],
+                  "framing", "length_limit", "RESPONSE_TOO_LARGE")]
+        for name, pairs, phase, event, code in cases:
+            with self.subTest(case=name):
+                response = MeteredHTTPResponse(body, pairs)
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, code))
+                self.assertEqual(result["diagnostics"], [{"phase": phase, "event": event, "status": "200"}])
+                self.assertEqual(response.read_sizes, [])
+                self.assertEqual(response.stream.consumed, response.initial_bytes)
+                self.assertEqual(len(calls), 1)
+                self.assertNotIn("X-", json.dumps(result["diagnostics"]))
+
+    def test_transfer_classification_precedes_real_http_body_reads(self):
+        module = load_probe(self)
+        body = json.dumps(deployments_page()).encode()
+        classes = {"oversized-trailers": "chunked", "oversized-chunk-extension": "chunked",
+                   "bounded-chunked": "chunked", "mixed-case": "chunked", "empty": "empty",
+                   "identity": "other", "gzip": "other", "duplicate": "duplicate",
+                   "comma-separated": "other", "with-content-length": "chunked", "canary": "other"}
+        cases = transfer_encoding_cases(body) + [("canary", [("Transfer-Encoding", TOKEN)], body)]
+        for name, pairs, wire_body in cases:
+            with self.subTest(framing=name):
+                response = MeteredHTTPResponse(body, [("Content-Type", "application/json"), *pairs], wire_body)
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["status"], result["code"]), (2, "PARTIAL", "RESPONSE_INVALID"))
+                self.assertEqual(result["diagnostics"], [{
+                    "phase": "headers" if name == "duplicate" else "framing",
+                    "event": "header_shape" if name == "duplicate" else "transfer_encoding",
+                    "status": "200", "transfer_encoding": classes[name]}])
+                self.assertEqual(response.read_sizes, [])
+                self.assertEqual(response.stream.consumed, response.initial_bytes)
+                self.assertEqual(len(calls), 1)
+        responses = [MeteredHTTPResponse(json.dumps(value).encode()) for value in
+                     (deployments_page(), versions_page(), domains_page(), deployments_page())]
+        status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+        self.assertEqual((status, result["status"]), (0, "METADATA_VERIFIED"))
+        self.assertEqual(result["diagnostics"], [{"phase": "http", "event": "status", "status": "200"}] * 4)
+        self.assertEqual(len(calls), 4)
+        for response in responses:
+            self.assertEqual(response.read_sizes, [module.MAX_RESPONSE_BYTES + 1])
+            self.assertEqual(response.stream.consumed, response.wire_bytes)
+
+    def test_optin_is_exact_and_observes_only_closed_http_status_classes(self):
+        module = load_probe(self)
+        baseline = module.probe(environment(), transport=happy_transport())
+        self.assertEqual(len(baseline), 9)
+        for flag in (None, "", "0", "true", 1, True):
+            env = {**environment(), "CF_READINESS_DIAGNOSTICS": flag}
+            self.assertEqual(module.probe(env, transport=happy_transport()), baseline)
+        env = {**environment(), "CF_READINESS_DIAGNOSTICS": "1"}
+        for status, expected, code in [(401, "401", "AUTH_UNAUTHORIZED"),
+                                       (403, "403", "AUTH_FORBIDDEN"),
+                                       (302, "3xx", "REDIRECT_REFUSED"),
+                                       (500, "other", "HTTP_REFUSED"),
+                                       (TOKEN, "invalid", "RESPONSE_INVALID"),
+                                       (True, "invalid", "RESPONSE_INVALID")]:
+            with self.subTest(status_class=expected):
+                transport = ScriptedTransport((status, {TOKEN: ACCOUNT}, TOKEN.encode()))
+                result = module.probe(env, transport=transport)
+                self.assertEqual((result["status"], result["code"]), ("PARTIAL", code))
+                self.assertIn("diagnostics", result, "explicit opt-in must classify the HTTP boundary")
+                self.assertEqual(result["diagnostics"], [{"phase": "http", "event": "status", "status": expected}])
+                self.assertEqual(len(transport.calls), 1)
+                for forbidden in (TOKEN, ACCOUNT, "Traceback"):
+                    self.assertNotIn(forbidden, json.dumps(result))
+        result = module.probe(env, transport=happy_transport())
+        self.assertEqual(result.pop("diagnostics", None),
+                         [{"phase": "http", "event": "status", "status": "200"}] * 4)
+        self.assertEqual(result, baseline)
+        self.assertEqual(module.probe({"CF_READINESS_DIAGNOSTICS": "1"})["diagnostics"], [])
+
+
 class WorkflowTests(unittest.TestCase):
     def workflow(self):
         path = ROOT / ".github/workflows/cloudflare-readiness.yml"
@@ -907,7 +1477,8 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(steps[1]["run"], "python3 -I -B -m unittest discover -s test -p 'test_cloudflare_readiness.py' -v")
         self.assertFalse(any("env" in s for s in steps if s is not steps[2]))
         self.assertEqual(steps[2]["env"], {"CLOUDFLARE_ACCOUNT_ID": "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}",
-                                         "CLOUDFLARE_API_TOKEN": "${{ secrets.CLOUDFLARE_API_TOKEN }}"})
+                                         "CLOUDFLARE_API_TOKEN": "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+                                         "CF_READINESS_DIAGNOSTICS": "1"})
         self.assertEqual(steps[2]["id"], "probe")
         self.assertEqual(steps[2]["continue-on-error"], True)
         self.assertEqual(steps[2]["timeout-minutes"], 2)
@@ -1010,7 +1581,8 @@ class WorkflowTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text()
         for required in ("METADATA_VERIFIED", "NOT_GRANTED", "34f440fe0c275c177add4ca678d4900450725641",
                          "555a616cfa4bb826fbfd2b60e0ee2b15d30c866e", "DOMAIN_NOT_FOUND",
-                         "PAGINATION_UNVERIFIED", "NOT_TESTED"):
+                         "PAGINATION_UNVERIFIED", "NOT_TESTED", "CF_READINESS_DIAGNOSTICS=1",
+                         "16384", "256 bytes", "diagnostics", "http_parse", "schema_unsupported"):
             self.assertIn(required, readme)
 
 

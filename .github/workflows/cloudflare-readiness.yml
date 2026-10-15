@@ -42,7 +42,8 @@
           "shell": "bash",
           "env": {
             "CLOUDFLARE_ACCOUNT_ID": "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}",
-            "CLOUDFLARE_API_TOKEN": "${{ secrets.CLOUDFLARE_API_TOKEN }}"
+            "CLOUDFLARE_API_TOKEN": "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+            "CF_READINESS_DIAGNOSTICS": "1"
           },
           "run": "set +e\ntimeout --signal=TERM --kill-after=5s 75s python3 -I -B scripts/cloudflare-readiness.py\nstatus=$?\nif [ \"$status\" -eq 0 ] || [ \"$status\" -eq 2 ]; then\n  if ! { printf '%s\\n' 'artifact_ready=true' >> \"$GITHUB_OUTPUT\"; } 2>/dev/null; then\n    exit 3\n  fi\nfi\nexit \"$status\"\n"
         },
