@@ -198,7 +198,8 @@ def _https_get(path, authorization, timeout, *, diagnostics=None):
                 raise _Failure("RESPONSE_INVALID")
             headers, header_size = {}, 0
             for key, value in pairs:
-                if not isinstance(key, str) or not isinstance(value, str) or key.lower() in headers:
+                if (not isinstance(key, str) or not isinstance(value, str)
+                        or (key.lower() in headers and key.lower() != "set-cookie")):
                     if isinstance(key, str) and key.lower() == "transfer-encoding" and key.lower() in headers:
                         _observe(diagnostics, "headers", "header_shape", status="200", transfer_encoding="duplicate")
                     else:
@@ -208,6 +209,12 @@ def _https_get(path, authorization, timeout, *, diagnostics=None):
                 if header_size > 16384 or len(value) > 4096:
                     _observe(diagnostics, "headers", "header_budget", status="200")
                     raise _Failure("RESPONSE_INVALID")
+                if key.lower() in headers:
+                    # Only opaque Set-Cookie repeats reach here; count and validate each before discarding.
+                    if any(ord(c) < 32 or ord(c) == 127 for c in value):
+                        _observe(diagnostics, "headers", "header_shape", status="200")
+                        raise _Failure("RESPONSE_INVALID")
+                    continue  # Keep the first value for the unchanged second-stage validator, never combine.
                 headers[key.lower()] = value
             # Chunk extensions/trailers bypass decoded-body and initial-header counters.
             if "transfer-encoding" in headers:

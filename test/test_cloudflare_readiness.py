@@ -1447,6 +1447,179 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual(module.probe({"CF_READINESS_DIAGNOSTICS": "1"})["diagnostics"], [])
 
 
+class RepeatedCookieTests(unittest.TestCase):
+    """One narrow repeatable-field exception, exercised with real wire parsing."""
+    connection_factory = HTTPSBoundaryTests.connection_factory
+    invoke_real_http = HTTPSBoundaryTests.invoke_real_http
+
+    def responses(self, extra):
+        responses = []
+        for item in (deployments_page(), versions_page(), domains_page(), deployments_page()):
+            body = json.dumps(item).encode()
+            pairs = [("Content-Type", "application/json"), ("Content-Length", str(len(body))), *extra]
+            responses.append(MeteredHTTPResponse(body, pairs))
+        return responses
+
+    def test_repeated_set_cookie_preserves_metadata_and_closed_diagnostics(self):
+        module = load_probe(self)
+        expected = module.probe(environment(), transport=happy_transport())
+        cookies = [("Set-Cookie", "first=COOKIE_PRIVATE_CANARY; Path=/; HttpOnly"),
+                   ("sEt-CoOkIe", "second=other; Expires=Wed, 21 Oct 2037 07:28:00 GMT")]
+        for diagnostics in (False, True):
+            with self.subTest(diagnostics=diagnostics):
+                responses = self.responses(cookies)
+                self.assertEqual(responses[0].getheaders()[-2:], cookies)
+                self.assertTrue(all(type(k) is str and type(v) is str for k, v in responses[0].getheaders()))
+                status, result, calls = self.invoke_real_http(module, responses, diagnostics=diagnostics)
+                self.assertEqual((status, result["code"]), (0, "METADATA_VERIFIED"))
+                if diagnostics:
+                    self.assertEqual(result.pop("diagnostics"), [{"phase": "http", "event": "status", "status": "200"}] * 4)
+                self.assertEqual(result, expected)
+                self.assertEqual(len(calls), 4)
+                self.assertNotIn("COOKIE_PRIVATE_CANARY", json.dumps(result))
+                for response in responses:
+                    self.assertEqual(response.read_sizes, [module.MAX_RESPONSE_BYTES + 1])
+                    self.assertEqual(response.stream.consumed, response.wire_bytes)
+
+    def test_unique_cookie_and_ordinary_headers_keep_default_optin_parity(self):
+        module = load_probe(self)
+        expected = module.probe(environment(), transport=happy_transport())
+        for extra in ([], [("Set-Cookie", "single=COOKIE_PRIVATE_CANARY")], [("X-Synthetic", "opaque")]):
+            for diagnostics in (False, True):
+                with self.subTest(extra=extra, diagnostics=diagnostics):
+                    status, result, calls = self.invoke_real_http(module, self.responses(extra), diagnostics=diagnostics)
+                    if diagnostics:
+                        self.assertEqual(result.pop("diagnostics"),
+                                         [{"phase": "http", "event": "status", "status": "200"}] * 4)
+                    self.assertEqual((status, result), (0, expected))
+                    self.assertEqual(len(calls), 4)
+
+    def test_invalid_later_cookie_occurrences_are_not_hidden(self):
+        module = load_probe(self)
+        body = json.dumps(deployments_page()).encode()
+        bad_values = ["left" + chr(n) + "right" for n in (*range(32), 127) if n not in (10, 13)]
+        bad_values += ["left\r\n COOKIE_PRIVATE_CANARY"]
+        for value in bad_values:
+            for index in (1, 2):
+                with self.subTest(value_codepoints=[ord(c) for c in value], index=index):
+                    cookies = [("Set-Cookie", "valid=first")] * index + [("set-cookie", value)]
+                    response = MeteredHTTPResponse(body, [("Content-Type", "application/json"), *cookies])
+                    status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                    self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+                    self.assertEqual(result["diagnostics"], [{"phase": "headers", "event": "header_shape", "status": "200"}])
+                    self.assertEqual(response.read_sizes, [])
+                    self.assertEqual(response.stream.consumed, response.initial_bytes)
+                    self.assertEqual(len(calls), 1)
+
+    def test_invalid_retained_first_cookie_still_reaches_second_validator(self):
+        module = load_probe(self)
+        response = self.responses([("Set-Cookie", "left\tright"), ("set-cookie", "valid=second")])[0]
+        # The retained first value must not be replaced by a later, valid value.
+        # Before compatibility support the blanket duplicate check refuses earlier.
+        status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+        self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+        self.assertEqual(result["diagnostics"], [{"phase": "http", "event": "status", "status": "200"},
+                                                {"phase": "headers", "event": "header_shape", "status": "200"}])
+        self.assertEqual(response.read_sizes, [module.MAX_RESPONSE_BYTES + 1])
+        self.assertEqual(len(calls), 1)
+        self.assertNotIn("left", json.dumps(result))
+
+    def test_each_cookie_occurrence_counts_toward_header_count(self):
+        module = load_probe(self)
+        # Two decision headers plus 38 cookies is the exact 40-field ceiling.
+        status, result, calls = self.invoke_real_http(module, self.responses([("Set-Cookie", "a=b")] * 38))
+        self.assertEqual((status, result["code"], len(calls)), (0, "METADATA_VERIFIED", 4))
+        responses = self.responses([("Set-Cookie", "a=b")] * 39)
+        for response in responses:
+            self.assertEqual(len(response.getheaders()), 41)
+        status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+        self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+        self.assertEqual(result["diagnostics"], [{"phase": "headers", "event": "header_count", "status": "200"}])
+        self.assertEqual(responses[0].read_sizes, [])
+        self.assertEqual(len(calls), 1)
+
+    def test_each_cookie_occurrence_counts_toward_aggregate_header_budget(self):
+        module = load_probe(self)
+        body = json.dumps(deployments_page()).encode()
+        base = [("Content-Type", "application/json"), ("Content-Length", str(len(body)))]
+        remaining = 16384 - sum(len(k) + len(v) for k, v in base) - 4 * len("Set-Cookie") - 3 * 4096
+        self.assertTrue(2 < remaining <= 4096)
+        pairs = base + [("Set-Cookie", "a=" + "x" * 4094)] * 3
+        exact = MeteredHTTPResponse(body, pairs + [("set-cookie", "b=" + "y" * (remaining - 2))])
+        self.assertEqual(sum(len(k) + len(v) for k, v in exact.getheaders()), 16384)
+        remaining_responses = [MeteredHTTPResponse(json.dumps(item).encode()) for item in
+                               (versions_page(), domains_page(), deployments_page())]
+        status, result, calls = self.invoke_real_http(module, [exact, *remaining_responses])
+        self.assertEqual((status, result["code"], len(calls)), (0, "METADATA_VERIFIED", 4))
+        response = MeteredHTTPResponse(body, pairs + [("set-cookie", "b=" + "y" * (remaining - 1))])
+        self.assertEqual(sum(len(k) + len(v) for k, v in response.getheaders()), 16385)
+        status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+        self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+        self.assertEqual(result["diagnostics"], [{"phase": "headers", "event": "header_budget", "status": "200"}])
+        self.assertEqual(response.read_sizes, [])
+        self.assertEqual(len(calls), 1)
+
+    def test_later_cookie_value_cap_and_nonstring_refusals_remain(self):
+        module = load_probe(self)
+        status, result, calls = self.invoke_real_http(module, self.responses([
+            ("Set-Cookie", "valid=first"), ("set-cookie", "a=" + "x" * 4094)]))
+        self.assertEqual((status, result["code"], len(calls)), (0, "METADATA_VERIFIED", 4))
+        for value in ("a=" + "x" * 4095, None, 7):
+            with self.subTest(value_type=type(value).__name__):
+                response = FakeHTTPResponse(json.dumps(deployments_page()).encode(), headers=[
+                    ("Content-Type", "application/json"), ("Set-Cookie", "valid=first"), ("set-cookie", value)])
+                response.close = lambda: None
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+                self.assertEqual(response.read_sizes, [])
+                self.assertEqual(len(calls), 1)
+
+    def test_decision_header_duplicates_still_refuse_before_body(self):
+        module = load_probe(self)
+        body = json.dumps(deployments_page()).encode()
+        for key, first, second in [("Content-Type", "application/json", "application/json"),
+                                   ("Content-Type", "application/json", "text/html"),
+                                   ("Content-Length", str(len(body)), str(len(body))),
+                                   ("Content-Length", str(len(body)), "1"),
+                                   ("Content-Encoding", "identity", "identity"),
+                                   ("Content-Encoding", "identity", "gzip")]:
+            with self.subTest(key=key, same=first == second):
+                pairs = [("Set-Cookie", "first=1"), ("set-cookie", "second=2")]
+                if key != "Content-Type":
+                    pairs += [("Content-Type", "application/json")]
+                response = MeteredHTTPResponse(body, pairs + [(key, first), (key.lower(), second)])
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+                self.assertEqual(result["diagnostics"], [{"phase": "headers", "event": "header_shape", "status": "200"}])
+                self.assertEqual(response.read_sizes, [])
+                self.assertEqual(response.stream.consumed, response.initial_bytes)
+                self.assertEqual(len(calls), 1)
+
+    def test_any_transfer_encoding_with_repeated_cookies_is_prebody_refused(self):
+        module = load_probe(self)
+        body = json.dumps(deployments_page()).encode()
+        for name, framing, wire_body in transfer_encoding_cases(body):
+            for cookies_first in (False, True):
+                with self.subTest(framing=name, cookies_first=cookies_first):
+                    cookies = [("Set-Cookie", "first=1"), ("set-cookie", "second=2")]
+                    extra = cookies + framing if cookies_first else framing + cookies
+                    response = MeteredHTTPResponse(body, [("Content-Type", "application/json"), *extra], wire_body)
+                    status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                    self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+                    self.assertEqual(response.read_sizes, [])
+                    self.assertEqual(response.stream.consumed, response.initial_bytes)
+                    self.assertEqual(len(calls), 1)
+
+    def test_unknown_repeated_fields_remain_conservatively_refused(self):
+        module = load_probe(self)
+        response = self.responses([("X-Synthetic", "first"), ("x-synthetic", "second")])[0]
+        status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+        self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
+        self.assertEqual(result["diagnostics"], [{"phase": "headers", "event": "header_shape", "status": "200"}])
+        self.assertEqual(response.read_sizes, [])
+        self.assertEqual(len(calls), 1)
+
+
 class WorkflowTests(unittest.TestCase):
     def workflow(self):
         path = ROOT / ".github/workflows/cloudflare-readiness.yml"

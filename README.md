@@ -1,4 +1,4 @@
-# Cloudflare readiness — source candidate
+# Cloudflare readiness — offline header-compatibility candidate
 
 **Independent source review and separately authorized push are still required.** Only code/synthetic fixtures belong here; no site build, deployment, vault, real content, assets, compiler, credential cache or credential retrieval.
 
@@ -6,7 +6,7 @@
 
 The infrastructure audit observed default `miya` revision `34f440fe0c275c177add4ca678d4900450725641` and separately reviewed local site revision `555a616cfa4bb826fbfd2b60e0ee2b15d30c866e`. Both configurations name Worker **`miya-lis-forest`**, hostname **`miya-lis.net`**. These are repository facts, not an authenticated account/domain/deployment association. The old config is assets-only; the probe does not read code/settings/version resources/secret bindings to prove that model. Unsupported legacy responses stay partial.
 
-Never check out the default branch: its tree/history contains tracked local state and legacy/private content. This four-file candidate derives from the reviewed parentless code revision `b5dfda97e1b4d1c5a3e8f3486699385d5044a584`; the parent owns independent review, cold Git-copy rehearsal, exact-tree verification and any separately authorized fast-forward publication. No Git, hosted execution or live Cloudflare probe has been performed for this diagnostic candidate.
+Never check out the default branch: its tree/history contains tracked local state and legacy/private content. This four-file candidate derives from the frozen non-Git `cloudflare-diagnostic-fix-cycle1` source inventory, corresponding to the diagnostic publication at `a98fb78f4d1fb624f0b5b46390dee447e0f15ef5` (original parentless code revision `b5dfda97e1b4d1c5a3e8f3486699385d5044a584`). The parent owns independent review, cold Git-copy rehearsal, exact-tree verification and any separately authorized publication. This header candidate has not been committed, published, hosted or probed against live Cloudflare; the diagnostic publication and old evidence are unchanged.
 
 ## Exact read contract
 
@@ -69,7 +69,17 @@ python3 -I -B -m unittest discover -s test -p 'test_cloudflare_readiness.py' -v
 
 Tests use synthetic credentials/injected transports and block outbound socket creation. Child CLI environments contain no credentials. Keep logs outside source. The workflow is JSON syntax (a YAML subset), allowing stdlib-only guard tests. Distribution inventory permits only this README, probe, test and workflow; Git metadata is excluded.
 
-## Official sources (retrieved before implementation)
+## Bounded offline header compatibility
+
+The latest sanitized hosted receipt, run `38714994080`, remains failed: `PARTIAL/RESPONSE_INVALID`, with exactly one observation `{"event":"header_shape","phase":"headers","status":"200"}` and no `http/status` observation. In the frozen source, the early `_https_get` pair check can produce that sequence for a repeated non-transfer field or a non-string pair. The later `_response` value/control check first emits `http/status`, so it does not explain that exact sequence under the ordinary collector. The stdlib parser normally returns string pairs and preserves repeated fields. No raw hosted headers were captured: the actual field name, value, framing, credential validity and incident cause remain unknown. An earlier repeated field may mask later framing headers; the receipt does not prove that transfer encoding was absent.
+
+In-memory `HTTPResponse`/socket fixtures reproduce a specific compatibility defect: ordinary repeated **`Set-Cookie`** fields, valid as separate fields (RFC 9110 §5.3), were refused solely because they repeat. The sole exception now permits only that unused, opaque field to repeat, case-insensitively. It never comma-combines cookies, installs a cookie jar, forwards a cookie, interprets its value or adds header telemetry. The first value is retained only for the unchanged second-stage validator; every later occurrence is type/value/control checked before being discarded. A malformed first value still fails the second validator rather than being replaced by a valid later value. HTAB/control refusal is deliberately unchanged.
+
+All occurrences, including discarded repeats, count toward the existing **40 initial fields**, **16384 aggregate name/value bytes** and **4096 bytes per value** ceilings. The stdlib's Latin-1 header decoding gives one character per header byte. `Content-Type`, `Content-Length`, `Content-Encoding` and every other field remain singleton-only; unknown repeated metadata is still conservatively refused. Any `Transfer-Encoding`, including duplicates/empty/mixed-case fields, remains unsupported and refused before body reads. No framing/trailer, deadline, pagination, collector, auth/endpoint, output-marker or workflow rule changes. The workflow file remains byte-identical to the frozen baseline.
+
+This is a **synthetically established parser-compatibility correction only**, not an established repair of the hosted incident, not hosted readiness success and not authorization for another hosted attempt. Independent read-only source review is pending. Local baseline/regression logs, exact RED/GREEN source manifests, static scans and diff are stored separately in `cloudflare-header-compat-cycle1-evidence`; no extra files belong in this four-file distribution.
+
+## Official sources (retrieved before the original implementation; not fetched in this offline cycle)
 
 - [Deployments: schema, pagination, latest active first](https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/deployments/methods/list/)
 - [Versions: result.items and deployable filter](https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/versions/methods/list/)
