@@ -23,7 +23,7 @@ MAX_DIAGNOSTIC_RECORDS = 64
 MAX_DIAGNOSTIC_BYTES = 16384
 MAX_DIAGNOSTIC_RECORD_BYTES = 256
 API_ENVELOPES = frozenset({"success_false_errors", "success_false_empty", "success_true_errors",
-                           "success_missing", "success_other", "errors_invalid"})
+                           "success_missing", "success_other", "success_false_null", "errors_invalid"})
 CODES = frozenset({"ACCOUNT_INVALID", "AUTH_INVALID", "AUTH_UNAUTHORIZED", "AUTH_FORBIDDEN",
                    "REDIRECT_REFUSED", "HTTP_REFUSED", "TRANSPORT_REFUSED", "RESPONSE_INVALID",
                    "RESPONSE_TOO_LARGE", "API_UNSUCCESSFUL", "SCHEMA_UNSUPPORTED", "METADATA_VERIFIED",
@@ -313,6 +313,8 @@ def _envelope_classes(data):
         envelope = "success_missing"
     elif type(success) is not bool:
         envelope = "success_other"
+    elif errors is None and not success:
+        envelope = "success_false_null"
     elif type(errors) is not list:
         envelope = "errors_invalid"
     elif success:
@@ -379,7 +381,9 @@ def _response(status, headers, body, *, diagnostics=None):
         if not isinstance(data, dict):
             raise _Failure("RESPONSE_INVALID")
         phase, event = "schema", "api_unsuccessful"
-        if data.get("success") is not True or data.get("errors", []) != []:
+        # The versions API reports success with "errors": null rather than an empty list.
+        errors = data.get("errors", [])
+        if data.get("success") is not True or not (errors is None or type(errors) is list and not errors):
             classes = _envelope_classes(data)
             raise _Failure("API_UNSUCCESSFUL")
         event = "result_missing"

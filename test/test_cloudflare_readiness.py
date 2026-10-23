@@ -1444,6 +1444,8 @@ class DiagnosticTests(unittest.TestCase):
                  ({"errors": [], "result": {}}, {"api_envelope": "success_missing"}),
                  ({"success": TOKEN, "result": {}}, {"api_envelope": "success_other"}),
                  ({"success": True, "errors": {TOKEN: ACCOUNT}, "result": {}}, {"api_envelope": "errors_invalid"}),
+                 ({"success": True, "errors": 0, "result": {}}, {"api_envelope": "errors_invalid"}),
+                 ({"success": False, "errors": None}, {"api_envelope": "success_false_null"}),
                  ({"success": False, "errors": [{"code": True}]},
                   {"api_envelope": "success_false_errors", "api_error_code": "other"}),
                  ({"success": False, "errors": [{"code": 123456789}]},
@@ -1468,6 +1470,16 @@ class DiagnosticTests(unittest.TestCase):
                 def __init__(self):
                     self.records = [forged]
             self.assertEqual(module._diagnostic_snapshot([Collector()]), [])
+
+    def test_successful_envelope_accepts_null_errors(self):
+        module = load_probe(self)
+        bodies = [deployments_page(), versions_page(), domains_page(), deployments_page()]
+        for body in bodies:
+            body["errors"] = None
+        responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in bodies]
+        status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+        self.assertEqual((status, result["status"]), (0, "METADATA_VERIFIED"))
+        self.assertEqual(len(calls), 4)
 
     def test_initial_http_rejections_identify_closed_header_or_framing_category(self):
         module = load_probe(self)
