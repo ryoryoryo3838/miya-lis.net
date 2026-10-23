@@ -1561,9 +1561,21 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertEqual((status, result["code"]), (2, "PAGINATION_UNVERIFIED"))
                 self.assertEqual(result["diagnostics"][-1]["pagination_field"], "total_pages")
 
+    def test_domain_identifier_accepts_32_or_40_hex_digits(self):
+        module = load_probe(self)
+        for value in ("d" * 32, "e" * 40, "0123456789ABCDEFabcdef0123456789abcdef01"):
+            with self.subTest(length=len(value)):
+                domains = domains_page()
+                domains["result"][0]["id"] = value
+                responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in
+                             (deployments_page(), versions_page(), domains, deployments_page())]
+                status, result, calls = self.invoke_real_http(module, responses)
+                self.assertEqual((status, result["status"], result["domain"]),
+                                 (0, "METADATA_VERIFIED", {"status": "MATCH", "id": value}))
+
     def test_invalid_domain_identifier_reports_only_closed_shape(self):
         module = load_probe(self)
-        for value, shape in (("e" * 40, "hex40"), ("e" * 31, "hex_other"), (V1, "uuid"), (7, "type"),
+        for value, shape in (("e" * 64, "hex64"), ("e" * 31, "hex_other"), (V1, "uuid"), (7, "type"),
                              ("PRIVATE-" + TOKEN[:20], "other")):
             with self.subTest(shape=shape):
                 domains = domains_page()

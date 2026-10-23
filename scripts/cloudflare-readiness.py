@@ -443,7 +443,9 @@ def _identifier_shape(value):
 
 
 def _identifier(value, sensitive, *, domain=False):
-    pattern = r"[a-fA-F0-9]{32}" if domain else r"[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}"
+    # Domain ids are documented as 32 hex digits, but the hosted API returns 40.
+    pattern = (r"[a-fA-F0-9]{32}|[a-fA-F0-9]{40}" if domain
+               else r"[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}")
     if not isinstance(value, str) or not re.fullmatch(pattern, value):
         raise _Failure("IDENTIFIER_INVALID", identifier_role="domain" if domain else "deployment_or_version",
                        identifier_shape=_identifier_shape(value))
