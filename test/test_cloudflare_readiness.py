@@ -1538,6 +1538,29 @@ class DiagnosticTests(unittest.TestCase):
         self.assertEqual((status, result["code"]), (2, "PAGINATION_UNVERIFIED"),
                          "domain reads remain strictly nonpaginated")
 
+    def test_absent_total_pages_requires_proven_completeness(self):
+        module = load_probe(self)
+        for info in ({"page": 1, "total_count": 1}, {"page": 1, "count": 1, "per_page": 20},
+                     {"page": 1, "count": 1, "per_page": 2, "total_count": 1}):
+            with self.subTest(info=info):
+                domains = domains_page()
+                domains["result_info"] = info
+                responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in
+                             (deployments_page(), versions_page(), domains, deployments_page())]
+                status, result, calls = self.invoke_real_http(module, responses)
+                self.assertEqual((status, result["status"]), (0, "METADATA_VERIFIED"))
+        for info in ({"page": 1}, {"page": 1, "count": 1}, {"page": 1, "count": 1, "per_page": 1},
+                     {"page": 1, "total_count": 2}, {"page": 1, "count": 1, "per_page": 20, "total_count": 2},
+                     {"page": 1, "total_count": True}):
+            with self.subTest(info=info):
+                domains = domains_page()
+                domains["result_info"] = info
+                responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in
+                             (deployments_page(), versions_page(), domains)]
+                status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "PAGINATION_UNVERIFIED"))
+                self.assertEqual(result["diagnostics"][-1]["pagination_field"], "total_pages")
+
     def test_successful_envelope_accepts_null_errors(self):
         module = load_probe(self)
         bodies = [deployments_page(), versions_page(), domains_page(), deployments_page()]

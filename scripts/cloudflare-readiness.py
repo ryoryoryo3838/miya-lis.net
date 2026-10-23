@@ -481,6 +481,14 @@ def _pagination_refusal(field, value, expected):
 _ABSENT = object()
 
 
+def _complete_without_total_pages(info, size):
+    """Completeness is still proven: an exact total, or an exact count on a page that is not full."""
+    if "total_count" in info:
+        return type(info["total_count"]) is int and info["total_count"] == size
+    return (type(info.get("count")) is int and info["count"] == size
+            and type(info.get("per_page")) is int and info["per_page"] > size)
+
+
 def _nonpaginated(data, size, *, ignored=False):
     """ignored: the read is documented to ignore pagination, so a zero field means unpopulated."""
     if "result_info" not in data:
@@ -494,6 +502,8 @@ def _nonpaginated(data, size, *, ignored=False):
     for field in ("page", "total_pages"):
         if ignored and field not in info:
             continue  # An unpopulated record may omit total_pages altogether.
+        if field == "total_pages" and field not in info and _complete_without_total_pages(info, size):
+            continue
         if (type(info.get(field, _ABSENT)) is not int or info[field] != 1) and not unset(field):
             raise _pagination_refusal(field, info.get(field, _ABSENT), 1)
     for field in ("count", "total_count"):
