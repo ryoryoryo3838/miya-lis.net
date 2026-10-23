@@ -1504,7 +1504,8 @@ class DiagnosticTests(unittest.TestCase):
     def test_deployable_versions_treat_zero_pagination_as_unpopulated_only(self):
         module = load_probe(self)
         zeros = {"page": 0, "total_pages": 0, "count": 0, "total_count": 0, "per_page": 0}
-        for info in (zeros, {**zeros, "count": 3, "total_count": 3}, {"page": 0, "total_pages": 1}):
+        for info in (zeros, {**zeros, "count": 3, "total_count": 3}, {"page": 0, "total_pages": 1},
+                     {"page": 0}, {"page": 0, "per_page": 0, "count": 3}):
             with self.subTest(info=info):
                 versions = versions_page()
                 versions["result_info"] = info
@@ -1517,7 +1518,8 @@ class DiagnosticTests(unittest.TestCase):
                                       ({**zeros, "page": -1}, "page", "lower"),
                                       ({**zeros, "page": False}, "page", "type"),
                                       ({**zeros, "page": 1}, "total_pages", "lower"),
-                                      ({"page": 0}, "total_pages", "missing"),
+                                      ({"page": 0, "count": 2}, "count", "lower"),
+                                      ({"page": 1}, "total_pages", "missing"),
                                       ({"page": 1, "total_pages": 1, "count": 0}, "count", "lower")):
             with self.subTest(info=info):
                 versions = versions_page()

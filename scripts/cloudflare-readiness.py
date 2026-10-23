@@ -492,6 +492,8 @@ def _nonpaginated(data, size, *, ignored=False):
     ignored = ignored and type(info.get("page")) is int and info["page"] == 0
     unset = (lambda field: ignored and type(info.get(field)) is int and info[field] == 0)
     for field in ("page", "total_pages"):
+        if ignored and field not in info:
+            continue  # An unpopulated record may omit total_pages altogether.
         if (type(info.get(field, _ABSENT)) is not int or info[field] != 1) and not unset(field):
             raise _pagination_refusal(field, info.get(field, _ABSENT), 1)
     for field in ("count", "total_count"):
