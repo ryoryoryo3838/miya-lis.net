@@ -552,3 +552,93 @@ class SnapshotTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+JPEG = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x00\x00\x01\x00\x01\x00\x00synthetic\xff\xd9'
+
+
+def media_fixture(path, *, images=(JPEG,), extra=None, manifest_extra=None):
+    """A snapshot with a JPEG registry; extra/manifest_extra corrupt it on purpose."""
+    digests = [hashlib.sha256(image).hexdigest() for image in images]
+    content = [dict(kind='image', sha256=d, alt='') for d in digests] + [dict(kind='unavailable')]
+    forest = dict(schema='forester-public-v2', trees=[dict(tree(), content=content)],
+                  assets=[dict(sha256=d, mime='image/jpeg', bytes=len(i), width=2, height=3)
+                          for d, i in sorted(zip(digests, images))])
+    path.mkdir()
+    data = json.dumps(forest).encode()
+    (path / 'public-forest.json').write_bytes(data)
+    (path / 'media').mkdir()
+    for digest, image in zip(digests, images):
+        (path / 'media' / f'{digest}.jpg').write_bytes(image)
+    if extra:
+        (path / 'media' / extra).write_bytes(JPEG)
+    files = {'public-forest.json': hashlib.sha256(data).hexdigest(), **{f'media/{d}.jpg': d for d in digests}}
+    files.update(manifest_extra or {})
+    manifest = json.dumps(dict(schema='forester-public-snapshot-v1', files=files)).encode()
+    (path / 'manifest.json').write_bytes(manifest)
+    return hashlib.sha256(manifest).hexdigest(), digests
+
+
+class MediaTests(unittest.TestCase):
+    def setUp(self):
+        self.safe = load_module()
+        self.temp = tempfile.TemporaryDirectory(prefix='safe-web-media-', dir=TMP)
+        self.addCleanup(self.temp.cleanup)
+        self.base = Path(self.temp.name)
+
+    def test_registered_jpegs_and_unavailable_nodes_stage_byte_exact(self):
+        snapshot, stage = self.base / 'snapshot', self.base / 'stage'
+        digest, digests = media_fixture(snapshot)
+        self.assertEqual(self.safe.stage_snapshot(snapshot, stage, digest), {'trees': 1, 'files': 2})
+        self.assertEqual((stage / 'media' / f'{digests[0]}.jpg').read_bytes(), JPEG)
+
+    def test_media_inventory_and_digests_fail_closed(self):
+        other = JPEG.replace(b'synthetic', b'different')
+        cases = {
+            'unlisted extra file': dict(extra='0' * 64 + '.jpg'),
+            'manifest names unknown media': dict(manifest_extra={'media/' + '1' * 64 + '.jpg': '1' * 64}),
+            'manifest digest mismatch': dict(manifest_extra=None),
+        }
+        for name, options in cases.items():
+            with self.subTest(case=name):
+                snapshot, stage = self.base / name, self.base / (name + '-stage')
+                digest, digests = media_fixture(snapshot, **options)
+                if name == 'manifest digest mismatch':
+                    (snapshot / 'media' / f'{digests[0]}.jpg').write_bytes(other)
+                with self.assertRaises(self.safe.GateError):
+                    self.safe.stage_snapshot(snapshot, stage, digest)
+                self.assertFalse(stage.exists())
+
+    def test_registry_must_equal_used_images_and_nodes_stay_closed(self):
+        digest = hashlib.sha256(JPEG).hexdigest()
+        asset = dict(sha256=digest, mime='image/jpeg', bytes=len(JPEG), width=2, height=3)
+        def forest(content, assets=(asset,)):
+            return dict(schema='forester-public-v2', trees=[dict(tree(), content=content)], assets=list(assets))
+        image = dict(kind='image', sha256=digest, alt='')
+        self.assertEqual(self.safe.validate_forest(forest([image, dict(kind='unavailable', label='Public title')])), 1)
+        for content, assets in [
+            ([dict(kind='markdown', text='unused registry')], (asset,)),
+            ([dict(image, sha256='f' * 64)], (asset,)),
+            ([dict(image, src='/media/x.jpg')], (asset,)),
+            ([dict(kind='unavailable', target='PRIVATE')], ()),
+            ([dict(kind='unavailable', label=7)], ()),
+            ([image], (dict(asset, mime='image/png'),)),
+            ([image], (dict(asset, width=9000),)),
+            ([image, image], (asset, asset)),
+        ]:
+            with self.subTest(content=content, assets=assets):
+                with self.assertRaises(self.safe.GateError):
+                    self.safe.validate_forest(forest(content, assets))
+
+    def test_audit_accepts_only_digest_named_media(self):
+        output = self.base / 'web'
+        web_fixture(output)
+        (output / 'media').mkdir()
+        digest = hashlib.sha256(JPEG).hexdigest()
+        (output / 'media' / f'{digest}.jpg').write_bytes(JPEG)
+        self.assertEqual(self.safe.audit_output(output, {'PUBLICA'}, {}, {digest})['routes'], 1)
+        with self.assertRaises(self.safe.GateError):
+            self.safe.audit_output(output, {'PUBLICA'}, {})
+        (output / 'media' / f'{digest}.jpg').write_bytes(JPEG + b'tampered')
+        with self.assertRaises(self.safe.GateError):
+            self.safe.audit_output(output, {'PUBLICA'}, {}, {digest})

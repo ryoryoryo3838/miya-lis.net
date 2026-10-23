@@ -16,6 +16,9 @@ from pathlib import Path
 MAX_MANIFEST = 65536
 MAX_FOREST = 16 * 1024 * 1024
 MAX_STRING = 1024 * 1024
+MAX_JPEG = 8 * 1024 * 1024
+MAX_JPEGS = 128
+MAX_JPEG_TOTAL = 32 * 1024 * 1024
 
 
 def checked_path(value):
@@ -205,10 +208,38 @@ def markdown_guard_text(text):
     return ''.join(masked)
 
 
+def dimension(value):
+    if type(value) is not int or not 1 <= value <= 8192:
+        raise GateError('SW_SCHEMA')
+    return value
+
+
+def forest_assets(forest):
+    """The closed JPEG registry: strictly sorted digests, bounded count, bytes and pixels."""
+    assets = forest['assets']
+    if type(assets) is not list or len(assets) > MAX_JPEGS:
+        raise GateError('SW_SIZE')
+    registry, previous, total = {}, None, 0
+    for asset in assets:
+        object_keys(asset, {'sha256', 'mime', 'bytes', 'width', 'height'})
+        digest = asset['sha256']
+        if type(digest) is not str or not re.fullmatch(r'[0-9a-f]{64}', digest) or (previous is not None and digest <= previous):
+            raise GateError('SW_SCHEMA')
+        if asset['mime'] != 'image/jpeg' or type(asset['bytes']) is not int or not 1 <= asset['bytes'] <= MAX_JPEG:
+            raise GateError('SW_SCHEMA')
+        total += asset['bytes']
+        if total > MAX_JPEG_TOTAL or dimension(asset['width']) * dimension(asset['height']) > 32000000:
+            raise GateError('SW_SIZE')
+        registry[digest] = asset['bytes']
+        previous = digest
+    return registry
+
+
 def validate_forest(forest):
     object_keys(forest, {'schema', 'trees', 'assets'})
-    if forest['schema'] != 'forester-public-v2' or forest['assets'] != []:
+    if forest['schema'] != 'forester-public-v2':
         raise GateError('SW_SCHEMA')
+    registry, used = forest_assets(forest), set()
     roots = array(forest['trees'])
     names, edges, refs = {}, {}, []
     count = 0
@@ -304,12 +335,28 @@ def validate_forest(forest):
                     raise GateError('SW_SCHEMA')
                 refs.append(target)
                 edges[key].append(target)
+            elif kind == 'unavailable':
+                # A fixed placeholder: no target, path or reason, only an optional literal label.
+                object_keys(node, {'kind'}, {'label'})
+                if 'label' in node:
+                    literal(node['label'])
+            elif kind == 'image':
+                object_keys(node, {'kind', 'sha256', 'alt'}, {'width', 'height'})
+                if node['sha256'] not in registry:
+                    raise GateError('SW_SCHEMA')
+                used.add(node['sha256'])
+                literal(node['alt'])
+                for name in ('width', 'height'):
+                    if name in node:
+                        dimension(node[name])
             else:
                 raise GateError('SW_SCHEMA')
         return key
 
     for root in roots:
         visit(root)
+    if used != set(registry):
+        raise GateError('SW_SCHEMA')
     ids = set(names.values())
     if any(target not in ids for target in refs):
         raise GateError('SW_TARGET')
@@ -352,7 +399,7 @@ def stage_snapshot(snapshot, stage, expected_digest):
         raise GateError('SW_PATH')
     if stage.exists():
         raise GateError('SW_FRESH')
-    if {p.name for p in snapshot.iterdir()} != {'manifest.json', 'public-forest.json'}:
+    if {p.name for p in snapshot.iterdir()} - {'media'} != {'manifest.json', 'public-forest.json'}:
         raise GateError('SW_INVENTORY')
     manifest_bytes = read_bounded(snapshot / 'manifest.json', MAX_MANIFEST)
     if hashlib.sha256(manifest_bytes).hexdigest() != expected_digest:
@@ -361,7 +408,8 @@ def stage_snapshot(snapshot, stage, expected_digest):
     object_keys(manifest, {'schema', 'files'})
     if manifest['schema'] != 'forester-public-snapshot-v1':
         raise GateError('SW_SCHEMA')
-    object_keys(manifest['files'], {'public-forest.json'})
+    if type(manifest['files']) is not dict or 'public-forest.json' not in manifest['files']:
+        raise GateError('SW_SCHEMA')
     file_digest = manifest['files']['public-forest.json']
     if type(file_digest) is not str or not re.fullmatch(r'[0-9a-f]{64}', file_digest):
         raise GateError('SW_DIGEST')
@@ -370,17 +418,42 @@ def stage_snapshot(snapshot, stage, expected_digest):
         raise GateError('SW_FILE_DIGEST')
     forest = strict_json(data)
     count = validate_forest(forest)
+    registry = forest_assets(forest)
+    # The manifest authenticates every published JPEG by the same digest that names it.
+    media_names = {f'media/{digest}.jpg' for digest in registry}
+    if manifest['files'].keys() != {'public-forest.json'} | media_names:
+        raise GateError('SW_INVENTORY')
+    media = {}
+    if registry:
+        directory = snapshot / 'media'
+        if directory.is_symlink() or not directory.is_dir() or {p.name for p in directory.iterdir()} != {f'{d}.jpg' for d in registry}:
+            raise GateError('SW_INVENTORY')
+        for digest, size in registry.items():
+            name = f'media/{digest}.jpg'
+            if manifest['files'][name] != digest:
+                raise GateError('SW_DIGEST')
+            image = read_bounded(snapshot / name, MAX_JPEG)
+            if len(image) != size or hashlib.sha256(image).hexdigest() != digest or image[:2] != b'\xff\xd8':
+                raise GateError('SW_FILE_DIGEST')
+            media[digest] = image
+    elif (snapshot / 'media').exists():
+        raise GateError('SW_INVENTORY')
     stage.mkdir()
     (stage / 'public-forest.json').write_bytes(data)
-    return {'trees': count, 'files': 1}
+    if media:
+        (stage / 'media').mkdir()
+        for digest, image in media.items():
+            (stage / 'media' / f'{digest}.jpg').write_bytes(image)
+    return {'trees': count, 'files': 1 + len(media)}
 
 
 LEAK = re.compile(rb'(?:/(?:home|Users|nix/store|tmp)/|[A-Za-z]:\\\\Users\\\\|(?:sourcePath|source_path|sourceFile|source_file|sourceLocation|source_location|filename|file_name|offset|aliases|rawSource)\s*["\x27]?\s*[:=]|(?:gh[pousr]_|github_pat_|AKIA[0-9A-Z]|-----BEGIN [A-Z ]*PRIVATE KEY-----)|SYNTHETIC_(?:PRIVATE|REVOKED)_CANARY)', re.I)
 
 
-def audit_output(output, ids, theme_hashes):
+def audit_output(output, ids, theme_hashes, media=frozenset()):
     output = checked_path(output)
     routes = {f'{identifier(id)}/index.html' for id in ids}
+    images = {f'media/{digest}.jpg': digest for digest in media}
     files, seen, total = 0, set(), 0
     for directory, dirs, names in os.walk(output, followlinks=False):
         for name in dirs:
@@ -397,6 +470,9 @@ def audit_output(output, ids, theme_hashes):
             if relative in theme_hashes:
                 if hashlib.sha256(data).hexdigest() != theme_hashes[relative]:
                     raise GateError('SW_THEME')
+            elif relative in images:
+                if hashlib.sha256(data).hexdigest() != images[relative]:
+                    raise GateError('SW_OUTPUT')
             elif relative in routes:
                 if LEAK.search(data):
                     raise GateError('SW_LEAK')
@@ -418,7 +494,7 @@ def audit_output(output, ids, theme_hashes):
                     raise GateError('SW_OUTPUT')
             else:
                 raise GateError('SW_OUTPUT')
-    required = routes | {'index.html', 'forest.json'} | set(theme_hashes)
+    required = routes | {'index.html', 'forest.json'} | set(theme_hashes) | set(images)
     if seen != routes or required != {p.relative_to(output).as_posix() for p in output.rglob('*') if p.is_file()}:
         raise GateError('SW_OUTPUT')
     return {'files': files, 'routes': len(seen)}
@@ -438,7 +514,7 @@ def run_quiet(command, cwd=None):
     return result.stdout
 
 
-def render_native(trees, output, binary, ids, home):
+def render_native(trees, output, binary, ids, home, media=None):
     trees, output = checked_path(trees), checked_path(output)
     if output.exists():
         raise GateError('SW_FRESH')
@@ -473,7 +549,15 @@ def render_native(trees, output, binary, ids, home):
             destination.write_bytes(data)
             theme_hashes[relative.as_posix()] = hashlib.sha256(data).hexdigest()
         run_quiet([str(binary), 'build', 'forest.toml', '--no-theme'], cwd=work)
-        counts = audit_output(html, ids, theme_hashes)
+        digests = set()
+        if media is not None:
+            (html / 'media').mkdir()
+            for path in checked_path(media).iterdir():
+                if not re.fullmatch(r'[0-9a-f]{64}\.jpg', path.name):
+                    raise GateError('SW_INVENTORY')
+                (html / 'media' / path.name).write_bytes(read_bounded(path, MAX_JPEG))
+                digests.add(path.stem)
+        counts = audit_output(html, ids, theme_hashes, digests)
         # Move only after the complete artifact passes; failures expose nothing.
         checked_path(output)
         if output.exists():
@@ -520,7 +604,8 @@ def build_snapshot(snapshot, output, digest, converter, converter_rev, converter
         roots = {tree['id'] + '.tree' for tree in forest['trees']}
         if {path.name for path in (scratch / 'trees').iterdir()} != roots:
             raise GateError('SW_TREES')
-        return render_native(scratch / 'trees', output, forester, ids, home)
+        media = scratch / 'snapshot' / 'media'
+        return render_native(scratch / 'trees', output, forester, ids, home, media if media.exists() else None)
 
 
 def validate_pins(pins):
