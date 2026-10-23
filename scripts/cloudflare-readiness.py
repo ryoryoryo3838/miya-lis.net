@@ -22,6 +22,8 @@ TOTAL_SECONDS = 60
 MAX_DIAGNOSTIC_RECORDS = 64
 MAX_DIAGNOSTIC_BYTES = 16384
 MAX_DIAGNOSTIC_RECORD_BYTES = 256
+PAGINATION_FIELDS = frozenset({"result_info", "page", "total_pages", "count", "total_count", "per_page"})
+PAGINATION_RELATIONS = frozenset({"missing", "type", "lower", "higher"})
 API_ENVELOPES = frozenset({"success_false_errors", "success_false_empty", "success_true_errors",
                            "success_missing", "success_other", "success_false_null", "errors_invalid"})
 CODES = frozenset({"ACCOUNT_INVALID", "AUTH_INVALID", "AUTH_UNAUTHORIZED", "AUTH_FORBIDDEN",
@@ -35,9 +37,10 @@ CODES = frozenset({"ACCOUNT_INVALID", "AUTH_INVALID", "AUTH_UNAUTHORIZED", "AUTH
 
 
 class _Failure(Exception):
-    def __init__(self, code):
+    def __init__(self, code, **classes):
         super().__init__()
         self.code = code if code in CODES else "INTERNAL_REFUSED"
+        self.classes = classes  # Closed diagnostic classes only, observed by probe().
 
 
 def _status_class(status):
@@ -55,7 +58,7 @@ class _Diagnostics:
         self.bytes = 2  # The serialized list's brackets; commas counted per append.
 
     def record(self, phase, event, *, status=None, transfer_encoding=None, api_envelope=None,
-               api_error_code=None):
+               api_error_code=None, pagination_field=None, pagination_relation=None):
         if len(self.records) >= MAX_DIAGNOSTIC_RECORDS:
             return
         record = {"phase": phase if type(phase) is str and phase in {
@@ -66,7 +69,8 @@ class _Diagnostics:
                       "length_invalid", "length_limit", "length_mismatch", "body_limit",
                       "utf8_invalid", "json_invalid", "object_required", "api_unsuccessful",
                       "result_missing", "schema_unsupported", "http_parse", "read_error",
-                      "body_type", "total_body_limit", "response_shape"} else "other"}
+                      "body_type", "total_body_limit", "response_shape",
+                      "pagination_unverified"} else "other"}
         if status is not None:
             record["status"] = status if type(status) is str and status in {
                 "200", "401", "403", "3xx", "other", "invalid"} else "invalid"
@@ -76,6 +80,12 @@ class _Diagnostics:
         if api_envelope is not None:
             record["api_envelope"] = api_envelope if type(api_envelope) is str and api_envelope in API_ENVELOPES \
                 else "other"
+        if pagination_field is not None:
+            record["pagination_field"] = pagination_field if type(pagination_field) is str \
+                and pagination_field in PAGINATION_FIELDS else "other"
+        if pagination_relation is not None:
+            record["pagination_relation"] = pagination_relation if type(pagination_relation) is str \
+                and pagination_relation in PAGINATION_RELATIONS else "other"
         if api_error_code is not None:
             record["api_error_code"] = api_error_code if type(api_error_code) is str and re.fullmatch(
                 r"[1-9][0-9]{3,4}", api_error_code) else "other"
@@ -102,10 +112,13 @@ def _diagnostic_snapshot(diagnostics):
                       "length_invalid", "length_limit", "length_mismatch", "body_limit",
                       "utf8_invalid", "json_invalid", "object_required", "api_unsuccessful",
                       "result_missing", "schema_unsupported", "http_parse", "read_error",
-                      "body_type", "total_body_limit", "response_shape", "other"},
+                      "body_type", "total_body_limit", "response_shape", "pagination_unverified",
+                      "other"},
             "status": {"200", "401", "403", "3xx", "other", "invalid"},
             "transfer_encoding": {"none", "chunked", "other", "duplicate", "empty"},
-            "api_envelope": API_ENVELOPES | {"other"}}
+            "api_envelope": API_ENVELOPES | {"other"},
+            "pagination_field": PAGINATION_FIELDS | {"other"},
+            "pagination_relation": PAGINATION_RELATIONS | {"other"}}
         snapshot, total = [], 2
         for record in records[:min(64, MAX_DIAGNOSTIC_RECORDS)]:
             if type(record) is not dict or not 2 <= len(record) <= 5:
@@ -459,18 +472,29 @@ def _deployments(data, sensitive):
     return selected
 
 
+def _pagination_refusal(field, value, expected):
+    relation = ("missing" if value is _ABSENT else "type" if type(value) is not int
+                else "lower" if value < expected else "higher")
+    return _Failure("PAGINATION_UNVERIFIED", pagination_field=field, pagination_relation=relation)
+
+
+_ABSENT = object()
+
+
 def _nonpaginated(data, size):
     if "result_info" not in data:
         return
     info = data["result_info"]
-    if (not isinstance(info, dict) or type(info.get("page")) is not int or info["page"] != 1
-            or type(info.get("total_pages")) is not int or info["total_pages"] != 1):
-        raise _Failure("PAGINATION_UNVERIFIED")
+    if not isinstance(info, dict):
+        raise _Failure("PAGINATION_UNVERIFIED", pagination_field="result_info", pagination_relation="type")
+    for field in ("page", "total_pages"):
+        if type(info.get(field, _ABSENT)) is not int or info[field] != 1:
+            raise _pagination_refusal(field, info.get(field, _ABSENT), 1)
     for field in ("count", "total_count"):
         if field in info and (type(info[field]) is not int or info[field] != size):
-            raise _Failure("PAGINATION_UNVERIFIED")
+            raise _pagination_refusal(field, info[field], size)
     if "per_page" in info and (type(info["per_page"]) is not int or info["per_page"] < size):
-        raise _Failure("PAGINATION_UNVERIFIED")
+        raise _pagination_refusal("per_page", info["per_page"], size)
 
 
 def _eligible(data, sensitive):
@@ -647,6 +671,8 @@ def probe(environ, *, transport=None, clock=None):
         result["code"] = "METADATA_VERIFIED"
     except _Failure as failure:
         result["code"] = failure.code
+        if failure.code == "PAGINATION_UNVERIFIED" and failure.classes:
+            _observe(diagnostics, "schema", "pagination_unverified", **failure.classes)
         if failure.code == "SCHEMA_UNSUPPORTED":
             _observe(diagnostics, "schema", "schema_unsupported")
     except Exception:

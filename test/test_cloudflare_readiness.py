@@ -1471,6 +1471,36 @@ class DiagnosticTests(unittest.TestCase):
                     self.records = [forged]
             self.assertEqual(module._diagnostic_snapshot([Collector()]), [])
 
+    def test_nonpaginated_refusal_reports_only_field_and_relation(self):
+        module = load_probe(self)
+        base = {"page": 1, "total_pages": 1, "count": 3, "total_count": 3, "per_page": 100}
+        cases = [(TOKEN, "result_info", "type"),
+                 ({k: v for k, v in base.items() if k != "page"}, "page", "missing"),
+                 ({**base, "page": 0}, "page", "lower"),
+                 ({**base, "total_pages": 0}, "total_pages", "lower"),
+                 ({**base, "total_pages": TOKEN}, "total_pages", "type"),
+                 ({**base, "count": 2}, "count", "lower"),
+                 ({**base, "total_count": 40}, "total_count", "higher"),
+                 ({**base, "per_page": 1}, "per_page", "lower")]
+        for info, field, relation in cases:
+            with self.subTest(field=field, relation=relation):
+                versions = versions_page()
+                versions["result_info"] = info
+                responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in
+                             (deployments_page(), versions)]
+                status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "PAGINATION_UNVERIFIED"))
+                self.assertEqual(result["diagnostics"][-1], {"phase": "schema", "event": "pagination_unverified",
+                                                             "pagination_field": field,
+                                                             "pagination_relation": relation})
+                self.assertNotIn(TOKEN, json.dumps(result))
+        for forged in ({"phase": "schema", "event": "pagination_unverified", "pagination_field": TOKEN[:8]},
+                       {"phase": "schema", "event": "pagination_unverified", "pagination_relation": "40"}):
+            class Collector:
+                def __init__(self):
+                    self.records = [forged]
+            self.assertEqual(module._diagnostic_snapshot([Collector()]), [])
+
     def test_successful_envelope_accepts_null_errors(self):
         module = load_probe(self)
         bodies = [deployments_page(), versions_page(), domains_page(), deployments_page()]
