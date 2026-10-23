@@ -22,6 +22,8 @@ TOTAL_SECONDS = 60
 MAX_DIAGNOSTIC_RECORDS = 64
 MAX_DIAGNOSTIC_BYTES = 16384
 MAX_DIAGNOSTIC_RECORD_BYTES = 256
+IDENTIFIER_ROLES = frozenset({"domain", "deployment_or_version"})
+IDENTIFIER_SHAPES = frozenset({"type", "uuid", "hex32", "hex40", "hex64", "hex_other"})
 PAGINATION_FIELDS = frozenset({"result_info", "page", "total_pages", "count", "total_count", "per_page"})
 PAGINATION_RELATIONS = frozenset({"missing", "type", "lower", "higher"})
 API_ENVELOPES = frozenset({"success_false_errors", "success_false_empty", "success_true_errors",
@@ -58,7 +60,8 @@ class _Diagnostics:
         self.bytes = 2  # The serialized list's brackets; commas counted per append.
 
     def record(self, phase, event, *, status=None, transfer_encoding=None, api_envelope=None,
-               api_error_code=None, pagination_field=None, pagination_relation=None):
+               api_error_code=None, pagination_field=None, pagination_relation=None,
+               identifier_role=None, identifier_shape=None):
         if len(self.records) >= MAX_DIAGNOSTIC_RECORDS:
             return
         record = {"phase": phase if type(phase) is str and phase in {
@@ -70,7 +73,7 @@ class _Diagnostics:
                       "utf8_invalid", "json_invalid", "object_required", "api_unsuccessful",
                       "result_missing", "schema_unsupported", "http_parse", "read_error",
                       "body_type", "total_body_limit", "response_shape",
-                      "pagination_unverified"} else "other"}
+                      "pagination_unverified", "identifier_invalid"} else "other"}
         if status is not None:
             record["status"] = status if type(status) is str and status in {
                 "200", "401", "403", "3xx", "other", "invalid"} else "invalid"
@@ -86,6 +89,12 @@ class _Diagnostics:
         if pagination_relation is not None:
             record["pagination_relation"] = pagination_relation if type(pagination_relation) is str \
                 and pagination_relation in PAGINATION_RELATIONS else "other"
+        if identifier_role is not None:
+            record["identifier_role"] = identifier_role if type(identifier_role) is str \
+                and identifier_role in IDENTIFIER_ROLES else "other"
+        if identifier_shape is not None:
+            record["identifier_shape"] = identifier_shape if type(identifier_shape) is str \
+                and identifier_shape in IDENTIFIER_SHAPES else "other"
         if api_error_code is not None:
             record["api_error_code"] = api_error_code if type(api_error_code) is str and re.fullmatch(
                 r"[1-9][0-9]{3,4}", api_error_code) else "other"
@@ -113,12 +122,14 @@ def _diagnostic_snapshot(diagnostics):
                       "utf8_invalid", "json_invalid", "object_required", "api_unsuccessful",
                       "result_missing", "schema_unsupported", "http_parse", "read_error",
                       "body_type", "total_body_limit", "response_shape", "pagination_unverified",
-                      "other"},
+                      "identifier_invalid", "other"},
             "status": {"200", "401", "403", "3xx", "other", "invalid"},
             "transfer_encoding": {"none", "chunked", "other", "duplicate", "empty"},
             "api_envelope": API_ENVELOPES | {"other"},
             "pagination_field": PAGINATION_FIELDS | {"other"},
-            "pagination_relation": PAGINATION_RELATIONS | {"other"}}
+            "pagination_relation": PAGINATION_RELATIONS | {"other"},
+            "identifier_role": IDENTIFIER_ROLES | {"other"},
+            "identifier_shape": IDENTIFIER_SHAPES | {"other"}}
         snapshot, total = [], 2
         for record in records[:min(64, MAX_DIAGNOSTIC_RECORDS)]:
             if type(record) is not dict or not 2 <= len(record) <= 5:
@@ -421,10 +432,22 @@ def _report():
             "deployment_approval": "NOT_GRANTED"}
 
 
+def _identifier_shape(value):
+    if not isinstance(value, str):
+        return "type"
+    if re.fullmatch(r"[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}", value):
+        return "uuid"
+    if re.fullmatch(r"[a-fA-F0-9]+", value):
+        return {32: "hex32", 40: "hex40", 64: "hex64"}.get(len(value), "hex_other")
+    return "other"
+
+
 def _identifier(value, sensitive, *, domain=False):
     pattern = r"[a-fA-F0-9]{32}" if domain else r"[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}"
-    if (not isinstance(value, str) or not re.fullmatch(pattern, value)
-            or any(secret.lower() in value.lower() for secret in sensitive)):
+    if not isinstance(value, str) or not re.fullmatch(pattern, value):
+        raise _Failure("IDENTIFIER_INVALID", identifier_role="domain" if domain else "deployment_or_version",
+                       identifier_shape=_identifier_shape(value))
+    if any(secret.lower() in value.lower() for secret in sensitive):
         raise _Failure("IDENTIFIER_INVALID")
     return value
 
@@ -690,6 +713,8 @@ def probe(environ, *, transport=None, clock=None):
         result["code"] = failure.code
         if failure.code == "PAGINATION_UNVERIFIED" and failure.classes:
             _observe(diagnostics, "schema", "pagination_unverified", **failure.classes)
+        if failure.code == "IDENTIFIER_INVALID" and failure.classes:
+            _observe(diagnostics, "schema", "identifier_invalid", **failure.classes)
         if failure.code == "SCHEMA_UNSUPPORTED":
             _observe(diagnostics, "schema", "schema_unsupported")
     except Exception:

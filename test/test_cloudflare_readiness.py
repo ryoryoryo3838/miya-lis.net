@@ -1561,6 +1561,29 @@ class DiagnosticTests(unittest.TestCase):
                 self.assertEqual((status, result["code"]), (2, "PAGINATION_UNVERIFIED"))
                 self.assertEqual(result["diagnostics"][-1]["pagination_field"], "total_pages")
 
+    def test_invalid_domain_identifier_reports_only_closed_shape(self):
+        module = load_probe(self)
+        for value, shape in (("e" * 40, "hex40"), ("e" * 31, "hex_other"), (V1, "uuid"), (7, "type"),
+                             ("PRIVATE-" + TOKEN[:20], "other")):
+            with self.subTest(shape=shape):
+                domains = domains_page()
+                domains["result"][0]["id"] = value
+                responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in
+                             (deployments_page(), versions_page(), domains)]
+                status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "IDENTIFIER_INVALID"))
+                self.assertEqual(result["diagnostics"][-1], {"phase": "schema", "event": "identifier_invalid",
+                                                             "identifier_role": "domain", "identifier_shape": shape})
+                self.assertNotIn("PRIVATE-", json.dumps(result))
+        domains = domains_page()
+        domains["result"][0]["id"] = ACCOUNT
+        responses = [MeteredHTTPResponse(json.dumps(body).encode()) for body in
+                     (deployments_page(), versions_page(), domains)]
+        status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
+        self.assertEqual((status, result["code"]), (2, "IDENTIFIER_INVALID"))
+        self.assertNotIn("identifier_invalid", json.dumps(result["diagnostics"]),
+                         "a credential-matching identifier is refused without any shape observation")
+
     def test_successful_envelope_accepts_null_errors(self):
         module = load_probe(self)
         bodies = [deployments_page(), versions_page(), domains_page(), deployments_page()]
