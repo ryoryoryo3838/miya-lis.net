@@ -1,117 +1,110 @@
-# Safe public snapshot build — isolated, build-only
+# Safe public snapshot build — native Forester 6
 
-**Status: local gates and pinned native rendering exercised; CI deliberately BLOCKED.**
-The JSON-only `tree_of_md` adapter has no reviewed committed full revision/build driver in this change. `.github/safe-web-pins.json` therefore contains `null` converter fields. Both CI preflight and CI build stop with `SW_PIN` before accessing the content repository. This is not a working/green GitHub Actions claim.
+**code-only candidate for an approved synthetic build-only dry run. No production deployment.**
 
-## Boundary
+The canonical converter is `tree_of_md`. `config/pins.json` selects the reviewed source revision `a98f2800a88748381fcf9821d64e713925a0a027`, its real locked source-only build driver `nix develop --no-write-lock-file --command python3 scripts/build-public-cli.py`, and regular executable `_build/public-cli/tree_of_md`. Fixed Forester source and dependencies remain pinned. Only separately approved synthetic inputs may use this candidate.
 
-- Consume an already reviewed **public-only** snapshot; do not authorize publication here.
-- No vault discovery, vault checkout, legacy compile, `publish.from`, attachment copier, raw-content fallback, or publication shorthand changes. `%%p%%` remains **private**.
-- Preserve every approved ID and case, and existing routes. IDs are never minted or normalized.
-- Do not invoke the old site's `site/build.sh`, existing theme/lock, old deployment workflow, or Wrangler. This path uses the native theme bundled with the independently pinned Forester 6 package.
-- The new workflow is manual **build only**. There is no live deploy step or Cloudflare product change. A future reviewed deployment remains Workers + Wrangler 4.
+## Responsibilities and boundary
 
-## Snapshot format and approval anchor
+- The Markdown vault remains the private source of truth. Locally reviewed public projection and the private `miya-lis-public` input repository are separate from site implementation.
+- This consumer validates an already authorized **public-only snapshot**; links, titles and reachability do not grant publication permission. `%%p%%` remains private.
+- No vault discovery/checkout, whole-file `publish.from`, raw-content fallback, attachment copier or publication shorthand change.
+- `theme/` contains active trusted site code; `config/`, `scripts/`, `test/` and `docs/` have separate responsibilities. `_build/` and `dist/` are Git-ignored outputs.
+- This distribution omits old Git history, `legacy/`, `site/`, cached credentials, generated output and real Markdown notes. Licensed owned font/assets and their source-code provenance are retained; that metadata is not an archive of private notes.
+- Native Forester assets and semantics remain authoritative. The site-specific shell is an explicitly trusted presentation layer, **not** an invented Forester template API or a renderer fork.
+- The only workflow is a build-only push trigger for `ci/synthetic-dry-run-*`. No manual dispatch, production branch trigger or deployment is provided. Production publication needs a separate approval.
 
-A snapshot directory (and the snapshot commit's entire root Git tree) contains **exactly**:
+## Public snapshot format
+
+A snapshot directory and the specified snapshot commit's root Git tree contain exactly:
 
 ```text
 manifest.json
 public-forest.json
 ```
 
-The manifest has no optional keys or arbitrary command/path fields:
+The manifest has no optional keys or command/path fields:
 
 ```json
 {
   "schema": "forester-public-snapshot-v1",
   "files": {
-    "public-forest.json": "<64 lowercase hex characters: SHA-256 of exact forest bytes>"
+    "public-forest.json": "<SHA-256: 64 lowercase hexadecimal characters>"
   }
 }
 ```
 
-`SNAPSHOT_SHA256` / `--manifest-sha256` is the SHA-256 of the **exact manifest bytes**, not the forest digest. This external approval anchor authenticates the manifest; the manifest in turn authenticates every allowlisted input. Whitespace changes require a new approval digest. The README-only initial content-repository commit is intentionally not a valid snapshot.
+The external `SNAPSHOT_SHA256` / `--manifest-sha256` approval anchor hashes the **exact manifest bytes**, not the forest itself. The manifest then binds the exact allowlisted forest bytes; whitespace changes require a new approval digest. A README-only content commit is not a snapshot.
 
-`public-forest.json` uses the `forester-public-v2` wire contract: strict keys/discriminants, named root trees, anonymous/named nested sections, structured transclusions with boolean header/TOC flags, sanitized attribution and metadata, empty assets. Unknown/source keys, duplicate JSON keys, case-fold ID collisions, non-ASCII/path IDs, invalid dates, missing targets and containment/transclusion cycles fail closed. Named descendants are defined inline, not duplicated as root `.tree` files.
+The `forester-public-v2` contract contains named public roots, nested named/anonymous sections, typed transclusions with header/TOC flags, sanitized attribution and metadata, and empty content assets. Unknown/duplicate/source keys, unsafe or case-colliding IDs, invalid dates, missing targets and containment/transclusion cycles fail closed. The converter emits one `.tree` per root; nested named definitions also acquire independent native routes without duplicate root definitions.
 
-The site consumer is a second validation boundary, **not** a replacement for the producer's public projection or the converter's independent Markdown/IR validation. It checks unvetted HTML/raw Forester/assets/file references and declarations **outside recognized literal code/math**, without rewriting the input. Closed backtick/tilde fences, top-level indented code at a block boundary, exact-length inline backtick spans, and closed `$`/`$$` math spans are masked only for this defensive wire check. The internal non-whitespace mask preserves offsets, LF/CRLF, blank lines and token separation; the exact original snapshot bytes reach `tree_of_md`. Inline spans stop at paragraph/block boundaries, and separate Markdown chunks are never joined.
+The site's defensive Markdown guard recognizes literal code/math without rewriting the bytes passed to the independent converter. Its internal mask preserves offsets, LF/CRLF, blank lines and token separation. Unclosed literals, lone CR, raw Forester/HTML, unsupported assets and declarations remain fail-closed. Container-relative code is not guessed, and separate chunks are not concatenated. This is neither a publication authority nor a complete Markdown parser.
 
-Unclosed/mismatched fences are refused; unmatched inline delimiters cannot shield forbidden syntax. Lone CR and forbidden syntax outside literal spans remain fail-closed. Container-relative list/quote indentation is deliberately not guessed: indented code following a list/quote in the same chunk can still be over-rejected. This is not a full Markdown parser, a third publication/privacy parser, or complete Markdown compatibility. The real converter still parses the original chunks and refuses unsupported or unsafe constructs before tree emission. No actual notes were used in these checks.
+Limits: manifest 64 KiB; forest 16 MiB; individual strings 1 MiB of strict UTF-8 bytes; arrays/trees 20,000; containment depth 64; final artifact 128 MiB / 30,000 files. Escaped lone surrogates, traversal, namespace overlap, unsafe ancestor links, symlink/hardlink/special inputs and unknown files are refused. Accepted bytes are not normalized or repaired. Both staging and HTML destinations must be fresh; existing output is never merged or recursively replaced on refusal.
 
-Limits: manifest 64 KiB; forest 16 MiB; individual strings 1 MiB of strict UTF-8 encoded bytes (not Unicode codepoints); arrays/trees 20,000; containment depth 64; artifact 128 MiB and 30,000 files. Symlinks in input/output ancestors, symlink/hardlink/special input files, traversal, overlapping namespaces and extra files are refused. Staging and final HTML destinations must not already exist. A replacement/revocation build therefore cannot merge with stale outputs; use a new output directory each time. Existing output directories are preserved on refusal, not recursively deleted.
+## Local build
 
-Oversized strings and non-scalar strings (including escaped lone UTF-16 surrogates in JSON) fail with generic `SW_SCHEMA` before staging is created. Accepted JSON bytes are copied unchanged: this gate does not normalize Unicode, remove a string BOM, repair invalid UTF-8, or rewrite line endings. Existing control-character and lone-CR refusals still apply.
-
-## Local entry points
-
-Run focused tests:
+Compile only trusted client sources with the fixed toolchain and unchanged lock:
 
 ```sh
-python3 -m unittest discover -s test -p test_safe_web.py -v
+python3 scripts/build-theme-client.py --site-root .
 ```
 
-Tests use synthetic null-pin fixtures rather than assuming checked-in converter pins remain null. A separate syntax-only ready-pin fixture exercises successful `validate_pins` and `ci-config`; its placeholder revision and build argv are test-only, never real converter provenance or a CI-green claim. Null pins still reject before any content/output arguments are accessed. The test runner reports the current suite count.
+The builder copies only explicit root configs/locks and `theme/client/` into an owned workspace. It constructs its compiler environment without inherited content tokens or user OCaml/Nix settings, sets `DUNE_ROOT`, bounds subprocesses, kills the compiler process group on timeout, and atomically publishes a fresh regular JS file only after source-hash recheck. It does not solve a new lock or copy archive/content inputs.
 
-Stage a reviewed synthetic snapshot:
-
-```sh
-python3 scripts/safe-web.py stage \
-  --snapshot-dir /approved/snapshot \
-  --out-dir /fresh/scratch/stage \
-  --content-rev FULL_40_CHARACTER_COMMIT \
-  --manifest-sha256 MANIFEST_SHA256
-```
-
-Local staging validates revision **syntax**, not Git provenance for an arbitrary directory. CI additionally reads back both checked-out HEADs and reads only the two allowlisted regular Git blobs at the specified exact content revision. The caller-provided manifest digest authenticates local bytes.
-
-Build once the actual reviewed adapter exists:
+Build an independently approved snapshot:
 
 ```sh
 python3 scripts/safe-web.py build \
   --snapshot-dir /approved/snapshot \
-  --out-dir /fresh/scratch/public-html \
+  --out-dir /fresh/output/public-html \
   --content-rev FULL_40_CHARACTER_CONTENT_COMMIT \
   --manifest-sha256 MANIFEST_SHA256 \
   --converter /reviewed/bin/tree_of_md \
   --converter-rev FULL_40_CHARACTER_CONVERTER_COMMIT \
   --converter-sha256 REVIEWED_BINARY_SHA256 \
   --forester /pinned/forester/bin/forester \
-  --home EXISTING_PUBLIC_HOME_ID
+  --home EXISTING_APPROVED_PUBLIC_HOME_ID \
+  --theme-config config/theme.json --site-root .
 ```
 
-The only converter interface invoked is:
+Omit both theme flags to retain the pinned standard native presentation. Local revision arguments verify syntax and explicit binary/digest attestations; they are not Git provenance for arbitrary directories. CI additionally checks exact checkout revisions and the two allowlisted content Git blobs and builds the reviewed converter source afresh. No command comes from the snapshot.
+
+Fixed Forester source: `f8fb5f5d88923db36643cf9c20c662adff969c98`, banner **`6.0~dev`**, not a claim of stable 6.0 identity. The renderer checks the binary against the fixed Nix package, keeps native `style.css`, `min.js`, KaTeX and font/icon bytes unchanged, and never uses `--dev` or legacy XML/XSL navigation.
+
+## Trusted presentation and audit
+
+- `config/theme.json` explicitly lists the active assets and source-only notices. No glob grants approval. Unknown theme files/directories, links, mismatched mappings, late source changes and native asset collisions are refused.
+- The current static inventory declares 254 byte-preserved font files and two public license notices. Together with two CSS files and the freshly compiled JS, there are 259 owned public assets.
+- `theme/notices/INTEGRATION.md` and strict-JSON `PROVENANCE.json` are source-only documentation: bounded, hashed and rechecked, never copied into the public artifact.
+- Static navigation/home fragment roots are **direct body children**, before unchanged native `#main-wrapper`. A new wrapper would break the client's deliberately scoped `body > #nav-toggle-global` selector. Native header/article/TOC/backmatter bytes remain unchanged.
+- Native head links remain; additional links load `/theme/styles/fonts.css`, `/theme/styles/miya.css` and `/theme/client/hero.js` explicitly.
+- Only the reviewed navigation fragment's single `{{MENU}}` marker is substituted, using escaped validated **public root** IDs/titles in source order. Content is never used as a template, and nested/anonymous/private targets do not automatically gain menu entries.
+- The root page must be an exact byte-copy of the decorated approved home route, with its expected digest. The client progressively enables the landing hero for `/` and `/index.html`; a direct home-route link starts in content mode unless `#hero` is requested.
+- Native assets, owned assets, generated pages and native public `forest.json` have separate exact hash inventories. Root HTML, search metadata and every approved route/asset are required. Extra or stale output fails closed.
+- Leak signatures remain defense in depth, not a universal secret classifier. The compiled client's existing runtime `offset`/`aliases` exception is confined to its hashed asset. For the two fixed owned CSS files only, exact complete `outline-offset` / `--hero-mark-offset` declaration token spans are distinguished from serialized source fields; quoted/bare payload fields, other property names, paths, secrets and canaries still fail. Native HTML/search receive no CSS exception.
+
+## Verification scope
+
+Run the portable synthetic unit and distribution suites:
 
 ```sh
-tree_of_md --public-forest INPUT --out-dir OUTPUT
+python3 -B -m unittest discover -s test -p 'test*.py' -v
+python3 -B test/forester_version_test.py
 ```
 
-A caller-supplied converter revision/hash is an explicit local attestation; it is not a proof that an arbitrary binary came from a Git revision. CI builds the exact reviewed checkout afresh using the reviewed source-only build driver and hashes that output. No build commands are accepted from the content manifest.
+Real compiler tests require explicit `TC_REAL_BUILD=1`; native integration tests require explicitly supplied `SW_NATIVE_FORESTER` and, where applicable, `SW_PUBLIC_CONVERTER`. No test discovers a local worktree binary automatically. Passing unit fixtures is not a fresh compiler/native/browser acceptance claim.
 
-The native renderer verifies its resolved binary against `nix eval` of the fixed full-revision flake's output and checks `6.0~dev`. It copies only web assets from that pinned package's default theme to writable scratch directories, not Nix directory modes. It never uses `--dev`. It checks all generated routes and the final inventory before moving the HTML directory to the requested fresh destination. Tool failures expose generic codes, not their stdout/stderr or file paths.
+`test/native_theme_production_browser.mjs` serves the **canonical rendered directory byte-for-byte**, without a fixture HTML/asset adapter. It checks real hero/menu/header, desktop/mobile placement, actual self-hosted glyphs, native TOC/collapse/backmatter/KaTeX/search and duplicate initialization. Its unowned-CSS contrast explicitly removes the owned class in the browser, not in served artifact bytes. `test/native_theme_browser.mjs` remains a separately labeled test-only adapter for missing/partial/unowned shell boundary cases; that result is not a production-renderer acceptance claim.
 
-Local synthetic verification also exercised the **real producer → snapshot staging → JSON-only converter → pinned Forester** path: the shared producer-v2 fixture yielded eight approved named routes and 88 audited web files. A separate synthetic extension with inline and display `$`/`$$` `x < y` passed the same path and preserved TeX in the native HTML's `data-tex`. KaTeX's final browser rendering was not exercised here. The producer still refuses some TeX command examples as `unsupported-raw`; consumer masking does not bypass that upstream boundary. The converter worktree was uncommitted, so its baseline revision and binary hash were local attestations only, not a reviewed committed pin or a CI-green claim.
+Machine-specific inventories, execution logs and local acceptance reports are not distributed. Prior local browser results must not be used as acceptance of newly compiled client bytes. Hosted runner acceptance and production authorization are separate outcomes.
 
-## CI pins and secret scope
+## CI and remaining gates
 
-GitHub Actions references were resolved read-only from GitHub's tag API:
+`.github/workflows/synthetic-dry-run.yml` starts only on a push to `ci/synthetic-dry-run-*` in the approved site repository. `scripts/synthetic-ci-config.py` also checks the event/repository/branch, exact reviewed converter driver and strict `config/synthetic-inputs.json` before installation or content access. Inputs are fixed site-code fields (`dataset: synthetic-only`, full lowercase content commit, exact manifest digest, approved home ID), not workflow-dispatch arguments. Any null/missing/malformed anchor returns `SW_SYNTHETIC_INPUT` without creating runner outputs; wrong scope returns `SW_SYNTHETIC_SCOPE`. The independent null fixture remains active after reviewed values are filled.
 
-- `actions/checkout` v4: `11d5960a326750d5838078e36cf38b85af677262`
-- `actions/upload-artifact` v4: `ea165f8d65b6e75b540449e92b4886f43607fa02`
-- `cachix/install-nix-action` v31 (peeled annotated tag): `13d8dd58da0234aa297dedd986986ccb8e7f3e24`
+All checkout/upload/Nix actions are immutable revisions. Permissions are read-only, all three checkouts disable credential persistence/submodules/LFS and use depth 1, no Actions cache is used, and source-only client compilation precedes content checkout. `test_owned_css_leak.py` is explicitly run in CI. The only uploaded artifact is audited synthetic HTML/assets with one-day retention; snapshots, Markdown, trees, XML, checkouts, logs and tool binaries are excluded.
 
-Forester revision: `f8fb5f5d88923db36643cf9c20c662adff969c98`.
-Flake: `git+https://tangled.org/jonmsterling.com/ocaml-forester?ref=forester-6.0-dev&rev=f8fb5f5d88923db36643cf9c20c662adff969c98#legacyPackages.x86_64-linux.forester`.
+`PUBLIC_CONTENT_TOKEN` is the sole explicit secret, used only by the `approved-content` checkout of `ryoryoryo3838/miya-lis-public`. It needs least-privilege read access to that repository, not the private Markdown backup. It is never a job-wide environment variable or passed to compilers. Both site and snapshot repositories remain private.
 
-Before unblocking, independently review and populate all three converter fields: full Git revision, reproducible locked build argv, and real relative executable path ending in `tree_of_md` or `tree_of_md.exe`. The existing converter Devbox config alone is not a verified CI build driver/toolchain. The source-only argv is never evaluated by a shell; only explicit `dune`, `nix`, `devbox`, or `opam` entry points are allowed. Verify that driver on the real runner before making any CI-green claim.
-
-`PUBLIC_CONTENT_TOKEN` must be a separate read-only, least-privilege credential restricted to `ryoryoryo3838/miya-lis-public` only. It is supplied only to the content checkout action; credentials are not persisted. No secret was created, read, printed, changed or tested here. The old private vault GitHub backup stays unchanged. There is no cache step and no artifact upload of snapshot JSON, Markdown, trees, XML, Git checkouts, logs or tool binaries.
-
-The uploaded web directory must contain **both root `index.html` redirect and public native `forest.json` search metadata**, every exact approved named HTML route, and every byte-hash-verified pinned theme CSS/JS/font/icon asset. Omission of any required file blocks the artifact with `SW_OUTPUT`. Local refusal checks deleted each expected file separately from scratch copies of the actual eight-route/88-file native artifact: all incomplete copies were refused, the complete artifact passed, and the original artifact's byte hashes stayed unchanged. That public search JSON is necessary for the native theme; it is not the source snapshot. Extra routes/files or source-path/source-metadata/token/canary leak signatures block the whole artifact. Leak signatures are defense in depth, not a universal secret classifier or proof of publication authorization.
-
-## Remaining approval gates
-
-- Apply these new source files to the actual site only after its write-root restriction is explicitly resolved. This agent did not bypass it.
-- Commit/review the real `tree_of_md` adapter and locked build driver; fill pins with observed values, not placeholders.
-- Complete XML/native graph/transclusion/metadata and browser route/load/security checks on the shared synthetic pipeline; local JSON staging and audited HTML E2E are now exercised. Final browser KaTeX rendering remains a separate check.
-- Independent read-only source/hash review, actual content review, then separate deployment approval and local Wrangler 4 dry-run. No dispatch, push, commit, deployment, visibility or secret changes were performed by this agent.
+The parent operator owns commit/push and the real GitHub Actions run. Local preparation performs none of those operations. A successful hosted synthetic build would still not authorize real-note upload, a default-branch change, visibility changes, history rewriting or Cloudflare deployment. Retained `wrangler.jsonc` is inert configuration; this workflow never invokes it.

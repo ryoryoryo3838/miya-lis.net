@@ -1,0 +1,13 @@
+{
+  "schema": "safe-web-pins-v1",
+  "content_repository": "ryoryoryo3838/miya-lis-public",
+  "converter_repository": "ryoryoryo3838/tree-md",
+  "converter_revision": "a98f2800a88748381fcf9821d64e713925a0a027",
+  "converter_build_argv": [
+    "nix", "develop", "--no-write-lock-file", "--command",
+    "python3", "scripts/build-public-cli.py"
+  ],
+  "converter_executable": "_build/public-cli/tree_of_md",
+  "forester_revision": "f8fb5f5d88923db36643cf9c20c662adff969c98",
+  "forester_flake": "git+https://tangled.org/jonmsterling.com/ocaml-forester?ref=forester-6.0-dev&rev=f8fb5f5d88923db36643cf9c20c662adff969c98#legacyPackages.x86_64-linux.forester"
+}

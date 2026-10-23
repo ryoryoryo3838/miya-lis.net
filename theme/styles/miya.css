@@ -1,0 +1,251 @@
+/* SPDX-License-Identifier: CC0-1.0
+   Trusted presentation overrides, loaded AFTER pinned native style.css.
+   No unscoped selector; native article/TOC/backmatter/client stay authoritative. */
+body.miya-native {
+  --miya-gothic: "Inria Sans", "BIZ UDGothic", "BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans CJK JP", sans-serif;
+  --hero-type-size: clamp(6rem, min(19.5vw, 48vh), 28rem);
+  --hero-mark-size: calc(var(--hero-type-size) * .12 / .69);
+  --hero-mark-offset: calc(var(--hero-type-size) * .42);
+  --hero-mark-shift: calc(var(--hero-type-size) * .012);
+  --nav-panel-width: 200px;
+  --nav-clearance: clamp(3.75rem, 5.5vw, 5.5rem);
+  --miya-mincho: "BIZ UDMincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  margin: 0;
+  font-family: var(--miya-gothic);
+  font-size: 12pt;
+  line-height: 1.55;
+  background: #fff;
+  color: #111;
+  color-scheme: light;
+}
+body.miya-native #main-wrapper {
+  margin: 1.5rem clamp(.5rem, 2vw, 2rem) 2rem var(--nav-clearance);
+}
+body.miya-native #grid-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 90ex) minmax(12rem, 18rem);
+  gap: 1.5rem;
+  align-items: start;
+}
+body.miya-native #grid-wrapper > article {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  font-family: var(--miya-mincho);
+  overflow-wrap: anywhere;
+}
+body.miya-native #grid-wrapper :is(h1, h2, h3, h4, h5, h6, .metadata, .taxon, .slug, .doi, .orcid),
+body.miya-native #toc {
+  font-family: var(--miya-gothic);
+}
+body.miya-native #grid-wrapper :is(.taxon, .section-number) {
+  color: #444;
+}
+body.miya-native #toc {
+  display: block;
+  margin: 0;
+  min-width: 0;
+  position: sticky;
+  top: 1.5rem;
+  overflow-wrap: anywhere;
+}
+body.miya-native #toc > ul { padding-left: .25rem; }
+body.miya-native #grid-wrapper .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+}
+@media (max-width: 1000px) {
+  body.miya-native #grid-wrapper { display: block; }
+  body.miya-native #toc { position: static; margin-top: 1.5rem; }
+}
+body.miya-native .nav-toggle {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+body.miya-native .nav-toggle--global {
+  position: fixed;
+  top: .5rem;
+  left: .5rem;
+  z-index: 11;
+  width: max(44px, calc(var(--hero-type-size) * .2));
+  height: max(44px, calc(var(--hero-type-size) * .2));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--miya-gothic);
+  font-size: var(--hero-type-size);
+  font-weight: 900;
+  line-height: 0;
+}
+body.miya-native .nav-toggle--global > span {
+  transform: translateY(-.32em);
+  pointer-events: none;
+}
+body.miya-native .nav-panel {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 30;
+  background: #1a1a1a;
+  color: #eee;
+  border-radius: .5rem;
+  padding: 1.5rem;
+  min-width: var(--nav-panel-width);
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100svh - 2rem);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+  font-family: var(--miya-gothic);
+}
+body.miya-native .nav-panel[hidden] { display: none; }
+body.miya-native .nav-panel a {
+  color: #ccc;
+  text-decoration: none;
+  display: block;
+  padding: .4rem 0;
+}
+body.miya-native .nav-panel a:hover { color: #fff; }
+body.miya-native .nav-close {
+  display: block;
+  width: 44px;
+  height: 44px;
+  margin: -.75rem -.75rem .25rem auto;
+  border: 0;
+  background: transparent;
+  font: 1.5rem var(--miya-gothic);
+  color: #eee;
+  cursor: pointer;
+}
+body.miya-native .nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: #000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+body.miya-native .nav-overlay.is-visible {
+  opacity: .3;
+  visibility: visible;
+  pointer-events: auto;
+}
+body.miya-native :is(.nav-toggle, .nav-close, .nav-panel a):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Landing shell is a sibling of, never a replacement for, #main-wrapper. */
+body.miya-native:not(.hero-page) :is(.hero, .persistent-header) { display: none; }
+body.miya-native.hero-page > .nav-toggle--global { display: none; }
+body.miya-native.hero-page #main-wrapper { margin-top: 0; }
+body.miya-native.hero-page #grid-wrapper {
+  /* HOME targets this element: clearance must be INSIDE its anchor box. */
+  padding-top: calc(var(--hero-mark-size) + 1.5rem);
+}
+body.miya-native.hero-page #toc { top: calc(var(--hero-mark-size) + 1.5rem); }
+body.miya-native .hero {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+body.miya-native .hero-title {
+  margin: auto 0;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--miya-gothic);
+  font-size: var(--hero-type-size);
+  font-weight: 900;
+  line-height: .85;
+  text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .02em;
+  padding-left: .5rem;
+}
+body.miya-native .hero-line { display: inline-block; white-space: nowrap; }
+body.miya-native .hero-line--net { position: relative; }
+body.miya-native .hero-period { color: inherit; font: inherit; user-select: none; }
+body.miya-native .hero-period-placeholder { display: none; visibility: hidden; }
+body.miya-native .hero-period.is-fixed + .hero-period-placeholder { display: inline; }
+body.miya-native .hero-period.is-fixed {
+  position: fixed;
+  top: .5rem;
+  left: .5rem;
+  z-index: 11;
+  width: max(44px, calc(var(--hero-type-size) * .2));
+  height: max(44px, calc(var(--hero-type-size) * .2));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--miya-gothic);
+  font-size: var(--hero-type-size);
+  font-weight: 900;
+  line-height: 0;
+}
+body.miya-native .hero-period.is-fixed > span { transform: translateY(-.32em); }
+body.miya-native .hero-home {
+  /* A large positioned wordmark's text hit area extends below its short
+     line box; keep the later HOME control above that invisible area. */
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  margin-bottom: 1.5rem;
+  margin-left: calc(.5rem + var(--hero-mark-offset) - 1.1897em);
+  font-family: var(--miya-gothic);
+  font-weight: 900;
+  font-size: var(--hero-mark-size);
+  line-height: 1;
+  color: #666;
+  text-decoration: none;
+}
+body.miya-native .persistent-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: .5rem 1rem .5rem calc(.5rem + var(--hero-mark-offset));
+  background: #fff;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--hero-mark-size) + 1rem);
+  font-family: var(--miya-gothic);
+  font-size: var(--hero-mark-size);
+  font-weight: 900;
+  line-height: .85;
+}
+body.miya-native .persistent-header.is-visible { opacity: 1; visibility: visible; pointer-events: auto; }
+body.miya-native .persistent-header-link {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+  transform: translateY(var(--hero-mark-shift));
+}
+body.miya-native :is(.hero-home, .persistent-header-link):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+body.miya-native :is(.hero-home, .persistent-header-link, .hero-period):hover { color: #555; }
+@media (prefers-reduced-motion: no-preference) {
+  body.miya-native .persistent-header { transition: opacity .15s ease; }
+}

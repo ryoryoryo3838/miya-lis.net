@@ -21,7 +21,7 @@ class HeroNavCompatibilityTest(unittest.TestCase):
         if dune is None:
             self.fail("dune must be available on PATH")
         compiled = subprocess.run(
-            [dune, "build", "lib_theme/hero.bc.js", "-j2", "--stop-on-first-error"],
+            [dune, "build", "theme/client/hero.bc.js", "-j2", "--stop-on-first-error"],
             cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, timeout=180,
         )
@@ -31,7 +31,7 @@ class HeroNavCompatibilityTest(unittest.TestCase):
             self.fail("Node must be available on PATH")
         browser = subprocess.run(
             [node, str(ROOT / "test/hero_nav_compat_test.mjs"),
-             str(ROOT / "_build/default/lib_theme/hero.bc.js")],
+             str(ROOT / "_build/default/theme/client/hero.bc.js")],
             cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, timeout=90,
         )

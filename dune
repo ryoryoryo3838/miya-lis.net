@@ -1,1 +1,1 @@
-(dirs :standard \ tools)
+(dirs :standard \ tools legacy)

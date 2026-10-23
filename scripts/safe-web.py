@@ -4,13 +4,15 @@ import argparse
 import hashlib
 import json
 import os
+import posixpath
 import re
-import shutil
 import stat
 import subprocess
 import sys
 import tempfile
 from datetime import date
+from html import escape
+from html.parser import HTMLParser
 from pathlib import Path
 
 MAX_MANIFEST = 65536
@@ -19,6 +21,321 @@ MAX_STRING = 1024 * 1024
 MAX_JPEG = 8 * 1024 * 1024
 MAX_JPEGS = 128
 MAX_JPEG_TOTAL = 32 * 1024 * 1024
+MAX_THEME = 64 * 1024 * 1024
+
+
+def owned_asset_leak(data, *, compiled=False, css=False):
+    # Only the two fixed owned CSS files may contain these complete declarations.
+    # Token spans, not an entire-file waiver: serialized fields/paths/secrets
+    # elsewhere in the same CSS still fail. Quoted keys never match this grammar.
+    css_tokens = {(match.start(1), match.end(1)) for match in re.finditer(
+        rb'(?:^|[;{}])[ \t\r\n\f]*(?:--hero-mark-|outline-)(offset\s*:)', data, re.I)} if css else set()
+    for match in LEAK.finditer(data):
+        # Existing js_of_ocaml runtime exception, compiled-client only.
+        if compiled and re.fullmatch(rb'(?:offset|aliases)\s*[:=]', match[0], re.I):
+            continue
+        if (match.start(), match.end()) in css_tokens:
+            continue
+        return True
+    return False
+
+
+def site_relative(value, prefix):
+    if (type(value) is not str or len(value) > 512 or
+            not value.startswith(prefix) or
+            any(not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', part) or part in {'.', '..'}
+                for part in value.split('/'))):
+        raise GateError('SW_THEME')
+    return value
+
+
+def theme_inventory(root, expected):
+    """No unlisted files, links or directories in the active theme namespace."""
+    required_dirs = {'theme', 'theme/assets', 'theme/styles', 'theme/layout', 'theme/client'}
+    for source in expected:
+        if source.startswith('theme/'):
+            required_dirs.update(p.as_posix() for p in Path(source).parents if p.as_posix() != '.')
+    found = set()
+    for directory, dirs, names in os.walk(checked_path(root / 'theme'), followlinks=False):
+        for name in dirs:
+            path = checked_path(Path(directory) / name)
+            if path.relative_to(root).as_posix() not in required_dirs:
+                raise GateError('SW_THEME')
+        for name in names:
+            path = checked_path(Path(directory) / name)
+            source = path.relative_to(root).as_posix()
+            if source not in expected:
+                raise GateError('SW_THEME')
+            found.add(source)
+    if found != {p for p in expected if p.startswith('theme/')}:
+        raise GateError('SW_THEME')
+
+
+def load_trusted_theme(config, site_root):
+    """Load caller-owned site code, never a field of the public snapshot."""
+    root, config = checked_path(site_root), checked_path(config)
+    if config != root / 'config' / 'theme.json':
+        raise GateError('SW_THEME')
+    config_bytes = read_bounded(config, MAX_MANIFEST)
+    spec = strict_json(config_bytes)
+    object_keys(spec, {'schema', 'styles', 'client', 'layout', 'assets', 'notices'})
+    if spec['schema'] != 'safe-web-theme-v1':
+        raise GateError('SW_THEME')
+    styles = [{'source': f'theme/styles/{name}.css', 'output': f'theme/styles/{name}.css'}
+              for name in ('fonts', 'miya')]
+    client = {'source': '_build/default/theme/client/hero.bc.js', 'output': 'theme/client/hero.js'}
+    layout = {'home': 'theme/layout/home.html', 'navigation': 'theme/layout/navigation.html'}
+    if spec['styles'] != styles or spec['client'] != client or spec['layout'] != layout:
+        raise GateError('SW_THEME')
+    sources = {'config/theme.json': hashlib.sha256(config_bytes).hexdigest()}
+    assets = {}
+    total = len(config_bytes)
+
+    def read(source):
+        nonlocal total
+        path = checked_path(root / source)
+        data = read_bounded(path, MAX_FOREST)
+        total += len(data)
+        if total > MAX_THEME:
+            raise GateError('SW_SIZE')
+        if owned_asset_leak(data, compiled=source == '_build/default/theme/client/hero.bc.js',
+                            css=source in {'theme/styles/fonts.css', 'theme/styles/miya.css'}):
+            raise GateError('SW_LEAK')
+        if Path(source).suffix in {'.css', '.js', '.html', '.ml'} and re.search(
+                rb'(?:reload2\.js|forester\.js|\.(?:xml|xsl)(?:["\x27\s?#<]|$))', data, re.I):
+            raise GateError('SW_THEME')
+        sources[source] = hashlib.sha256(data).hexdigest()
+        return data
+
+    for entry in [*styles, client, *array(spec['assets'])]:
+        object_keys(entry, {'source', 'output'})
+        source, output = entry['source'], entry['output']
+        if entry not in styles and entry != client:
+            site_relative(source, 'theme/assets/')
+            if source != output or Path(source).suffix not in {'.woff', '.woff2', '.ttf', '.png', '.ico', '.svg', '.webmanifest', '.txt'}:
+                raise GateError('SW_THEME')
+            if (Path(source).suffix == '.txt' and source != 'theme/assets/notices/CC0-1.0.txt' and
+                    not re.match(r'(?:LICENSE|NOTICE|OFL)', Path(source).name)):
+                raise GateError('SW_THEME')
+        if output in assets or source in sources:
+            raise GateError('SW_THEME')
+        data = read(source)
+        assets[output] = (data, hashlib.sha256(data).hexdigest())
+    home = read(layout['home']).decode('utf-8', errors='strict')
+    navigation = read(layout['navigation']).decode('utf-8', errors='strict')
+    for source in ['theme/client/dune', 'theme/client/hero.ml']:
+        read(source)
+    source_only_docs = {'theme/notices/INTEGRATION.md', 'theme/notices/PROVENANCE.json'}
+    for source in array(spec['notices']):
+        site_relative(source, 'theme/')
+        if source in sources:
+            raise GateError('SW_THEME')
+        if source not in source_only_docs:
+            site_relative(source, 'theme/assets/')
+            if (Path(source).suffix not in {'.md', '.txt'} or
+                    not re.match(r'(?:LICENSE|NOTICE|OFL|PROVENANCE)', Path(source).name)):
+                raise GateError('SW_THEME')
+        data = read(source)
+        if source == 'theme/notices/PROVENANCE.json':
+            # Provenance is bounded source-only data, never asset authority.
+            try:
+                strict_json(data.decode('utf-8', errors='strict'))
+            except UnicodeError:
+                raise GateError('SW_SCHEMA') from None
+    for relative, (data, _) in assets.items():
+        if relative.endswith('.svg'):
+            validate_fragment(data.decode('utf-8', errors='strict'), menu=False, assets=set(assets))
+        if relative.endswith('.css'):
+            css = data.decode('utf-8', errors='strict')
+            if re.search(r'@import\b|\\', css, re.I):
+                raise GateError('SW_THEME')
+            for value in re.findall(r'url\(([^)]*)\)', css, re.I):
+                value = value.strip(' \t\r\n\"\x27')
+                target = posixpath.normpath(posixpath.join(posixpath.dirname(relative), value)) if not value.startswith('/') else value[1:]
+                if target not in assets:
+                    raise GateError('SW_THEME')
+    validate_fragment(home, menu=False, assets=set(assets))
+    validate_fragment(navigation, menu=True, assets=set(assets))
+    theme_inventory(root, sources)
+    return {'root': root, 'assets': assets, 'sources': sources,
+            'home': home, 'navigation': navigation}
+
+
+def verify_trusted_theme(theme):
+    theme_inventory(theme['root'], theme['sources'])
+    for source, digest in theme['sources'].items():
+        data = read_bounded(checked_path(theme['root'] / source), MAX_FOREST)
+        if hashlib.sha256(data).hexdigest() != digest:
+            raise GateError('SW_THEME')
+
+
+class FragmentParser(HTMLParser):
+    """Constrained, reviewed static fragments, not a content template engine."""
+    tags = set('nav header footer section div ul ol li a button span p h1 h2 h3 h4 h5 h6 strong em small img br svg g path circle rect line polyline polygon title desc'.split())
+    void = {'img', 'br'}
+    reserved = {'main-wrapper', 'grid-wrapper', 'tree-container', 'home-link', 'site-shell'}
+    common_attrs = {'id', 'class', 'role', 'title', 'tabindex', 'hidden', 'inert'}
+    svg_attrs = set('xmlns xmlns:xlink viewbox width height fill fill-rule clip-rule stroke stroke-width stroke-linecap stroke-linejoin stroke-dasharray d cx cy r rx ry x y x1 x2 y1 y2 points transform focusable'.split())
+    tag_attrs = {'a': {'href', 'rel', 'target'}, 'button': {'type', 'disabled'},
+                 'img': {'src', 'alt', 'width', 'height', 'loading', 'decoding'}}
+
+    def __init__(self, assets):
+        super().__init__(convert_charrefs=True)
+        self.assets, self.ids, self.targets, self.stack = assets, set(), set(), []
+
+    def handle_starttag(self, tag, attrs):
+        if tag not in self.tags or len(dict(attrs)) != len(attrs):
+            raise GateError('SW_THEME')
+        for key, value in attrs:
+            allowed = self.common_attrs | self.tag_attrs.get(tag, set())
+            if tag in {'svg', 'g', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon'}:
+                allowed |= self.svg_attrs
+            if key not in allowed and not re.fullmatch(r'(?:data|aria)-[a-z0-9-]+', key):
+                raise GateError('SW_THEME')
+            if key == 'inert' and value not in {None, '', 'inert'}:
+                raise GateError('SW_THEME')
+            if value and ('{{' in value or '}}' in value or re.search(r'(?:javascript|data|file|vbscript)\s*:', value, re.I)):
+                raise GateError('SW_THEME')
+            if value and re.search(r'url\s*\(', value, re.I) and not re.fullmatch(r'url\(#[A-Za-z0-9_-]+\)', value):
+                raise GateError('SW_THEME')
+            if key == 'id':
+                if not value or value in self.ids or value in self.reserved:
+                    raise GateError('SW_THEME')
+                self.ids.add(value)
+            if key in {'src', 'href', 'xlink:href'}:
+                if not value or '\\' in value or '..' in value.split('/') or re.search(r'\.(?:xml|xsl)(?:$|[?#])', value, re.I):
+                    raise GateError('SW_THEME')
+                if key == 'src':
+                    if not value.startswith('/theme/assets/') or value[1:] not in self.assets:
+                        raise GateError('SW_THEME')
+                elif value == '/' or value.startswith('#') or re.fullmatch(r'https://[^\s<>]+|mailto:[^\s<>]+', value):
+                    pass
+                elif re.fullmatch(r'/[A-Za-z0-9-]{1,128}/', value):
+                    self.targets.add(value[1:-1])
+                else:
+                    raise GateError('SW_THEME')
+        if tag not in self.void:
+            self.stack.append(tag)
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self.void:
+            self.stack.pop()
+
+    def handle_endtag(self, tag):
+        if not self.stack or self.stack.pop() != tag:
+            raise GateError('SW_THEME')
+
+    def handle_decl(self, decl):
+        raise GateError('SW_THEME')
+
+    def handle_comment(self, text):
+        if '{{' in text or '}}' in text:
+            raise GateError('SW_THEME')
+
+
+def validate_fragment(text, *, menu, assets):
+    if len(text.encode('utf-8')) > MAX_MANIFEST or text.count('{{MENU}}') != int(menu):
+        raise GateError('SW_THEME')
+    inert = text.replace('{{MENU}}', '') if menu else text
+    if '{{' in inert or '}}' in inert:
+        raise GateError('SW_THEME')
+    parser = FragmentParser(assets)
+    parser.feed(text)
+    parser.close()
+    if parser.stack:
+        raise GateError('SW_THEME')
+    return parser
+
+
+class NativePageParser(HTMLParser):
+    """Find trusted fixed-template insertion points without reserializing DOM."""
+    def __init__(self, text):
+        super().__init__(convert_charrefs=False)
+        self.lines = [0]
+        self.lines.extend(match.end() for match in re.finditer('\n', text))
+        self.head_end, self.body, self.main = [], [], []
+        self.ids, self.scripts, self.styles = set(), [], []
+        self.feed(text)
+        self.close()
+
+    def position(self):
+        line, column = self.getpos()
+        return self.lines[line - 1] + column
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'body':
+            self.body.append((self.position(), self.get_starttag_text()))
+        if 'id' in attrs:
+            self.ids.add(attrs['id'])
+        if attrs.get('id') == 'main-wrapper':
+            if tag != 'div':
+                raise GateError('SW_OUTPUT')
+            self.main.append(self.position())
+        if tag == 'script':
+            self.scripts.append(attrs.get('src'))
+        if tag == 'link' and attrs.get('rel') == 'stylesheet':
+            self.styles.append(attrs.get('href'))
+
+    def handle_endtag(self, tag):
+        if tag == 'head':
+            self.head_end.append(self.position())
+
+
+def present_native(output, ids, home, theme, forest):
+    """Decorate only audited native pages. Snapshot text is never substituted."""
+    validate_forest(forest)
+    if forest_ids(forest) != ids or home not in ids:
+        raise GateError('SW_TARGET')
+    verify_trusted_theme(theme)
+    navigation = validate_fragment(theme['navigation'], menu=True, assets=set(theme['assets']))
+    hero = validate_fragment(theme['home'], menu=False, assets=set(theme['assets']))
+    if not (navigation.targets | hero.targets) <= ids or navigation.ids & hero.ids:
+        raise GateError('SW_TARGET')
+    menu = ''.join('<li><a href="/' + escape(identifier(tree['id']), quote=True) + '/">' +
+                   escape(tree['title'], quote=True) + '</a></li>' for tree in forest['trees'])
+    nav_text = theme['navigation'].replace('{{MENU}}', menu)
+    links = ('<link rel="stylesheet" href="/theme/styles/fonts.css">'
+             '<link rel="stylesheet" href="/theme/styles/miya.css">'
+             '<script defer src="/theme/client/hero.js"></script>')
+    page_hashes = {}
+    for id in sorted(ids):
+        route = identifier(id) + '/index.html'
+        path = output / route
+        text = read_bounded(path, MAX_FOREST).decode('utf-8', errors='strict')
+        page = NativePageParser(text)
+        if (len(page.head_end) != 1 or len(page.body) != 1 or len(page.main) != 1 or
+                'grid-wrapper' not in page.ids or page.scripts != ['/katex.min.js', '/min.js'] or
+                page.styles != ['/style.css', '/katex.min.css'] or
+                page.ids & (navigation.ids | hero.ids)):
+            raise GateError('SW_OUTPUT')
+        is_home = id == home
+        # Trusted fragment roots stay direct body siblings; the actual owned
+        # client intentionally excludes nav controls nested in native content.
+        shell = nav_text + (theme['home'] if is_home else '')
+        body_start, body_tag = page.body[0]
+        if body_tag != '<body>':
+            raise GateError('SW_OUTPUT')
+        body = '<body class="miya-native' + (' miya-home' if is_home else '') + '" data-site-page="' + escape(id, quote=True) + '" data-site-home="' + str(is_home).lower() + '">'
+        edits = [(page.main[0], page.main[0], shell),
+                 (body_start, body_start + len(body_tag), body),
+                 (page.head_end[0], page.head_end[0], links)]
+        for start, end, replacement in sorted(edits, reverse=True):
+            text = text[:start] + replacement + text[end:]
+        data = text.encode('utf-8')
+        path.write_bytes(data)
+        page_hashes[route] = hashlib.sha256(data).hexdigest()
+    (output / 'index.html').write_bytes(read_bounded(output / home / 'index.html', MAX_FOREST))
+    for relative, (data, _) in theme['assets'].items():
+        destination = output / relative
+        if destination.exists():
+            raise GateError('SW_THEME')
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(data)
+    verify_trusted_theme(theme)
+    return page_hashes
+
 
 
 def checked_path(value):
@@ -450,15 +767,36 @@ def stage_snapshot(snapshot, stage, expected_digest):
 LEAK = re.compile(rb'(?:/(?:home|Users|nix/store|tmp)/|[A-Za-z]:\\\\Users\\\\|(?:sourcePath|source_path|sourceFile|source_file|sourceLocation|source_location|filename|file_name|offset|aliases|rawSource)\s*["\x27]?\s*[:=]|(?:gh[pousr]_|github_pat_|AKIA[0-9A-Z]|-----BEGIN [A-Z ]*PRIVATE KEY-----)|SYNTHETIC_(?:PRIVATE|REVOKED)_CANARY)', re.I)
 
 
-def audit_output(output, ids, theme_hashes, media=frozenset()):
+def audit_output(output, ids, theme_hashes, *, custom_hashes=None, page_hashes=None, home_copy=None, search_hash=None,
+                 media=frozenset()):
     output = checked_path(output)
     routes = {f'{identifier(id)}/index.html' for id in ids}
     images = {f'media/{digest}.jpg': digest for digest in media}
+    custom_hashes = custom_hashes or {}
+    if set(theme_hashes) & set(custom_hashes):
+        raise GateError('SW_THEME')
+    for relative, digest in custom_hashes.items():
+        site_relative(relative, 'theme/')
+        if not re.fullmatch(r'[0-9a-f]{64}', digest):
+            raise GateError('SW_THEME')
+    if page_hashes is not None and (set(page_hashes) != routes or
+            any(not re.fullmatch(r'[0-9a-f]{64}', digest) for digest in page_hashes.values())):
+        raise GateError('SW_OUTPUT')
+    if home_copy is not None and (home_copy not in ids or page_hashes is None):
+        raise GateError('SW_OUTPUT')
+    if search_hash is not None and not re.fullmatch(r'[0-9a-f]{64}', search_hash):
+        raise GateError('SW_OUTPUT')
+    required = routes | {'index.html', 'forest.json'} | set(theme_hashes) | set(custom_hashes) | set(images)
+    allowed_dirs = {parent.as_posix() for relative in required for parent in Path(relative).parents
+                    if parent.as_posix() != '.'}
     files, seen, total = 0, set(), 0
     for directory, dirs, names in os.walk(output, followlinks=False):
         for name in dirs:
-            if (Path(directory) / name).is_symlink():
+            path = Path(directory) / name
+            if path.is_symlink():
                 raise GateError('SW_PATH')
+            if path.relative_to(output).as_posix() not in allowed_dirs:
+                raise GateError('SW_OUTPUT')
         for name in names:
             path = Path(directory) / name
             relative = path.relative_to(output).as_posix()
@@ -473,16 +811,35 @@ def audit_output(output, ids, theme_hashes, media=frozenset()):
             elif relative in images:
                 if hashlib.sha256(data).hexdigest() != images[relative]:
                     raise GateError('SW_OUTPUT')
+            elif relative in custom_hashes:
+                if owned_asset_leak(data, compiled=relative == 'theme/client/hero.js',
+                                    css=relative in {'theme/styles/fonts.css', 'theme/styles/miya.css'}):
+                    raise GateError('SW_LEAK')
+                if hashlib.sha256(data).hexdigest() != custom_hashes[relative]:
+                    raise GateError('SW_THEME')
             elif relative in routes:
                 if LEAK.search(data):
                     raise GateError('SW_LEAK')
+                if page_hashes is not None and hashlib.sha256(data).hexdigest() != page_hashes[relative]:
+                    raise GateError('SW_OUTPUT')
                 seen.add(relative)
             elif relative == 'index.html':
-                if LEAK.search(data) or not re.search(rb'content="0;url=(?:' + b'|'.join(re.escape(id.encode()) for id in sorted(ids)) + rb')/"', data):
+                if LEAK.search(data):
+                    raise GateError('SW_OUTPUT')
+                if home_copy is not None:
+                    home_route = home_copy + '/index.html'
+                    if not (output / home_route).is_file():
+                        raise GateError('SW_OUTPUT')
+                    if (hashlib.sha256(data).hexdigest() != page_hashes[home_route] or
+                            data != read_bounded(output / home_route, MAX_FOREST)):
+                        raise GateError('SW_OUTPUT')
+                elif not re.search(rb'content="0;url=(?:' + b'|'.join(re.escape(id.encode()) for id in sorted(ids)) + rb')/"', data):
                     raise GateError('SW_OUTPUT')
             elif relative == 'forest.json':
                 if LEAK.search(data):
                     raise GateError('SW_LEAK')
+                if search_hash is not None and hashlib.sha256(data).hexdigest() != search_hash:
+                    raise GateError('SW_OUTPUT')
                 entries = array(strict_json(data))
                 found = set()
                 for entry in entries:
@@ -494,7 +851,6 @@ def audit_output(output, ids, theme_hashes, media=frozenset()):
                     raise GateError('SW_OUTPUT')
             else:
                 raise GateError('SW_OUTPUT')
-    required = routes | {'index.html', 'forest.json'} | set(theme_hashes) | set(images)
     if seen != routes or required != {p.relative_to(output).as_posix() for p in output.rglob('*') if p.is_file()}:
         raise GateError('SW_OUTPUT')
     return {'files': files, 'routes': len(seen)}
@@ -514,7 +870,7 @@ def run_quiet(command, cwd=None):
     return result.stdout
 
 
-def render_native(trees, output, binary, ids, home, media=None):
+def render_native(trees, output, binary, ids, home, *, theme=None, forest=None, media=None):
     trees, output = checked_path(trees), checked_path(output)
     if output.exists():
         raise GateError('SW_FRESH')
@@ -524,7 +880,7 @@ def render_native(trees, output, binary, ids, home, media=None):
     package = Path(run_quiet(['nix', 'eval', '--offline', '--impure', '--raw', '--option', 'allow-import-from-derivation', 'true', FORESTER_FLAKE + '.outPath']).decode().strip())
     if binary != package / 'bin' / 'forester' or run_quiet([str(binary), '--version']).strip() != b'6.0~dev':
         raise GateError('SW_PIN')
-    theme = package / 'share' / 'forester' / 'themes' / 'default'
+    native_theme = package / 'share' / 'forester' / 'themes' / 'default'
     # Keep every intermediate outside the site, and never reuse a prior output.
     with tempfile.TemporaryDirectory(prefix='safe-web-render-', dir=output.parent) as scratch:
         work = Path(scratch)
@@ -537,10 +893,10 @@ def render_native(trees, output, binary, ids, home, media=None):
         html = work / 'output'
         html.mkdir()
         theme_hashes = {}
-        for path in theme.rglob('*'):
+        for path in native_theme.rglob('*'):
             if path.is_dir():
                 continue
-            relative = path.relative_to(theme)
+            relative = path.relative_to(native_theme)
             if path.suffix not in {'.css', '.js', '.woff', '.woff2', '.ttf', '.png', '.ico', '.webmanifest'} or path.name.startswith('legacy-'):
                 continue
             data = read_bounded(path, MAX_FOREST)
@@ -557,7 +913,15 @@ def render_native(trees, output, binary, ids, home, media=None):
                     raise GateError('SW_INVENTORY')
                 (html / 'media' / path.name).write_bytes(read_bounded(path, MAX_JPEG))
                 digests.add(path.stem)
-        counts = audit_output(html, ids, theme_hashes, digests)
+        counts = audit_output(html, ids, theme_hashes, media=digests)
+        if theme is not None:
+            if forest is None:
+                raise GateError('SW_THEME')
+            search_hash = hashlib.sha256(read_bounded(html / 'forest.json', MAX_FOREST)).hexdigest()
+            page_hashes = present_native(html, ids, home, theme, forest)
+            counts = audit_output(html, ids, theme_hashes,
+                custom_hashes={p: digest for p, (_, digest) in theme['assets'].items()},
+                page_hashes=page_hashes, home_copy=home, search_hash=search_hash, media=digests)
         # Move only after the complete artifact passes; failures expose nothing.
         checked_path(output)
         if output.exists():
@@ -583,7 +947,8 @@ def forest_ids(forest):
     return ids
 
 
-def build_snapshot(snapshot, output, digest, converter, converter_rev, converter_hash, forester, home):
+def build_snapshot(snapshot, output, digest, converter, converter_rev, converter_hash, forester, home,
+                   *, theme_config=None, site_root=None):
     revision(converter_rev)
     snapshot, output = checked_path(snapshot), checked_path(output)
     if output.exists():
@@ -597,6 +962,20 @@ def build_snapshot(snapshot, output, digest, converter, converter_rev, converter
         ids = forest_ids(forest)
         if home not in ids:
             raise GateError('SW_ID')
+        theme = None
+        if theme_config is not None:
+            if site_root is None:
+                raise GateError('SW_THEME')
+            root = checked_path(site_root)
+            if snapshot == root or snapshot in root.parents:
+                raise GateError('SW_PATH')
+            theme = load_trusted_theme(theme_config, root)
+            if any(snapshot == root / source or snapshot in (root / source).parents for source in theme['sources']):
+                raise GateError('SW_PATH')
+            if any(output == root / source or output in (root / source).parents for source in theme['sources']):
+                raise GateError('SW_PATH')
+        elif site_root is not None:
+            raise GateError('SW_THEME')
         converter = checked_path(converter)
         if not re.fullmatch(r'[0-9a-f]{64}', converter_hash) or hashlib.sha256(read_bounded(converter, 64 * 1024 * 1024)).hexdigest() != converter_hash:
             raise GateError('SW_PIN')
@@ -605,7 +984,8 @@ def build_snapshot(snapshot, output, digest, converter, converter_rev, converter
         if {path.name for path in (scratch / 'trees').iterdir()} != roots:
             raise GateError('SW_TREES')
         media = scratch / 'snapshot' / 'media'
-        return render_native(scratch / 'trees', output, forester, ids, home, media if media.exists() else None)
+        return render_native(scratch / 'trees', output, forester, ids, home, theme=theme, forest=forest,
+                             media=media if media.exists() else None)
 
 
 def validate_pins(pins):
@@ -667,7 +1047,8 @@ def ci_run(args):
         run_quiet(pins['converter_build_argv'], cwd=converter_repo)
         converter = checked_path(converter_repo / pins['converter_executable'])
         converter_hash = hashlib.sha256(read_bounded(converter, 64 * 1024 * 1024)).hexdigest()
-        return build_snapshot(snapshot, output, args.manifest_sha256, converter, pins['converter_revision'], converter_hash, args.forester, args.home)
+        return build_snapshot(snapshot, output, args.manifest_sha256, converter, pins['converter_revision'], converter_hash, args.forester, args.home,
+                              theme_config=args.theme_config, site_root=args.site_root)
 
 
 class SafeParser(argparse.ArgumentParser):
@@ -686,6 +1067,8 @@ def main():
     ci = commands.add_parser('ci-run')
     for option in ('pins', 'content-rev', 'manifest-sha256', 'snapshot-repository', 'converter-repository', 'forester', 'home', 'out-dir'):
         ci.add_argument('--' + option, required=True)
+    ci.add_argument('--theme-config')
+    ci.add_argument('--site-root')
     for name in ('stage', 'build'):
         command = commands.add_parser(name)
         command.add_argument('--snapshot-dir', required=True)
@@ -698,6 +1081,8 @@ def main():
             command.add_argument('--converter-sha256', required=True)
             command.add_argument('--forester', required=True)
             command.add_argument('--home', required=True)
+            command.add_argument('--theme-config')
+            command.add_argument('--site-root')
     try:
         args = parser.parse_args()
         revision(args.content_rev)
@@ -713,7 +1098,8 @@ def main():
         elif args.command == 'ci-run':
             result = ci_run(args)
         else:
-            result = build_snapshot(args.snapshot_dir, args.out_dir, args.manifest_sha256, args.converter, args.converter_rev, args.converter_sha256, args.forester, args.home)
+            result = build_snapshot(args.snapshot_dir, args.out_dir, args.manifest_sha256, args.converter, args.converter_rev, args.converter_sha256, args.forester, args.home,
+                                    theme_config=args.theme_config, site_root=args.site_root)
         print(json.dumps(result, sort_keys=True))
         return 0
     except GateError as exc:

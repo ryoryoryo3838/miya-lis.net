@@ -2,6 +2,7 @@
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import tempfile
@@ -10,7 +11,7 @@ from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / 'scripts' / 'safe-web.py'
-TMP = Path('/home/miyax/.hermes/cache/scratch') if Path('/home/miyax/.hermes/cache/scratch').is_dir() else None
+TMP = Path(os.environ['TMPDIR']) if os.environ.get('TMPDIR') else None
 
 
 def load_module():
@@ -410,7 +411,9 @@ class SnapshotTests(unittest.TestCase):
 
     def test_pinned_native_render_builds_routes_in_fresh_isolation(self):
         self.assertTrue(hasattr(self.safe, 'render_native'), 'isolated native renderer must exist')
-        binary = Path('/home/miyax/Workspace/forester-playground/.tools/forester/bin/forester')
+        if not os.environ.get('SW_NATIVE_FORESTER'):
+            self.skipTest('explicit SW_NATIVE_FORESTER required for native integration')
+        binary = Path(os.environ['SW_NATIVE_FORESTER'])
         if not binary.exists():
             self.skipTest('fixed Forester binary unavailable; gate tests remain active')
         trees = self.base / 'trees'
@@ -422,18 +425,24 @@ class SnapshotTests(unittest.TestCase):
         self.assertIn('Approved synthetic body.', (output / 'PUBLICA' / 'index.html').read_text())
         self.assertIn('Approved child.', (output / 'NESTED' / 'index.html').read_text())
         self.assertFalse(any(p.suffix in {'.tree', '.md', '.xml', '.sqlite'} for p in output.rglob('*')))
-        # Delete only from copies of genuine pinned native output.
-        for relative in ['index.html', 'forest.json']:
-            copy = self.base / ('without-' + relative)
+        # Every required omission is checked on a copy of genuine pinned HTML.
+        hashes = {
+            p.relative_to(output).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in output.rglob('*') if p.is_file() and p.suffix != '.html' and p.name != 'forest.json'
+        }
+        original_hashes = {p.relative_to(output).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+                           for p in output.rglob('*') if p.is_file()}
+        for number, relative in enumerate(sorted(original_hashes)):
+            copy = self.base / f'without-{number}'
             shutil.copytree(output, copy)
             (copy / relative).unlink()
             with self.subTest(missing_native=relative):
                 with self.assertRaises(self.safe.GateError) as caught:
-                    self.safe.audit_output(copy, {'PUBLICA', 'NESTED'}, {
-                        p.relative_to(output).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
-                        for p in output.rglob('*') if p.is_file() and p.suffix != '.html' and p.name != 'forest.json'
-                    })
+                    self.safe.audit_output(copy, {'PUBLICA', 'NESTED'}, hashes)
                 self.assertEqual(caught.exception.code, 'SW_OUTPUT')
+            shutil.rmtree(copy)
+        self.assertEqual(original_hashes, {p.relative_to(output).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+                                         for p in output.rglob('*') if p.is_file()})
         with self.assertRaises(self.safe.GateError) as caught:
             self.safe.render_native(trees, output, binary, {'PUBLICA', 'NESTED'}, 'PUBLICA')
         self.assertEqual(caught.exception.code, 'SW_FRESH')
@@ -544,6 +553,8 @@ class SnapshotTests(unittest.TestCase):
                                  '--snapshot-repository', str(self.base / 'absent-content'),
                                  '--converter-repository', str(self.base / 'absent-converter'),
                                  '--forester', str(self.base / 'absent-forester'), '--home', 'PUBLICA',
+                                 '--theme-config', str(self.base / 'absent-theme'),
+                                 '--site-root', str(self.base / 'absent-site'),
                                  '--out-dir', str(output)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)
         self.assertEqual(result.stderr.strip(), 'SW_PIN')
@@ -636,9 +647,9 @@ class MediaTests(unittest.TestCase):
         (output / 'media').mkdir()
         digest = hashlib.sha256(JPEG).hexdigest()
         (output / 'media' / f'{digest}.jpg').write_bytes(JPEG)
-        self.assertEqual(self.safe.audit_output(output, {'PUBLICA'}, {}, {digest})['routes'], 1)
+        self.assertEqual(self.safe.audit_output(output, {'PUBLICA'}, {}, media={digest})['routes'], 1)
         with self.assertRaises(self.safe.GateError):
             self.safe.audit_output(output, {'PUBLICA'}, {})
         (output / 'media' / f'{digest}.jpg').write_bytes(JPEG + b'tampered')
         with self.assertRaises(self.safe.GateError):
-            self.safe.audit_output(output, {'PUBLICA'}, {}, {digest})
+            self.safe.audit_output(output, {'PUBLICA'}, {}, media={digest})

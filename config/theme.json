@@ -1,0 +1,1045 @@
+{
+  "schema": "safe-web-theme-v1",
+  "styles": [
+    {"source": "theme/styles/fonts.css", "output": "theme/styles/fonts.css"},
+    {"source": "theme/styles/miya.css", "output": "theme/styles/miya.css"}
+  ],
+  "client": {
+    "source": "_build/default/theme/client/hero.bc.js",
+    "output": "theme/client/hero.js"
+  },
+  "layout": {
+    "home": "theme/layout/home.html",
+    "navigation": "theme/layout/navigation.html"
+  },
+  "assets": [
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.000.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.000.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.001.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.001.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.002.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.002.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.003.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.003.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.004.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.004.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.005.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.005.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.006.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.006.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.007.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.007.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.008.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.008.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.009.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.009.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.010.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.010.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.011.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.011.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.012.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.012.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.013.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.013.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.014.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.014.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.015.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.015.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.016.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.016.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.017.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.017.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.018.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.018.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.019.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.019.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.020.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.020.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.021.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.021.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.022.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.022.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.023.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.023.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.024.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.024.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.025.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.025.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.026.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.026.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.027.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.027.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.028.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.028.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.029.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.029.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.030.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.030.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.031.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.031.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.032.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.032.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.033.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.033.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.034.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.034.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.035.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.035.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.036.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.036.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.037.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.037.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.038.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.038.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.039.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.039.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.040.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.040.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.041.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.041.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.042.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.042.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.043.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.043.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.044.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.044.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.045.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.045.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.046.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.046.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.047.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.047.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.048.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.048.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.049.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.049.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.050.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.050.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.051.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.051.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.052.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.052.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.053.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.053.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.054.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.054.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.055.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.055.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.056.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.056.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.057.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.057.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.058.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.058.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.059.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.059.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.060.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.060.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.061.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.061.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.062.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.062.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.063.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.063.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.064.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.064.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.065.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.065.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.066.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.066.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.067.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.067.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.068.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.068.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.069.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.069.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.070.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.070.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.071.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.071.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.072.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.072.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.073.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.073.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.074.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.074.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.075.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.075.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.076.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.076.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.077.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.077.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.078.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.078.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.079.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.079.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.080.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.080.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.081.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.081.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.082.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.082.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.083.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.083.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.084.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.084.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.085.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.085.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.086.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.086.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.087.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.087.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.088.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.088.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.089.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.089.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.090.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.090.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.091.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.091.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.092.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.092.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.093.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.093.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.094.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.094.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.095.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.095.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.096.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.096.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.097.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.097.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.098.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.098.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.099.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.099.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.100.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.100.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.101.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.101.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.102.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.102.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.103.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.103.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.104.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.104.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.105.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.105.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.106.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.106.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.107.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.107.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.108.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.108.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.109.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.109.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.110.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.110.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.111.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.111.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.112.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.112.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.113.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.113.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.114.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.114.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.115.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.115.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.116.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.116.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.117.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.117.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.118.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.118.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.119.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.119.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.120.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.120.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.121.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.121.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.122.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.122.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.123.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.123.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.000.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.000.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.001.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.001.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.002.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.002.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.003.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.003.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.004.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.004.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.005.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.005.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.006.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.006.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.007.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.007.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.008.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.008.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.009.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.009.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.010.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.010.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.011.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.011.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.012.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.012.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.013.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.013.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.014.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.014.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.015.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.015.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.016.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.016.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.017.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.017.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.018.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.018.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.019.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.019.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.020.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.020.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.021.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.021.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.022.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.022.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.023.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.023.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.024.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.024.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.025.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.025.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.026.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.026.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.027.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.027.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.028.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.028.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.029.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.029.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.030.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.030.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.031.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.031.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.032.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.032.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.033.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.033.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.034.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.034.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.035.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.035.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.036.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.036.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.037.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.037.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.038.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.038.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.039.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.039.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.040.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.040.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.041.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.041.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.042.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.042.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.043.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.043.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.044.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.044.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.045.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.045.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.046.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.046.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.047.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.047.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.048.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.048.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.049.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.049.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.050.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.050.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.051.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.051.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.052.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.052.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.053.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.053.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.054.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.054.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.055.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.055.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.056.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.056.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.057.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.057.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.058.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.058.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.059.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.059.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.060.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.060.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.061.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.061.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.062.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.062.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.063.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.063.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.064.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.064.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.065.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.065.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.066.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.066.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.067.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.067.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.068.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.068.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.069.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.069.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.070.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.070.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.071.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.071.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.072.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.072.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.073.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.073.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.074.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.074.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.075.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.075.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.076.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.076.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.077.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.077.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.078.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.078.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.079.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.079.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.080.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.080.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.081.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.081.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.082.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.082.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.083.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.083.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.084.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.084.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.085.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.085.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.086.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.086.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.087.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.087.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.088.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.088.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.089.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.089.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.090.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.090.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.091.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.091.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.092.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.092.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.093.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.093.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.094.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.094.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.095.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.095.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.096.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.096.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.097.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.097.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.098.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.098.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.099.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.099.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.100.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.100.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.101.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.101.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.102.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.102.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.103.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.103.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.104.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.104.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.105.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.105.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.106.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.106.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.107.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.107.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.108.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.108.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.109.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.109.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.110.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.110.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.111.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.111.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.112.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.112.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.113.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.113.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.114.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.114.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.115.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.115.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.116.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.116.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.117.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.117.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.118.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.118.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.119.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.119.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.120.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.120.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.121.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.121.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.122.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.122.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.123.woff2",
+      "output": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.123.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-300.woff2",
+      "output": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-300.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-300italic.woff2",
+      "output": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-300italic.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-700.woff2",
+      "output": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-700.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-700italic.woff2",
+      "output": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-700italic.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-italic.woff2",
+      "output": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-italic.woff2"
+    },
+    {
+      "source": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-regular.woff2",
+      "output": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-regular.woff2"
+    },
+    {
+      "source": "theme/assets/notices/CC0-1.0.txt",
+      "output": "theme/assets/notices/CC0-1.0.txt"
+    },
+    {
+      "source": "theme/assets/notices/OFL-1.1.txt",
+      "output": "theme/assets/notices/OFL-1.1.txt"
+    }
+  ],
+  "notices": [
+    "theme/notices/INTEGRATION.md",
+    "theme/notices/PROVENANCE.json"
+  ]
+}

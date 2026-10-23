@@ -1,0 +1,2072 @@
+{
+  "schema": "native-theme-provenance-v1",
+  "source_commit": "bb66098a6e040a2ec94b47e627ae38c817ee1d71",
+  "font_sources": {
+    "Inria Sans": "Existing site/theme/fonts/inria-sans-v14-latin_latin-ext-*.woff2, SIL OFL 1.1; original project copyright preserved in the license.",
+    "BIZ UDMincho": "Existing site/theme/fonts/biz-udmincho/{400,700}, 124 slices per weight. Legacy fetch-biz-udmincho.sh documents Google Fonts CSS2 provenance; no new download and no claim of an independently verified Google/Morisawa release revision."
+  },
+  "adaptations": {
+    "theme/styles/fonts.css": "Only local relative URL relocation; existing font-face weights/styles/unicode ranges retained.",
+    "theme/styles/miya.css": "Scoped presentation derived from retained site/theme/style.css (CC0-1.0) and native DOM; no native CSS/client copied over.",
+    "theme/client/hero.ml": "Ported retained lib_theme/hero.ml behavior into new active client; source has no per-file license assertion, so do not infer a font/CSS license for it.",
+    "theme/layout": "Static trusted site fragments adapted from retained tree.xsl (CC0-1.0), no XML fetching/content evaluator."
+  },
+  "original_reference_sha256": {
+    "site/theme/style.css": "852897f61b9eca2e4da2d26248a28e5f830fe4a5c7d74217cd7c8601297b73e4",
+    "site/theme/fonts-biz-udmincho.css": "5e5881ea3b97e3cf4fe62a512a7ed550420a2c3043c2cad9352b0f0600c6a80a",
+    "site/theme/fetch-biz-udmincho.sh": "e6c46d099e6ce376f15e2800fea7751e9167c1b6f48b97c69eed3a87d9b02e6f",
+    "site/theme/tree.xsl": "7662ac486bedad4f90c0bf6efebfedf3bc30946ecf5e532485f510b3c6a1d288",
+    "lib_theme/hero.ml": "314797f384ea19dde3df560ecc4b95cbcd25ef805ac73482186835bce8642717",
+    "lib_theme/dune": "5088f88d4e8a47f2d4af456ba26bbae6587727f6ad612df48c314657beb6d61c"
+  },
+  "assets": [
+    {
+      "path": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-300.woff2",
+      "original_path": "site/theme/fonts/inria-sans-v14-latin_latin-ext-300.woff2",
+      "sha256": "8f74b88f5a214d9ab4edb649e1290b8b76d8b97cb41f2daee4a6b1bbf2034e10",
+      "original_sha256": "8f74b88f5a214d9ab4edb649e1290b8b76d8b97cb41f2daee4a6b1bbf2034e10",
+      "bytes": 23280,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-300italic.woff2",
+      "original_path": "site/theme/fonts/inria-sans-v14-latin_latin-ext-300italic.woff2",
+      "sha256": "90512941f234f76fa2440ef25c0245f8ee972e67a3d447a19b9c86acb4758aa6",
+      "original_sha256": "90512941f234f76fa2440ef25c0245f8ee972e67a3d447a19b9c86acb4758aa6",
+      "bytes": 23952,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-700.woff2",
+      "original_path": "site/theme/fonts/inria-sans-v14-latin_latin-ext-700.woff2",
+      "sha256": "15196db523c20d09f90b79a9412dedea234a377fe7244054b7df75b89d72864b",
+      "original_sha256": "15196db523c20d09f90b79a9412dedea234a377fe7244054b7df75b89d72864b",
+      "bytes": 23368,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-700italic.woff2",
+      "original_path": "site/theme/fonts/inria-sans-v14-latin_latin-ext-700italic.woff2",
+      "sha256": "6e7016d4faa523e07ed4158e27349b463502eda7f3d38e86b1d41d2a19028615",
+      "original_sha256": "6e7016d4faa523e07ed4158e27349b463502eda7f3d38e86b1d41d2a19028615",
+      "bytes": 24044,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-italic.woff2",
+      "original_path": "site/theme/fonts/inria-sans-v14-latin_latin-ext-italic.woff2",
+      "sha256": "1a24c5f35023cbe36b1fec7edc4f6f9fae10e408487f0b58df3bd19eb6bedac0",
+      "original_sha256": "1a24c5f35023cbe36b1fec7edc4f6f9fae10e408487f0b58df3bd19eb6bedac0",
+      "bytes": 24724,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/inria-sans-v14-latin_latin-ext-regular.woff2",
+      "original_path": "site/theme/fonts/inria-sans-v14-latin_latin-ext-regular.woff2",
+      "sha256": "f47be20f9140e3e7f56fe1e552704084b713434377f6f2bad74d5d6ea358278e",
+      "original_sha256": "f47be20f9140e3e7f56fe1e552704084b713434377f6f2bad74d5d6ea358278e",
+      "bytes": 23876,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.000.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.000.woff2",
+      "sha256": "54d135f87b2002b1040db7ff60f3b2620068aa2b065ae94740bc5b1aaffa0996",
+      "original_sha256": "54d135f87b2002b1040db7ff60f3b2620068aa2b065ae94740bc5b1aaffa0996",
+      "bytes": 49024,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.001.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.001.woff2",
+      "sha256": "b6cdae507ba9317d3ffa7d7119636d5ad5b5e38f8d123e1e8d32b25846bd5956",
+      "original_sha256": "b6cdae507ba9317d3ffa7d7119636d5ad5b5e38f8d123e1e8d32b25846bd5956",
+      "bytes": 50372,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.002.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.002.woff2",
+      "sha256": "59ff3ecf1b670a015149cdf737d716384d631282af95b9b9a98035db64faf0a4",
+      "original_sha256": "59ff3ecf1b670a015149cdf737d716384d631282af95b9b9a98035db64faf0a4",
+      "bytes": 4356,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.003.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.003.woff2",
+      "sha256": "c680e1fc1dee032f7b7a3a431bb0bd412407ad45e1160c6d4357a98a80bcf61d",
+      "original_sha256": "c680e1fc1dee032f7b7a3a431bb0bd412407ad45e1160c6d4357a98a80bcf61d",
+      "bytes": 31268,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.004.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.004.woff2",
+      "sha256": "bacc62cf25951f1c2c53c48f4577211a1f4b7a95da99c53e15a4098479679a0e",
+      "original_sha256": "bacc62cf25951f1c2c53c48f4577211a1f4b7a95da99c53e15a4098479679a0e",
+      "bytes": 6740,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.005.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.005.woff2",
+      "sha256": "bb652e08c77be054a3a8ce706e43288e85c1180e26dad22e0a81193b8cfe02ea",
+      "original_sha256": "bb652e08c77be054a3a8ce706e43288e85c1180e26dad22e0a81193b8cfe02ea",
+      "bytes": 47276,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.006.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.006.woff2",
+      "sha256": "c33e022c7c7a02b53bf005363303b195e08dde61e713178824f9cb2f9d64a581",
+      "original_sha256": "c33e022c7c7a02b53bf005363303b195e08dde61e713178824f9cb2f9d64a581",
+      "bytes": 69060,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.007.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.007.woff2",
+      "sha256": "740202beca676874adbbf948dfa29017620ea26c17a0d306710b59dd9d4c44fa",
+      "original_sha256": "740202beca676874adbbf948dfa29017620ea26c17a0d306710b59dd9d4c44fa",
+      "bytes": 56776,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.008.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.008.woff2",
+      "sha256": "e7e70d5b688ffc3ddcc4195046f536765b82d0a8e2de961e525782d85200b80e",
+      "original_sha256": "e7e70d5b688ffc3ddcc4195046f536765b82d0a8e2de961e525782d85200b80e",
+      "bytes": 56364,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.009.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.009.woff2",
+      "sha256": "29ee7f68b14c988a3f29cc244f33cb1d07fd27f551298e73662f39271ba996b4",
+      "original_sha256": "29ee7f68b14c988a3f29cc244f33cb1d07fd27f551298e73662f39271ba996b4",
+      "bytes": 58296,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.010.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.010.woff2",
+      "sha256": "af7ac87c2912c62b4faafdb440f30d9d12ff891d1f8044e61ee3cc9fc18f3886",
+      "original_sha256": "af7ac87c2912c62b4faafdb440f30d9d12ff891d1f8044e61ee3cc9fc18f3886",
+      "bytes": 51552,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.011.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.011.woff2",
+      "sha256": "4d173c8b89864165e842159f9135fffcc89598e31ad1717fbd6b72cacc3d1adb",
+      "original_sha256": "4d173c8b89864165e842159f9135fffcc89598e31ad1717fbd6b72cacc3d1adb",
+      "bytes": 50916,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.012.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.012.woff2",
+      "sha256": "b578d9f048421209bbb33bb66d9ad5f07bfad0009df2f1a305df79fa677eb5cc",
+      "original_sha256": "b578d9f048421209bbb33bb66d9ad5f07bfad0009df2f1a305df79fa677eb5cc",
+      "bytes": 42360,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.013.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.013.woff2",
+      "sha256": "3ad92fa22c1fc9e106bfb0a38c872dacc96de0054b9898c075b1730b661b1d81",
+      "original_sha256": "3ad92fa22c1fc9e106bfb0a38c872dacc96de0054b9898c075b1730b661b1d81",
+      "bytes": 47876,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.014.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.014.woff2",
+      "sha256": "3a9da34f38217ac73fd4cf97f9610c10dbd0c1cc2501ca595dc6ee463bf9f75a",
+      "original_sha256": "3a9da34f38217ac73fd4cf97f9610c10dbd0c1cc2501ca595dc6ee463bf9f75a",
+      "bytes": 46184,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.015.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.015.woff2",
+      "sha256": "fda58f2f5f193ff638ad616314672d565baf1704f31f9fc905b81da3b5a74932",
+      "original_sha256": "fda58f2f5f193ff638ad616314672d565baf1704f31f9fc905b81da3b5a74932",
+      "bytes": 52340,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.016.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.016.woff2",
+      "sha256": "5fbb9e46f9d0ed48dde28080698f7a30af327d5f187dfcd3ec6ef072b5ea73cd",
+      "original_sha256": "5fbb9e46f9d0ed48dde28080698f7a30af327d5f187dfcd3ec6ef072b5ea73cd",
+      "bytes": 45388,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.017.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.017.woff2",
+      "sha256": "fdb1e0b1ea0064cd870378f37d38d9f5fa10b436242bba3d5ce6855262eccd9a",
+      "original_sha256": "fdb1e0b1ea0064cd870378f37d38d9f5fa10b436242bba3d5ce6855262eccd9a",
+      "bytes": 51732,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.018.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.018.woff2",
+      "sha256": "5af34dd2d8d2a2fe67935fa1488bd7a59a46c161610207284da8c2a859701a9d",
+      "original_sha256": "5af34dd2d8d2a2fe67935fa1488bd7a59a46c161610207284da8c2a859701a9d",
+      "bytes": 48788,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.019.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.019.woff2",
+      "sha256": "0f8ad557e4356652e934ab17d6c7b2544954f4a8c9ac7ba2793bfb589f2b86a4",
+      "original_sha256": "0f8ad557e4356652e934ab17d6c7b2544954f4a8c9ac7ba2793bfb589f2b86a4",
+      "bytes": 61308,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.020.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.020.woff2",
+      "sha256": "2217af85b20c9743b971b3c106eeb4a6f54157a9199346539cce000612d4d316",
+      "original_sha256": "2217af85b20c9743b971b3c106eeb4a6f54157a9199346539cce000612d4d316",
+      "bytes": 45888,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.021.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.021.woff2",
+      "sha256": "c27663c6fe37456ed7570fa0922a776e5dbc5636721970bda5898863861f6fdf",
+      "original_sha256": "c27663c6fe37456ed7570fa0922a776e5dbc5636721970bda5898863861f6fdf",
+      "bytes": 48220,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.022.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.022.woff2",
+      "sha256": "00916a8b792c83f15f531d38ccd951a987409791e192feb333e3d11a2fd4dcf7",
+      "original_sha256": "00916a8b792c83f15f531d38ccd951a987409791e192feb333e3d11a2fd4dcf7",
+      "bytes": 47696,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.023.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.023.woff2",
+      "sha256": "e8a47511c7bcbbcc54c7ae4a896db23fdbd5c60d3cfa09a096189aff31475dd1",
+      "original_sha256": "e8a47511c7bcbbcc54c7ae4a896db23fdbd5c60d3cfa09a096189aff31475dd1",
+      "bytes": 61216,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.024.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.024.woff2",
+      "sha256": "1561f17462273f92a2eaa6f85f8bfcf86b5ac3f804604c0d61c9ac1fbbd75b3a",
+      "original_sha256": "1561f17462273f92a2eaa6f85f8bfcf86b5ac3f804604c0d61c9ac1fbbd75b3a",
+      "bytes": 57696,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.025.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.025.woff2",
+      "sha256": "74ac3a513c87ded2ebfbcecb1a16df51f000fc84b4a22117e1434d539ff8700c",
+      "original_sha256": "74ac3a513c87ded2ebfbcecb1a16df51f000fc84b4a22117e1434d539ff8700c",
+      "bytes": 52848,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.026.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.026.woff2",
+      "sha256": "c4acd9b7e5371eccbc8ed3dbea1ab760904ac50d316241ffffce05ba81009564",
+      "original_sha256": "c4acd9b7e5371eccbc8ed3dbea1ab760904ac50d316241ffffce05ba81009564",
+      "bytes": 46056,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.027.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.027.woff2",
+      "sha256": "f90cbd48e989d2efae64927759a2bc5edde1a62ccdbc81c23c484ba63a55e1a2",
+      "original_sha256": "f90cbd48e989d2efae64927759a2bc5edde1a62ccdbc81c23c484ba63a55e1a2",
+      "bytes": 42520,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.028.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.028.woff2",
+      "sha256": "436abff5c51fbbf70fe12087f9914013e6cb5cfa316211108635c7fdf85e395d",
+      "original_sha256": "436abff5c51fbbf70fe12087f9914013e6cb5cfa316211108635c7fdf85e395d",
+      "bytes": 51364,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.029.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.029.woff2",
+      "sha256": "c261ef7002c2adb8199cb155914fc23a625d368c8c0323b1910435d7813d725b",
+      "original_sha256": "c261ef7002c2adb8199cb155914fc23a625d368c8c0323b1910435d7813d725b",
+      "bytes": 53676,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.030.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.030.woff2",
+      "sha256": "3aa45d34ce81b17ac60e72de2e296d7610888da64859c36dd3f7d26866532982",
+      "original_sha256": "3aa45d34ce81b17ac60e72de2e296d7610888da64859c36dd3f7d26866532982",
+      "bytes": 51452,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.031.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.031.woff2",
+      "sha256": "b241f2aaa20ed3cfd184a0c83adcfce09a77f1e5cbc73c98eae9e26f3af42eac",
+      "original_sha256": "b241f2aaa20ed3cfd184a0c83adcfce09a77f1e5cbc73c98eae9e26f3af42eac",
+      "bytes": 63780,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.032.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.032.woff2",
+      "sha256": "3e95757bdc1ccbed67fb2be5555220962ae79cb4e9c9876036fcb239ac1ac57b",
+      "original_sha256": "3e95757bdc1ccbed67fb2be5555220962ae79cb4e9c9876036fcb239ac1ac57b",
+      "bytes": 51620,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.033.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.033.woff2",
+      "sha256": "6a28a891ab1548382adbb80962682dab5f3818769328ff9619960217672e524a",
+      "original_sha256": "6a28a891ab1548382adbb80962682dab5f3818769328ff9619960217672e524a",
+      "bytes": 43252,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.034.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.034.woff2",
+      "sha256": "dcfbe6063cb711aef64922543ded08157c4a59b74e418656fb804cf3ee0a0a54",
+      "original_sha256": "dcfbe6063cb711aef64922543ded08157c4a59b74e418656fb804cf3ee0a0a54",
+      "bytes": 60920,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.035.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.035.woff2",
+      "sha256": "7689cbdbf47fb5192b7e62dd22af438fb49428f0fb277867f0d6acacef4e8c8e",
+      "original_sha256": "7689cbdbf47fb5192b7e62dd22af438fb49428f0fb277867f0d6acacef4e8c8e",
+      "bytes": 49428,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.036.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.036.woff2",
+      "sha256": "2433a8793a67a83bce5ee36ab63f25ff164c60964d7d6dc431c2e2adcc2db3e4",
+      "original_sha256": "2433a8793a67a83bce5ee36ab63f25ff164c60964d7d6dc431c2e2adcc2db3e4",
+      "bytes": 40292,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.037.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.037.woff2",
+      "sha256": "79be3904ca2b3331c1fe831cf271c75a23dcac33bce12557906b3320b710edf6",
+      "original_sha256": "79be3904ca2b3331c1fe831cf271c75a23dcac33bce12557906b3320b710edf6",
+      "bytes": 48400,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.038.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.038.woff2",
+      "sha256": "4714a442d95499426cf17ffef26b050b2eae2480b167ea5d8f9f8b319c3bd10f",
+      "original_sha256": "4714a442d95499426cf17ffef26b050b2eae2480b167ea5d8f9f8b319c3bd10f",
+      "bytes": 44196,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.039.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.039.woff2",
+      "sha256": "dc2b1f73d4bee142dfd8e40e250361f6dfc3bf4b0123f92be78422febb3ebe90",
+      "original_sha256": "dc2b1f73d4bee142dfd8e40e250361f6dfc3bf4b0123f92be78422febb3ebe90",
+      "bytes": 48036,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.040.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.040.woff2",
+      "sha256": "6d8e59d220032e9afa0a1c918efa6bdb3fb0649e6938e39c7b167a360b81e0f4",
+      "original_sha256": "6d8e59d220032e9afa0a1c918efa6bdb3fb0649e6938e39c7b167a360b81e0f4",
+      "bytes": 41568,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.041.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.041.woff2",
+      "sha256": "7d016fc0a73013e644162375813d71b3f9229d14e45f341cab410996235e787a",
+      "original_sha256": "7d016fc0a73013e644162375813d71b3f9229d14e45f341cab410996235e787a",
+      "bytes": 51524,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.042.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.042.woff2",
+      "sha256": "50ac6e39988f25fc255302e6ddef75b32db4cf4ac3a70488941439dfbe1ecee6",
+      "original_sha256": "50ac6e39988f25fc255302e6ddef75b32db4cf4ac3a70488941439dfbe1ecee6",
+      "bytes": 42460,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.043.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.043.woff2",
+      "sha256": "daad89ec98a17fbe61b9c6a112274f7535e8fc1db2558949a03b43df65ad6cad",
+      "original_sha256": "daad89ec98a17fbe61b9c6a112274f7535e8fc1db2558949a03b43df65ad6cad",
+      "bytes": 46664,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.044.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.044.woff2",
+      "sha256": "166ccaafb03875e8ce37f6efadfdd5c22209b8b76809957d9990dab2b467fd91",
+      "original_sha256": "166ccaafb03875e8ce37f6efadfdd5c22209b8b76809957d9990dab2b467fd91",
+      "bytes": 47368,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.045.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.045.woff2",
+      "sha256": "c0b492c2ea2308a3eb5512d02f85408451d889119fc46f97c500cc2fabb05c9a",
+      "original_sha256": "c0b492c2ea2308a3eb5512d02f85408451d889119fc46f97c500cc2fabb05c9a",
+      "bytes": 42816,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.046.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.046.woff2",
+      "sha256": "254fe102456e76ae3750301c09a9131dfc58cab3047acec2a096a22764b084ed",
+      "original_sha256": "254fe102456e76ae3750301c09a9131dfc58cab3047acec2a096a22764b084ed",
+      "bytes": 36488,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.047.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.047.woff2",
+      "sha256": "f426ca332e4acb8c7f3633059a98fff561c49c06d15229957148117d89d42018",
+      "original_sha256": "f426ca332e4acb8c7f3633059a98fff561c49c06d15229957148117d89d42018",
+      "bytes": 36896,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.048.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.048.woff2",
+      "sha256": "e39a93e5a6228de3688152ecb40c220e405c30205904bb208be883b216c7476f",
+      "original_sha256": "e39a93e5a6228de3688152ecb40c220e405c30205904bb208be883b216c7476f",
+      "bytes": 41888,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.049.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.049.woff2",
+      "sha256": "17c9fdc8c7c8304167730739c1bd9b13795589abd2a3bb4c420a7bc56dcf423f",
+      "original_sha256": "17c9fdc8c7c8304167730739c1bd9b13795589abd2a3bb4c420a7bc56dcf423f",
+      "bytes": 38192,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.050.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.050.woff2",
+      "sha256": "7ee9d85f64424120d1211cafebac33f72e73b50f70f39b0822cbd71d9d361a53",
+      "original_sha256": "7ee9d85f64424120d1211cafebac33f72e73b50f70f39b0822cbd71d9d361a53",
+      "bytes": 40752,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.051.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.051.woff2",
+      "sha256": "4ca99b4d3dcddebed1ff4cd3a0c57699e3f7f700bb4c2cb6e8bcdf8d92ba0d84",
+      "original_sha256": "4ca99b4d3dcddebed1ff4cd3a0c57699e3f7f700bb4c2cb6e8bcdf8d92ba0d84",
+      "bytes": 33680,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.052.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.052.woff2",
+      "sha256": "e455047e97ae6301cd81ab8fc8b0a63c40626d0a7758814f092180f6d56ebb50",
+      "original_sha256": "e455047e97ae6301cd81ab8fc8b0a63c40626d0a7758814f092180f6d56ebb50",
+      "bytes": 29536,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.053.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.053.woff2",
+      "sha256": "31117f4b4ecffb1fa670d6c4cf99394d082bf83c309a659d0335c8370d412807",
+      "original_sha256": "31117f4b4ecffb1fa670d6c4cf99394d082bf83c309a659d0335c8370d412807",
+      "bytes": 18928,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.054.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.054.woff2",
+      "sha256": "ac96689ebd47cc77685424dbfd8cd131bb34eb87dd7380741c2a48b355f5250f",
+      "original_sha256": "ac96689ebd47cc77685424dbfd8cd131bb34eb87dd7380741c2a48b355f5250f",
+      "bytes": 6660,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.055.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.055.woff2",
+      "sha256": "a93db0eb23896ab51ad053fd77e20b9b46364a042507a223445e332de6bcc418",
+      "original_sha256": "a93db0eb23896ab51ad053fd77e20b9b46364a042507a223445e332de6bcc418",
+      "bytes": 4988,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.056.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.056.woff2",
+      "sha256": "a2783a7fe84aeb287e823bba52c35eb61ee6cbad747d8b894896f6ba70881930",
+      "original_sha256": "a2783a7fe84aeb287e823bba52c35eb61ee6cbad747d8b894896f6ba70881930",
+      "bytes": 9616,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.057.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.057.woff2",
+      "sha256": "74892bb4c2af810cd765955742f4eceaff710c5caa0d1b57a4c0baa561e0dacc",
+      "original_sha256": "74892bb4c2af810cd765955742f4eceaff710c5caa0d1b57a4c0baa561e0dacc",
+      "bytes": 10576,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.058.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.058.woff2",
+      "sha256": "4054ff871e7ae90c749fb25a40e4283a81ca93f251b781ffe0a8264896da6dde",
+      "original_sha256": "4054ff871e7ae90c749fb25a40e4283a81ca93f251b781ffe0a8264896da6dde",
+      "bytes": 17408,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.059.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.059.woff2",
+      "sha256": "e74a9550fbcb91c43c0a8d12777bd24a661b9da1a3019bb70d61a01e1f605ac5",
+      "original_sha256": "e74a9550fbcb91c43c0a8d12777bd24a661b9da1a3019bb70d61a01e1f605ac5",
+      "bytes": 14624,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.060.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.060.woff2",
+      "sha256": "253d1e6472f7ab31a5cf5d98bf32168b0a4f4424dece32158d567bf9f1893864",
+      "original_sha256": "253d1e6472f7ab31a5cf5d98bf32168b0a4f4424dece32158d567bf9f1893864",
+      "bytes": 22524,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.061.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.061.woff2",
+      "sha256": "d7e908e09f2fc451ae3b1fd313e6c94b700a5a3222e9be4e8fb1422c79e4a880",
+      "original_sha256": "d7e908e09f2fc451ae3b1fd313e6c94b700a5a3222e9be4e8fb1422c79e4a880",
+      "bytes": 19484,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.062.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.062.woff2",
+      "sha256": "0163181f882f00eb0bdcb528f68a5211256779317b73bc9139e7895c5f7c792e",
+      "original_sha256": "0163181f882f00eb0bdcb528f68a5211256779317b73bc9139e7895c5f7c792e",
+      "bytes": 18628,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.063.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.063.woff2",
+      "sha256": "e648b40bc9083d332573f8f80ae046682df7c823bd5d31daeaa6e7141417e304",
+      "original_sha256": "e648b40bc9083d332573f8f80ae046682df7c823bd5d31daeaa6e7141417e304",
+      "bytes": 17916,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.064.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.064.woff2",
+      "sha256": "d69334b934ce1a07f1248b1640128d2877f3424c437e4dfa831276fe2db49c3a",
+      "original_sha256": "d69334b934ce1a07f1248b1640128d2877f3424c437e4dfa831276fe2db49c3a",
+      "bytes": 22040,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.065.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.065.woff2",
+      "sha256": "dece5ccd41dcc526f9a36079147b9f0bb12303b1270fc325f0856cc00f7891f9",
+      "original_sha256": "dece5ccd41dcc526f9a36079147b9f0bb12303b1270fc325f0856cc00f7891f9",
+      "bytes": 20076,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.066.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.066.woff2",
+      "sha256": "e90708a248009e15b50d0988880c4c3211717b1caa2bbe09f6b98ccbe9ddec7d",
+      "original_sha256": "e90708a248009e15b50d0988880c4c3211717b1caa2bbe09f6b98ccbe9ddec7d",
+      "bytes": 17800,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.067.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.067.woff2",
+      "sha256": "ce495afba020b29e5cc10f363a55c44a180112478ed11588de6d2c89d34e4e05",
+      "original_sha256": "ce495afba020b29e5cc10f363a55c44a180112478ed11588de6d2c89d34e4e05",
+      "bytes": 17888,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.068.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.068.woff2",
+      "sha256": "f8870a288e95d3c3aff303cf86febac907fdd67be83c687019e2fe4307be5125",
+      "original_sha256": "f8870a288e95d3c3aff303cf86febac907fdd67be83c687019e2fe4307be5125",
+      "bytes": 20432,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.069.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.069.woff2",
+      "sha256": "6fd284d6cf63c94ea6412555e042261116bebb1c030bc8577d205e2e1451e3ca",
+      "original_sha256": "6fd284d6cf63c94ea6412555e042261116bebb1c030bc8577d205e2e1451e3ca",
+      "bytes": 19748,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.070.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.070.woff2",
+      "sha256": "5badd7c9c8053fa2e3a58a9068e7fc4760fa3cca1a4c786dd44b8bf550fb8f5d",
+      "original_sha256": "5badd7c9c8053fa2e3a58a9068e7fc4760fa3cca1a4c786dd44b8bf550fb8f5d",
+      "bytes": 19472,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.071.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.071.woff2",
+      "sha256": "4b2987b7a5c0d24f85304901e8ddea78c57931da531c8369889808acfd7d3b81",
+      "original_sha256": "4b2987b7a5c0d24f85304901e8ddea78c57931da531c8369889808acfd7d3b81",
+      "bytes": 19812,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.072.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.072.woff2",
+      "sha256": "b26763bc4dbc00d39c96fbbadfd4ec2e5802f26ace24bac9695be82770d59f6a",
+      "original_sha256": "b26763bc4dbc00d39c96fbbadfd4ec2e5802f26ace24bac9695be82770d59f6a",
+      "bytes": 20244,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.073.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.073.woff2",
+      "sha256": "945f76fbbff2f8f73b5bf8aee36a3da0119e7cce4ed39fc8e11008c5f6286a71",
+      "original_sha256": "945f76fbbff2f8f73b5bf8aee36a3da0119e7cce4ed39fc8e11008c5f6286a71",
+      "bytes": 19664,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.074.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.074.woff2",
+      "sha256": "a45912b3a23c6ef3d27266f56f2a136763bfa49b32bf7e2addfc85446f1b29f8",
+      "original_sha256": "a45912b3a23c6ef3d27266f56f2a136763bfa49b32bf7e2addfc85446f1b29f8",
+      "bytes": 18252,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.075.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.075.woff2",
+      "sha256": "775901d6a5a8d4e814c665a1a8202a7f019a217c6a51a66511d9822ea6848c7a",
+      "original_sha256": "775901d6a5a8d4e814c665a1a8202a7f019a217c6a51a66511d9822ea6848c7a",
+      "bytes": 18976,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.076.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.076.woff2",
+      "sha256": "24a0f91e1f43934ed5fe7bd19b21ba727c71fdfd0b9e521f893f1e09cef10c64",
+      "original_sha256": "24a0f91e1f43934ed5fe7bd19b21ba727c71fdfd0b9e521f893f1e09cef10c64",
+      "bytes": 17132,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.077.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.077.woff2",
+      "sha256": "6bdec0ee7d32b397c32906e167b80c6d4bbdd15cd3f9bed8fd2defb3dafcc10f",
+      "original_sha256": "6bdec0ee7d32b397c32906e167b80c6d4bbdd15cd3f9bed8fd2defb3dafcc10f",
+      "bytes": 18740,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.078.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.078.woff2",
+      "sha256": "6c54c42c55f3048afe5ab0e66130c7d2c65bf2a4e9461ff068bce492960eb3c2",
+      "original_sha256": "6c54c42c55f3048afe5ab0e66130c7d2c65bf2a4e9461ff068bce492960eb3c2",
+      "bytes": 19580,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.079.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.079.woff2",
+      "sha256": "e07738d7d332a5d575ef3f51f9e8d309db6518608d0c499fd5fca088830542c7",
+      "original_sha256": "e07738d7d332a5d575ef3f51f9e8d309db6518608d0c499fd5fca088830542c7",
+      "bytes": 19372,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.080.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.080.woff2",
+      "sha256": "155d0b071e409aeb89a8887c182efd16aeeb4767103d38ff9af463022cf097da",
+      "original_sha256": "155d0b071e409aeb89a8887c182efd16aeeb4767103d38ff9af463022cf097da",
+      "bytes": 18576,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.081.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.081.woff2",
+      "sha256": "054f5d46f38e2bc5d26126112853084a3da04cf2f640469a405e9f9d78df8989",
+      "original_sha256": "054f5d46f38e2bc5d26126112853084a3da04cf2f640469a405e9f9d78df8989",
+      "bytes": 17324,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.082.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.082.woff2",
+      "sha256": "c3a944f1249a25cd852672fe791d4e9481b8b19baad43b7a271d5bc410872b58",
+      "original_sha256": "c3a944f1249a25cd852672fe791d4e9481b8b19baad43b7a271d5bc410872b58",
+      "bytes": 17944,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.083.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.083.woff2",
+      "sha256": "c75dc8cb7f2228a81360e8a0966ff37806c4f79cff9adc1ea2704f2aba1e466a",
+      "original_sha256": "c75dc8cb7f2228a81360e8a0966ff37806c4f79cff9adc1ea2704f2aba1e466a",
+      "bytes": 17640,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.084.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.084.woff2",
+      "sha256": "b1117f6bd4a7d20c365017b3767bf01a9822f3c36070da0ceabc5f32154d5cac",
+      "original_sha256": "b1117f6bd4a7d20c365017b3767bf01a9822f3c36070da0ceabc5f32154d5cac",
+      "bytes": 18192,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.085.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.085.woff2",
+      "sha256": "0c0a65687c18def07b106b6fb3ca288a302759b622fc0a5e09f757aadb3363d8",
+      "original_sha256": "0c0a65687c18def07b106b6fb3ca288a302759b622fc0a5e09f757aadb3363d8",
+      "bytes": 17984,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.086.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.086.woff2",
+      "sha256": "345301a4c6dc9ae7e3e54b3b94394ebc43f6a0b76f12a071994cb54dd2770b32",
+      "original_sha256": "345301a4c6dc9ae7e3e54b3b94394ebc43f6a0b76f12a071994cb54dd2770b32",
+      "bytes": 17844,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.087.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.087.woff2",
+      "sha256": "536c4c6be9a66c2741a28163c713e8bfe435930f0379f7f92da68dafc1c41c3e",
+      "original_sha256": "536c4c6be9a66c2741a28163c713e8bfe435930f0379f7f92da68dafc1c41c3e",
+      "bytes": 18344,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.088.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.088.woff2",
+      "sha256": "587617be02f7be012a1ee8f1e772e4a4eebf1b276161f53bcffd43f5368d7728",
+      "original_sha256": "587617be02f7be012a1ee8f1e772e4a4eebf1b276161f53bcffd43f5368d7728",
+      "bytes": 17632,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.089.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.089.woff2",
+      "sha256": "4be0a593aeafa0b9aef335ab3d7ad350240e7e07dd43342cb19ac0067ff339d7",
+      "original_sha256": "4be0a593aeafa0b9aef335ab3d7ad350240e7e07dd43342cb19ac0067ff339d7",
+      "bytes": 17812,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.090.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.090.woff2",
+      "sha256": "c9b750b03c01a7a9aa1aa5fc676e40ffb340ff012159bb86452e5f3ae37744d0",
+      "original_sha256": "c9b750b03c01a7a9aa1aa5fc676e40ffb340ff012159bb86452e5f3ae37744d0",
+      "bytes": 18480,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.091.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.091.woff2",
+      "sha256": "993eb4f864ea3443b0d90befc7c83ebf8e04716152da14cb416204c12e2cd740",
+      "original_sha256": "993eb4f864ea3443b0d90befc7c83ebf8e04716152da14cb416204c12e2cd740",
+      "bytes": 18008,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.092.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.092.woff2",
+      "sha256": "7485801e5cd715f0d43b13e55b5a3ed14522a04114c2a14321954717aedb9367",
+      "original_sha256": "7485801e5cd715f0d43b13e55b5a3ed14522a04114c2a14321954717aedb9367",
+      "bytes": 18972,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.093.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.093.woff2",
+      "sha256": "e9ac17b3318a7e89657e3d91cccfadc6485d06b5b2ef500cd1a627c0fb7319e8",
+      "original_sha256": "e9ac17b3318a7e89657e3d91cccfadc6485d06b5b2ef500cd1a627c0fb7319e8",
+      "bytes": 16340,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.094.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.094.woff2",
+      "sha256": "9c58ae6939457b382cbc70284e6dcf4ba2bcc4e31e305c149b617cc83fbb6c3f",
+      "original_sha256": "9c58ae6939457b382cbc70284e6dcf4ba2bcc4e31e305c149b617cc83fbb6c3f",
+      "bytes": 17284,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.095.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.095.woff2",
+      "sha256": "bfe0a9155cb54d48f043613e0aaf9b045258772ac8b012864e390dacb13f9e12",
+      "original_sha256": "bfe0a9155cb54d48f043613e0aaf9b045258772ac8b012864e390dacb13f9e12",
+      "bytes": 16616,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.096.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.096.woff2",
+      "sha256": "488cc3a7828684ebbbae83de4142a3e4374f980ebb7119b2741e77ad91b047cd",
+      "original_sha256": "488cc3a7828684ebbbae83de4142a3e4374f980ebb7119b2741e77ad91b047cd",
+      "bytes": 17612,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.097.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.097.woff2",
+      "sha256": "4366e312014e4f5a35d158069714bb7e6136ce3f342fd8b7f0283a3f30457e05",
+      "original_sha256": "4366e312014e4f5a35d158069714bb7e6136ce3f342fd8b7f0283a3f30457e05",
+      "bytes": 16628,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.098.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.098.woff2",
+      "sha256": "300a1e5f36f26122917c8c855440374767186d80b6e2edf467e777cd2c29ac8c",
+      "original_sha256": "300a1e5f36f26122917c8c855440374767186d80b6e2edf467e777cd2c29ac8c",
+      "bytes": 17340,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.099.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.099.woff2",
+      "sha256": "cd9207526ed69ae2d3b37fca79c85248756682c69d176b21dda0bc9b5da48743",
+      "original_sha256": "cd9207526ed69ae2d3b37fca79c85248756682c69d176b21dda0bc9b5da48743",
+      "bytes": 18916,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.100.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.100.woff2",
+      "sha256": "f42a09c5d9f8b7cc8d7c157d7c9f1659b5212c3d94594edfdf2764d663b3b2fc",
+      "original_sha256": "f42a09c5d9f8b7cc8d7c157d7c9f1659b5212c3d94594edfdf2764d663b3b2fc",
+      "bytes": 19040,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.101.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.101.woff2",
+      "sha256": "46f7e23a2639cca679d225be0efcc2832acd0cae406ed4bd5e78330ef2a4c1b7",
+      "original_sha256": "46f7e23a2639cca679d225be0efcc2832acd0cae406ed4bd5e78330ef2a4c1b7",
+      "bytes": 15348,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.102.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.102.woff2",
+      "sha256": "91510e7cd3bc630b118f834f5ba9329d794707332388e820fda14264d611ad44",
+      "original_sha256": "91510e7cd3bc630b118f834f5ba9329d794707332388e820fda14264d611ad44",
+      "bytes": 16276,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.103.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.103.woff2",
+      "sha256": "22f6ab2c894672ce4f10702bf72946b67c9311bb503ca8873fa35b361ad892ba",
+      "original_sha256": "22f6ab2c894672ce4f10702bf72946b67c9311bb503ca8873fa35b361ad892ba",
+      "bytes": 16504,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.104.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.104.woff2",
+      "sha256": "803391937312c077d97240c49c036055c82be45509edd8fddc159092b1c2c790",
+      "original_sha256": "803391937312c077d97240c49c036055c82be45509edd8fddc159092b1c2c790",
+      "bytes": 16684,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.105.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.105.woff2",
+      "sha256": "6fa53ba516ceae15cfad4849221332b64563cae4673458ec3188a0c549c465fe",
+      "original_sha256": "6fa53ba516ceae15cfad4849221332b64563cae4673458ec3188a0c549c465fe",
+      "bytes": 16864,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.106.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.106.woff2",
+      "sha256": "b09ff699c8c57da7d406028fc161258363c185802bbbd1e2214434d037791d3d",
+      "original_sha256": "b09ff699c8c57da7d406028fc161258363c185802bbbd1e2214434d037791d3d",
+      "bytes": 18560,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.107.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.107.woff2",
+      "sha256": "ef156292f4fe7f7cc0a67530ce3cec258ac4e5909e3902ae597bc61b318623fd",
+      "original_sha256": "ef156292f4fe7f7cc0a67530ce3cec258ac4e5909e3902ae597bc61b318623fd",
+      "bytes": 15584,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.108.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.108.woff2",
+      "sha256": "00227dbc6e15ff46ee594bb9d1188f9deaa031d0cec548067c90ee21c3f4b078",
+      "original_sha256": "00227dbc6e15ff46ee594bb9d1188f9deaa031d0cec548067c90ee21c3f4b078",
+      "bytes": 17152,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.109.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.109.woff2",
+      "sha256": "0c067779788bfcd4eb7e5594d26adf9521273e584c1a75522716d4899efc8237",
+      "original_sha256": "0c067779788bfcd4eb7e5594d26adf9521273e584c1a75522716d4899efc8237",
+      "bytes": 14920,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.110.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.110.woff2",
+      "sha256": "c81ba418338f8c5d9d1ab2c79cc5f8f980bd1b2e7521392ad17d331190bea4b3",
+      "original_sha256": "c81ba418338f8c5d9d1ab2c79cc5f8f980bd1b2e7521392ad17d331190bea4b3",
+      "bytes": 16028,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.111.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.111.woff2",
+      "sha256": "9f47a578a86d04cb27c036c4d765c7388310d8085f41c731dfbfc715ae16b1fb",
+      "original_sha256": "9f47a578a86d04cb27c036c4d765c7388310d8085f41c731dfbfc715ae16b1fb",
+      "bytes": 16064,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.112.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.112.woff2",
+      "sha256": "19cf385540e306cb9fb1b3f3e606d3b7000b53d53dc0fddda09d8f115048d6d4",
+      "original_sha256": "19cf385540e306cb9fb1b3f3e606d3b7000b53d53dc0fddda09d8f115048d6d4",
+      "bytes": 15600,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.113.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.113.woff2",
+      "sha256": "6f3498d8028d547db90f9e5b9d7c4daf6aed37c4046c88b317668c63f436a2b1",
+      "original_sha256": "6f3498d8028d547db90f9e5b9d7c4daf6aed37c4046c88b317668c63f436a2b1",
+      "bytes": 15084,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.114.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.114.woff2",
+      "sha256": "777a7f2652eb38e6f677a00e7421e673b244c2c39217ddf8de4aa8b084739aac",
+      "original_sha256": "777a7f2652eb38e6f677a00e7421e673b244c2c39217ddf8de4aa8b084739aac",
+      "bytes": 14124,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.115.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.115.woff2",
+      "sha256": "9e71635414dffd8b382735aca11f2078cafe4801687633b4e4020821036f2455",
+      "original_sha256": "9e71635414dffd8b382735aca11f2078cafe4801687633b4e4020821036f2455",
+      "bytes": 14816,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.116.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.116.woff2",
+      "sha256": "ef98a738a204dc9145775daf6d7a102a43fa7f9b1fac21614cc47a9ee38b23b4",
+      "original_sha256": "ef98a738a204dc9145775daf6d7a102a43fa7f9b1fac21614cc47a9ee38b23b4",
+      "bytes": 14520,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.117.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.117.woff2",
+      "sha256": "bb767b7ad9ac4c5e3e47a7fb72a08df073859e624890297a817e075e8de74168",
+      "original_sha256": "bb767b7ad9ac4c5e3e47a7fb72a08df073859e624890297a817e075e8de74168",
+      "bytes": 12276,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.118.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.118.woff2",
+      "sha256": "f03694822e9eeeab2f8730a151d7bf6426d0d1600a435386a8e32c6fd08d8d80",
+      "original_sha256": "f03694822e9eeeab2f8730a151d7bf6426d0d1600a435386a8e32c6fd08d8d80",
+      "bytes": 21144,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.119.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.119.woff2",
+      "sha256": "8365c9cd45fcb7c69d847ac28a577a14e3f9f974ac24c4ac6c10976e6dc2c1e3",
+      "original_sha256": "8365c9cd45fcb7c69d847ac28a577a14e3f9f974ac24c4ac6c10976e6dc2c1e3",
+      "bytes": 28856,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.120.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.120.woff2",
+      "sha256": "d321328a8873a5b823f7561bcf43d1bb3ed5aee7604d4dcba029776efb595d4b",
+      "original_sha256": "d321328a8873a5b823f7561bcf43d1bb3ed5aee7604d4dcba029776efb595d4b",
+      "bytes": 13320,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.121.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.121.woff2",
+      "sha256": "6ab883005c5ebff53e8cfa206b499d49051161e6556344b00b2f3e7048ff2570",
+      "original_sha256": "6ab883005c5ebff53e8cfa206b499d49051161e6556344b00b2f3e7048ff2570",
+      "bytes": 4124,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.122.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.122.woff2",
+      "sha256": "4312b64f5b77932a36113a447b86991fdc9964a57933a1354513ee5487adab80",
+      "original_sha256": "4312b64f5b77932a36113a447b86991fdc9964a57933a1354513ee5487adab80",
+      "bytes": 20228,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-400.123.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-400.123.woff2",
+      "sha256": "7de15e46c9d06e63e7450f5025b4a6fa1c888fee97e993372e8edca038f74039",
+      "original_sha256": "7de15e46c9d06e63e7450f5025b4a6fa1c888fee97e993372e8edca038f74039",
+      "bytes": 28340,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.000.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.000.woff2",
+      "sha256": "a712f4cc53b69bd431ed5766aa601ca8029a4e4d0e6113f56d2c9da7f4a99590",
+      "original_sha256": "a712f4cc53b69bd431ed5766aa601ca8029a4e4d0e6113f56d2c9da7f4a99590",
+      "bytes": 56868,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.001.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.001.woff2",
+      "sha256": "bcdf9c8dc1dee9b36095fd082b03bc09c915160a523159b926e3fe74130ac3db",
+      "original_sha256": "bcdf9c8dc1dee9b36095fd082b03bc09c915160a523159b926e3fe74130ac3db",
+      "bytes": 58444,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.002.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.002.woff2",
+      "sha256": "5acafd5270b8975bc21510b3d79a3bc48679f83f41d4e65968d331d43cdf6aab",
+      "original_sha256": "5acafd5270b8975bc21510b3d79a3bc48679f83f41d4e65968d331d43cdf6aab",
+      "bytes": 4496,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.003.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.003.woff2",
+      "sha256": "708d45a4a72c1bc97f545086466b0fe9f0789f0cfcc5483b010549272504c0b1",
+      "original_sha256": "708d45a4a72c1bc97f545086466b0fe9f0789f0cfcc5483b010549272504c0b1",
+      "bytes": 37268,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.004.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.004.woff2",
+      "sha256": "73c5d1c4505f5d833c821d82668af475131fde261196a31f69d1416125745f7a",
+      "original_sha256": "73c5d1c4505f5d833c821d82668af475131fde261196a31f69d1416125745f7a",
+      "bytes": 7576,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.005.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.005.woff2",
+      "sha256": "74c0dcb0837a9b71b5307c8f73d6653019c3747042d3a22fd66f0639e589311e",
+      "original_sha256": "74c0dcb0837a9b71b5307c8f73d6653019c3747042d3a22fd66f0639e589311e",
+      "bytes": 56688,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.006.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.006.woff2",
+      "sha256": "a1aabfd5d3609e64199a697dd8b8cff0c3dc66a1968153ceb8995066f2efb266",
+      "original_sha256": "a1aabfd5d3609e64199a697dd8b8cff0c3dc66a1968153ceb8995066f2efb266",
+      "bytes": 87576,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.007.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.007.woff2",
+      "sha256": "0af4516219a35fc87e4b2dde3d0b29713084619497b8a96539f7ea1573086411",
+      "original_sha256": "0af4516219a35fc87e4b2dde3d0b29713084619497b8a96539f7ea1573086411",
+      "bytes": 77400,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.008.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.008.woff2",
+      "sha256": "9ede7f0e0ce77c78377c3541c31a90f32b9ae433590d9c65a4363755cca1aaba",
+      "original_sha256": "9ede7f0e0ce77c78377c3541c31a90f32b9ae433590d9c65a4363755cca1aaba",
+      "bytes": 71412,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.009.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.009.woff2",
+      "sha256": "e3ad0bcc073441a9926eaf7804c91c49038a1489acfbf03b2eae77a046833240",
+      "original_sha256": "e3ad0bcc073441a9926eaf7804c91c49038a1489acfbf03b2eae77a046833240",
+      "bytes": 69724,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.010.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.010.woff2",
+      "sha256": "42db4647d308aa01f928d866cbfea9266c90d52c8cccc0e68e9491381f15d25b",
+      "original_sha256": "42db4647d308aa01f928d866cbfea9266c90d52c8cccc0e68e9491381f15d25b",
+      "bytes": 63664,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.011.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.011.woff2",
+      "sha256": "02a512cf7525c2b9665bc42b39b378c557379261a30db07e93c77e9123ee1706",
+      "original_sha256": "02a512cf7525c2b9665bc42b39b378c557379261a30db07e93c77e9123ee1706",
+      "bytes": 67004,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.012.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.012.woff2",
+      "sha256": "bcb5188d6e1f2465a2f6bfbaef5a5c1a3837f02ab74090349fc5de52ad9ca11b",
+      "original_sha256": "bcb5188d6e1f2465a2f6bfbaef5a5c1a3837f02ab74090349fc5de52ad9ca11b",
+      "bytes": 54588,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.013.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.013.woff2",
+      "sha256": "a7990db623a901719bb44028bf9e9accf92de4b30c3dbbca5187fb30c5730532",
+      "original_sha256": "a7990db623a901719bb44028bf9e9accf92de4b30c3dbbca5187fb30c5730532",
+      "bytes": 58304,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.014.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.014.woff2",
+      "sha256": "84c3c3b619cce5119a04aea1d3f128876eaabac3c3c1bdb587bcb7f8bbda330a",
+      "original_sha256": "84c3c3b619cce5119a04aea1d3f128876eaabac3c3c1bdb587bcb7f8bbda330a",
+      "bytes": 55708,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.015.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.015.woff2",
+      "sha256": "dc0807febd46a79b81f8025e85def2473fd07e75afdaefcae14155e7cca8b20d",
+      "original_sha256": "dc0807febd46a79b81f8025e85def2473fd07e75afdaefcae14155e7cca8b20d",
+      "bytes": 64508,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.016.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.016.woff2",
+      "sha256": "5f3cd2685cfe5ae169e838ee214ba962f8c60fe40cf730566d967693ace8f481",
+      "original_sha256": "5f3cd2685cfe5ae169e838ee214ba962f8c60fe40cf730566d967693ace8f481",
+      "bytes": 55748,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.017.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.017.woff2",
+      "sha256": "2fffb574f8876aa716bc68d7524ad9b61b6ed1033b7206d2cafbc3ec084a304e",
+      "original_sha256": "2fffb574f8876aa716bc68d7524ad9b61b6ed1033b7206d2cafbc3ec084a304e",
+      "bytes": 63668,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.018.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.018.woff2",
+      "sha256": "35bbadaf98a7cf4ec3dc9a786b594962ef3156aafe9a8698f2b800f13d3df30f",
+      "original_sha256": "35bbadaf98a7cf4ec3dc9a786b594962ef3156aafe9a8698f2b800f13d3df30f",
+      "bytes": 59948,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.019.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.019.woff2",
+      "sha256": "23f2667cfdcfc62dd762d78e970381eb9d72270ecb879c51f365f0f5a1fcd0fa",
+      "original_sha256": "23f2667cfdcfc62dd762d78e970381eb9d72270ecb879c51f365f0f5a1fcd0fa",
+      "bytes": 73776,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.020.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.020.woff2",
+      "sha256": "29228caa241685906ecb0836825aa0189a9d78102f950741cf1f79c53a22d9b2",
+      "original_sha256": "29228caa241685906ecb0836825aa0189a9d78102f950741cf1f79c53a22d9b2",
+      "bytes": 53984,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.021.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.021.woff2",
+      "sha256": "2bd91ddf5156f681cf8fcbcfd4a8c974e96806e9e642e718b0a28d5426bce3ab",
+      "original_sha256": "2bd91ddf5156f681cf8fcbcfd4a8c974e96806e9e642e718b0a28d5426bce3ab",
+      "bytes": 59528,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.022.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.022.woff2",
+      "sha256": "f4fff907b356642e4ba6fe1ae6f0e9e3e5202148ffa1b86ad97b4bae2471db84",
+      "original_sha256": "f4fff907b356642e4ba6fe1ae6f0e9e3e5202148ffa1b86ad97b4bae2471db84",
+      "bytes": 58244,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.023.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.023.woff2",
+      "sha256": "838ccd1979a10bacabc7887256dfa269309c5920ba1bae80e797c7e5858c4841",
+      "original_sha256": "838ccd1979a10bacabc7887256dfa269309c5920ba1bae80e797c7e5858c4841",
+      "bytes": 79808,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.024.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.024.woff2",
+      "sha256": "3b4f661fcfda02c596ce905839d452c0c8f9c3d04099041ab3af34947ffae65b",
+      "original_sha256": "3b4f661fcfda02c596ce905839d452c0c8f9c3d04099041ab3af34947ffae65b",
+      "bytes": 72036,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.025.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.025.woff2",
+      "sha256": "a18707e1bb1075b2960f460a65cad83c74ddb0f03e2dd0f7a47ecace719b42e5",
+      "original_sha256": "a18707e1bb1075b2960f460a65cad83c74ddb0f03e2dd0f7a47ecace719b42e5",
+      "bytes": 66612,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.026.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.026.woff2",
+      "sha256": "85db69828904c91ae34faa7a338398915fc6b591bd8b8770a5b69e5de1959a1e",
+      "original_sha256": "85db69828904c91ae34faa7a338398915fc6b591bd8b8770a5b69e5de1959a1e",
+      "bytes": 55728,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.027.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.027.woff2",
+      "sha256": "9447837c9ece9a0bb44d240332d6435d59acf98df9fb8b8088627eea078699e8",
+      "original_sha256": "9447837c9ece9a0bb44d240332d6435d59acf98df9fb8b8088627eea078699e8",
+      "bytes": 51300,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.028.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.028.woff2",
+      "sha256": "165a6c8c61f1fb5adb699d312590220cc3573259beab38ddc2c09322287041d9",
+      "original_sha256": "165a6c8c61f1fb5adb699d312590220cc3573259beab38ddc2c09322287041d9",
+      "bytes": 62092,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.029.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.029.woff2",
+      "sha256": "97850cab8bede85342a594f04113951b335a95b85257fa85380c2735a87f8147",
+      "original_sha256": "97850cab8bede85342a594f04113951b335a95b85257fa85380c2735a87f8147",
+      "bytes": 64812,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.030.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.030.woff2",
+      "sha256": "3693cb3d3c3645c25e02698fb22335ff4d70144d03f281d16c92a6143162832b",
+      "original_sha256": "3693cb3d3c3645c25e02698fb22335ff4d70144d03f281d16c92a6143162832b",
+      "bytes": 63320,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.031.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.031.woff2",
+      "sha256": "91c0389cd18bd432ea82fb0176b70c06d754db7832d78eb4cefd66ebf0910ed7",
+      "original_sha256": "91c0389cd18bd432ea82fb0176b70c06d754db7832d78eb4cefd66ebf0910ed7",
+      "bytes": 78540,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.032.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.032.woff2",
+      "sha256": "86025e5bf6c4fb33d2ec43359ab9c1c579041a2a6490173f3221415071a8c438",
+      "original_sha256": "86025e5bf6c4fb33d2ec43359ab9c1c579041a2a6490173f3221415071a8c438",
+      "bytes": 65356,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.033.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.033.woff2",
+      "sha256": "8acf62ed8b6eacae89ea675ab64630105017db91b24180df5ab85bad8f8ba3dc",
+      "original_sha256": "8acf62ed8b6eacae89ea675ab64630105017db91b24180df5ab85bad8f8ba3dc",
+      "bytes": 54536,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.034.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.034.woff2",
+      "sha256": "ab0d59827ec358ddb69f557a2efb7261b0cff097659c78a43c931beaf22de26f",
+      "original_sha256": "ab0d59827ec358ddb69f557a2efb7261b0cff097659c78a43c931beaf22de26f",
+      "bytes": 72228,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.035.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.035.woff2",
+      "sha256": "36c4f24e60fc2f92779d1c173a4799c162210e0ce45a3fd14ac522a534c691c2",
+      "original_sha256": "36c4f24e60fc2f92779d1c173a4799c162210e0ce45a3fd14ac522a534c691c2",
+      "bytes": 60360,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.036.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.036.woff2",
+      "sha256": "796b014e31b6608ef5dc0d2ad1f59367aaa8fad6fa1439b9ea5082d436618b75",
+      "original_sha256": "796b014e31b6608ef5dc0d2ad1f59367aaa8fad6fa1439b9ea5082d436618b75",
+      "bytes": 48312,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.037.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.037.woff2",
+      "sha256": "a5052e4799570940527ec9e1dc1510e08034af7f1d0f3c089e2ce09eec0381fa",
+      "original_sha256": "a5052e4799570940527ec9e1dc1510e08034af7f1d0f3c089e2ce09eec0381fa",
+      "bytes": 58572,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.038.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.038.woff2",
+      "sha256": "7b4ce22d693e39da59dad0b29af56c4e60717969d6def8ea0b36b500d7b7426a",
+      "original_sha256": "7b4ce22d693e39da59dad0b29af56c4e60717969d6def8ea0b36b500d7b7426a",
+      "bytes": 52832,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.039.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.039.woff2",
+      "sha256": "39b33fe603d4543b5fbf21ad1a77a441ede270b66b6eecc5e21ccd5cfe5fcd45",
+      "original_sha256": "39b33fe603d4543b5fbf21ad1a77a441ede270b66b6eecc5e21ccd5cfe5fcd45",
+      "bytes": 58632,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.040.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.040.woff2",
+      "sha256": "57388192365689b88c26861fd6c6579a467bfda83fa19af16d8497e3d61781ea",
+      "original_sha256": "57388192365689b88c26861fd6c6579a467bfda83fa19af16d8497e3d61781ea",
+      "bytes": 52276,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.041.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.041.woff2",
+      "sha256": "bbb4b63e196f0b4102515ce755d9a0ba08c72a66c2bd38128146af8f6fc3be00",
+      "original_sha256": "bbb4b63e196f0b4102515ce755d9a0ba08c72a66c2bd38128146af8f6fc3be00",
+      "bytes": 62488,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.042.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.042.woff2",
+      "sha256": "76f29838503698850b7bf882360e2cb6d8418311dfe517c8ad611243d1de8fa2",
+      "original_sha256": "76f29838503698850b7bf882360e2cb6d8418311dfe517c8ad611243d1de8fa2",
+      "bytes": 51584,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.043.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.043.woff2",
+      "sha256": "37666ae53ce73183d8d64b63c7b8cbb35a09198b11e3b79aeeac0611bcfad682",
+      "original_sha256": "37666ae53ce73183d8d64b63c7b8cbb35a09198b11e3b79aeeac0611bcfad682",
+      "bytes": 58720,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.044.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.044.woff2",
+      "sha256": "fc649a62757647154c8f89c57c81d2c64536af78d4853e62fca36d4efd37a808",
+      "original_sha256": "fc649a62757647154c8f89c57c81d2c64536af78d4853e62fca36d4efd37a808",
+      "bytes": 57012,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.045.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.045.woff2",
+      "sha256": "f3e17f42c21a7629e8d4e537a175923c5d93ce70d0a39f00a5b2e6a70622b8b8",
+      "original_sha256": "f3e17f42c21a7629e8d4e537a175923c5d93ce70d0a39f00a5b2e6a70622b8b8",
+      "bytes": 51372,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.046.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.046.woff2",
+      "sha256": "ac8021325b1a9abd8d46e72f53b85596bba20161d576a6b37fd35a136cc63867",
+      "original_sha256": "ac8021325b1a9abd8d46e72f53b85596bba20161d576a6b37fd35a136cc63867",
+      "bytes": 44484,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.047.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.047.woff2",
+      "sha256": "12ea3962e95325fbe76d780d33b5ac6fc0b07cd8bd091125c21fe789d8999d07",
+      "original_sha256": "12ea3962e95325fbe76d780d33b5ac6fc0b07cd8bd091125c21fe789d8999d07",
+      "bytes": 44012,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.048.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.048.woff2",
+      "sha256": "bb4906ce466bd9294e5394436192061e198bcffd1b3285d6bedfcaef19989de3",
+      "original_sha256": "bb4906ce466bd9294e5394436192061e198bcffd1b3285d6bedfcaef19989de3",
+      "bytes": 50856,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.049.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.049.woff2",
+      "sha256": "ede4d1cd2a950049f82b97a17a40a7d30dfa12abf9a69a78f10368e04121d845",
+      "original_sha256": "ede4d1cd2a950049f82b97a17a40a7d30dfa12abf9a69a78f10368e04121d845",
+      "bytes": 47904,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.050.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.050.woff2",
+      "sha256": "42597a0e2135db5ea770e912df9d36eccb803465e0ac7388c1a686937da0b19b",
+      "original_sha256": "42597a0e2135db5ea770e912df9d36eccb803465e0ac7388c1a686937da0b19b",
+      "bytes": 48424,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.051.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.051.woff2",
+      "sha256": "941572d5c554195b2c7d04a419b17b9a0d2b347047f4c54d8b1fd90681fad5a2",
+      "original_sha256": "941572d5c554195b2c7d04a419b17b9a0d2b347047f4c54d8b1fd90681fad5a2",
+      "bytes": 39524,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.052.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.052.woff2",
+      "sha256": "04cdca3cebe4da0f1333dc05a75c1ac6a6e4a5a88023d16dd39def085c5f4b05",
+      "original_sha256": "04cdca3cebe4da0f1333dc05a75c1ac6a6e4a5a88023d16dd39def085c5f4b05",
+      "bytes": 34944,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.053.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.053.woff2",
+      "sha256": "d3e4ea0edd40bac30ed202b0bac98b19e890a2abac9824c2473278b24baee1dc",
+      "original_sha256": "d3e4ea0edd40bac30ed202b0bac98b19e890a2abac9824c2473278b24baee1dc",
+      "bytes": 23016,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.054.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.054.woff2",
+      "sha256": "4ac94703f3dd25dbe601b15b91dbf2397d74d0542516f8740a328765e1444ca9",
+      "original_sha256": "4ac94703f3dd25dbe601b15b91dbf2397d74d0542516f8740a328765e1444ca9",
+      "bytes": 7840,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.055.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.055.woff2",
+      "sha256": "f63de41f109d6c4849782ff5e1a46e56c1110dee6b39b16742ef37e31407ba92",
+      "original_sha256": "f63de41f109d6c4849782ff5e1a46e56c1110dee6b39b16742ef37e31407ba92",
+      "bytes": 5156,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.056.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.056.woff2",
+      "sha256": "f748e4da1f059e7042cef6244b91f66c93d64080046a590e7d5c65f59f63156d",
+      "original_sha256": "f748e4da1f059e7042cef6244b91f66c93d64080046a590e7d5c65f59f63156d",
+      "bytes": 10572,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.057.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.057.woff2",
+      "sha256": "9db869d9551bd64c01e5323ac8fe38857ce2340828c85489f9119c5aa78100f7",
+      "original_sha256": "9db869d9551bd64c01e5323ac8fe38857ce2340828c85489f9119c5aa78100f7",
+      "bytes": 11028,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.058.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.058.woff2",
+      "sha256": "9de36b6794c82bc6c3ccaba6cefc44f06e4a740ee0f141e8bea381b1c10aab2b",
+      "original_sha256": "9de36b6794c82bc6c3ccaba6cefc44f06e4a740ee0f141e8bea381b1c10aab2b",
+      "bytes": 19700,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.059.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.059.woff2",
+      "sha256": "4e3c3bc1d015441e71f35b3cb1f148a44cb6a2582ffdb20e1fe328b26645588b",
+      "original_sha256": "4e3c3bc1d015441e71f35b3cb1f148a44cb6a2582ffdb20e1fe328b26645588b",
+      "bytes": 16384,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.060.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.060.woff2",
+      "sha256": "ca5e5122936351e2a013491266c3a1d86837754a0c4a13b8b458ebe6d63e4527",
+      "original_sha256": "ca5e5122936351e2a013491266c3a1d86837754a0c4a13b8b458ebe6d63e4527",
+      "bytes": 27044,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.061.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.061.woff2",
+      "sha256": "cd77f644936614fb944ca07630a94eb17dc3f20feea3cd583fd76f747d80dd56",
+      "original_sha256": "cd77f644936614fb944ca07630a94eb17dc3f20feea3cd583fd76f747d80dd56",
+      "bytes": 23636,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.062.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.062.woff2",
+      "sha256": "b4a5b6eac84f04fd8ebfdfb392bbdacf14268a23595eb6dddac990d6ba9e33b2",
+      "original_sha256": "b4a5b6eac84f04fd8ebfdfb392bbdacf14268a23595eb6dddac990d6ba9e33b2",
+      "bytes": 22800,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.063.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.063.woff2",
+      "sha256": "3c59280fc89ee59cd4d33ac6860c5aa66ea7d3fe95cd7e910a04bc2afc51b566",
+      "original_sha256": "3c59280fc89ee59cd4d33ac6860c5aa66ea7d3fe95cd7e910a04bc2afc51b566",
+      "bytes": 21472,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.064.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.064.woff2",
+      "sha256": "eb2f6e24ea033961c7d80292bf46429bdc18f774b420ad9ff2b867849c4ddc2f",
+      "original_sha256": "eb2f6e24ea033961c7d80292bf46429bdc18f774b420ad9ff2b867849c4ddc2f",
+      "bytes": 26696,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.065.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.065.woff2",
+      "sha256": "b0e7406e644ecb1e13d024aec05cc118e611b1d37855d8ef4c7c68f6d4608eeb",
+      "original_sha256": "b0e7406e644ecb1e13d024aec05cc118e611b1d37855d8ef4c7c68f6d4608eeb",
+      "bytes": 24084,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.066.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.066.woff2",
+      "sha256": "adbbbfe25ab0538c52234e2ca44e16e7915cacf526a83fb7a0b357f0d34a0cec",
+      "original_sha256": "adbbbfe25ab0538c52234e2ca44e16e7915cacf526a83fb7a0b357f0d34a0cec",
+      "bytes": 21456,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.067.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.067.woff2",
+      "sha256": "0a25fc65ecd3da4db87b9020b2d2934db2d57798b0d39611e1e10add7033f0c4",
+      "original_sha256": "0a25fc65ecd3da4db87b9020b2d2934db2d57798b0d39611e1e10add7033f0c4",
+      "bytes": 21208,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.068.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.068.woff2",
+      "sha256": "e090fd4af0d1cb7c183ea035d9c16b05a09a9a99e2386d4abf550ec4803df3bb",
+      "original_sha256": "e090fd4af0d1cb7c183ea035d9c16b05a09a9a99e2386d4abf550ec4803df3bb",
+      "bytes": 24588,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.069.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.069.woff2",
+      "sha256": "e9a67493b359874538d9e176043dba894af651c032ef18f36ce50390441ae5e9",
+      "original_sha256": "e9a67493b359874538d9e176043dba894af651c032ef18f36ce50390441ae5e9",
+      "bytes": 23476,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.070.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.070.woff2",
+      "sha256": "5e80eee24dd51a30561b1555e40871fafb0588fe120c21fbe65e77939274ec86",
+      "original_sha256": "5e80eee24dd51a30561b1555e40871fafb0588fe120c21fbe65e77939274ec86",
+      "bytes": 23436,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.071.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.071.woff2",
+      "sha256": "96e288d638f0ea9c2bf6a55927bf6857242822dad4b1bdeac4af1f660b7fcca6",
+      "original_sha256": "96e288d638f0ea9c2bf6a55927bf6857242822dad4b1bdeac4af1f660b7fcca6",
+      "bytes": 24224,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.072.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.072.woff2",
+      "sha256": "f9c7f2ac2108500e4ad9a45d31fcd3dcc572dbdc1fea0ef1f3b77921ea01aa56",
+      "original_sha256": "f9c7f2ac2108500e4ad9a45d31fcd3dcc572dbdc1fea0ef1f3b77921ea01aa56",
+      "bytes": 24792,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.073.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.073.woff2",
+      "sha256": "9e915c5c8e2175a06254a991c7feeb6d51aa737fbec14cc5600e7eaf1acb9efc",
+      "original_sha256": "9e915c5c8e2175a06254a991c7feeb6d51aa737fbec14cc5600e7eaf1acb9efc",
+      "bytes": 23304,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.074.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.074.woff2",
+      "sha256": "c93d5cfc8fad3fa69c39a6326beff7d906add5deb63dac5b1061ced9c381bc6a",
+      "original_sha256": "c93d5cfc8fad3fa69c39a6326beff7d906add5deb63dac5b1061ced9c381bc6a",
+      "bytes": 22008,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.075.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.075.woff2",
+      "sha256": "772e4ccfee3002d3e505739fd1066e07b600efd34d6ec38a19abc0fbda53a8ff",
+      "original_sha256": "772e4ccfee3002d3e505739fd1066e07b600efd34d6ec38a19abc0fbda53a8ff",
+      "bytes": 22656,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.076.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.076.woff2",
+      "sha256": "c01a06235cf5e140eb3870f3c57910f39d483d8a00cbf2fe3d1f4e556ae00a52",
+      "original_sha256": "c01a06235cf5e140eb3870f3c57910f39d483d8a00cbf2fe3d1f4e556ae00a52",
+      "bytes": 20708,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.077.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.077.woff2",
+      "sha256": "8d4af0fc47fdc6506761553bd24f0352b95ff4cf91effb11ed40322fe1fca41f",
+      "original_sha256": "8d4af0fc47fdc6506761553bd24f0352b95ff4cf91effb11ed40322fe1fca41f",
+      "bytes": 22392,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.078.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.078.woff2",
+      "sha256": "58cc51b7986397206a93348f183dff4b6a2ebcaf85b845bbc3ba4bfb01ade344",
+      "original_sha256": "58cc51b7986397206a93348f183dff4b6a2ebcaf85b845bbc3ba4bfb01ade344",
+      "bytes": 23592,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.079.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.079.woff2",
+      "sha256": "4ac12606094755e334ea931a79d0bd0ef6f5c899e6c2c57e7f33bbc4456059fa",
+      "original_sha256": "4ac12606094755e334ea931a79d0bd0ef6f5c899e6c2c57e7f33bbc4456059fa",
+      "bytes": 23448,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.080.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.080.woff2",
+      "sha256": "afedb337067963103aeca904b948ebaf14734aedd737000cb87d53955c0d7eff",
+      "original_sha256": "afedb337067963103aeca904b948ebaf14734aedd737000cb87d53955c0d7eff",
+      "bytes": 22580,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.081.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.081.woff2",
+      "sha256": "f50062fa1c1db3c8cb1db35ba794e25fa70e0d382e5f0cb06d08d4d019950807",
+      "original_sha256": "f50062fa1c1db3c8cb1db35ba794e25fa70e0d382e5f0cb06d08d4d019950807",
+      "bytes": 20692,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.082.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.082.woff2",
+      "sha256": "16390cda833c193a8c6066d3647aae9a5ccb7209ebb4ab5698d3e10d5f5ff026",
+      "original_sha256": "16390cda833c193a8c6066d3647aae9a5ccb7209ebb4ab5698d3e10d5f5ff026",
+      "bytes": 21852,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.083.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.083.woff2",
+      "sha256": "9d05db3d3c6e6dd2e10e1a84458d963e79b800c17336e4efa1dc2b2892390a98",
+      "original_sha256": "9d05db3d3c6e6dd2e10e1a84458d963e79b800c17336e4efa1dc2b2892390a98",
+      "bytes": 21380,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.084.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.084.woff2",
+      "sha256": "c4f9278254986209c10b8c290dd5100b0ff3a804d55accd754fc71193baf2b3f",
+      "original_sha256": "c4f9278254986209c10b8c290dd5100b0ff3a804d55accd754fc71193baf2b3f",
+      "bytes": 22412,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.085.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.085.woff2",
+      "sha256": "5bc31c47af6e554ded685987a24f8e8af1e22606e71c56e086efd4dd1e318974",
+      "original_sha256": "5bc31c47af6e554ded685987a24f8e8af1e22606e71c56e086efd4dd1e318974",
+      "bytes": 21516,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.086.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.086.woff2",
+      "sha256": "e649e9dae6d816362e60b4f4220049ace60e4a826eeda558f3749724bad8fa04",
+      "original_sha256": "e649e9dae6d816362e60b4f4220049ace60e4a826eeda558f3749724bad8fa04",
+      "bytes": 21240,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.087.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.087.woff2",
+      "sha256": "cb3860cd92b61f6d6a3b2e6b3b9989fac5fc4a5275ce692866af9affcbd8e44c",
+      "original_sha256": "cb3860cd92b61f6d6a3b2e6b3b9989fac5fc4a5275ce692866af9affcbd8e44c",
+      "bytes": 21984,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.088.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.088.woff2",
+      "sha256": "ee4faa6acf36ef915b004b3745cc27e1fc75663e13f986a49b42eec91e627e9a",
+      "original_sha256": "ee4faa6acf36ef915b004b3745cc27e1fc75663e13f986a49b42eec91e627e9a",
+      "bytes": 21236,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.089.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.089.woff2",
+      "sha256": "4c50607a08180a6962dd22a102c8064d66c9ee717770a58411f2eee6040bdf62",
+      "original_sha256": "4c50607a08180a6962dd22a102c8064d66c9ee717770a58411f2eee6040bdf62",
+      "bytes": 21120,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.090.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.090.woff2",
+      "sha256": "be0dbb30519322f94ef6545b033b6a4da0b5d97415d227438dfcb80d7eedf8cf",
+      "original_sha256": "be0dbb30519322f94ef6545b033b6a4da0b5d97415d227438dfcb80d7eedf8cf",
+      "bytes": 22632,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.091.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.091.woff2",
+      "sha256": "d157d1f403e520800151cafcd54d64983418ce2d8378db063564fb6fad59c25e",
+      "original_sha256": "d157d1f403e520800151cafcd54d64983418ce2d8378db063564fb6fad59c25e",
+      "bytes": 21400,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.092.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.092.woff2",
+      "sha256": "b2f05aa309562600dac235372a73c6b584cfb20cfdb54560df9607959afa4315",
+      "original_sha256": "b2f05aa309562600dac235372a73c6b584cfb20cfdb54560df9607959afa4315",
+      "bytes": 22604,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.093.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.093.woff2",
+      "sha256": "6a6c4f853b6868957200483281f2f31c9e5b6b1c4f10081a9f494d5fa71d1deb",
+      "original_sha256": "6a6c4f853b6868957200483281f2f31c9e5b6b1c4f10081a9f494d5fa71d1deb",
+      "bytes": 19352,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.094.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.094.woff2",
+      "sha256": "ca52025d15a97ffd9fc3d9cc65e1b12bf9e5eccabbcdf5271aacfcab68b9a1e0",
+      "original_sha256": "ca52025d15a97ffd9fc3d9cc65e1b12bf9e5eccabbcdf5271aacfcab68b9a1e0",
+      "bytes": 20672,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.095.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.095.woff2",
+      "sha256": "1a50b243f46bb039348b68db533317d836615bad961156b5f5146af75178ac7a",
+      "original_sha256": "1a50b243f46bb039348b68db533317d836615bad961156b5f5146af75178ac7a",
+      "bytes": 20068,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.096.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.096.woff2",
+      "sha256": "4b6c6f6ea050d827774481cc240adaff99aa1ee4865f8266421969985999ecbf",
+      "original_sha256": "4b6c6f6ea050d827774481cc240adaff99aa1ee4865f8266421969985999ecbf",
+      "bytes": 21308,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.097.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.097.woff2",
+      "sha256": "8d54a472cf1b1c5b1a66537eca8e99e8e974753222167e0f2a18d23b9904421d",
+      "original_sha256": "8d54a472cf1b1c5b1a66537eca8e99e8e974753222167e0f2a18d23b9904421d",
+      "bytes": 19792,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.098.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.098.woff2",
+      "sha256": "4896a67ecaa53015417bce1fda51659c198913234808a78b67632a541cbd6eaf",
+      "original_sha256": "4896a67ecaa53015417bce1fda51659c198913234808a78b67632a541cbd6eaf",
+      "bytes": 20792,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.099.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.099.woff2",
+      "sha256": "ab11e67f395a97a9904273e1f9605f5c9c5321b599a25ec338d69b10609e6366",
+      "original_sha256": "ab11e67f395a97a9904273e1f9605f5c9c5321b599a25ec338d69b10609e6366",
+      "bytes": 22564,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.100.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.100.woff2",
+      "sha256": "f31c324afcc79b4f51a768b6253ebe5ccf63247c6e03ae047979ac9ed257eb08",
+      "original_sha256": "f31c324afcc79b4f51a768b6253ebe5ccf63247c6e03ae047979ac9ed257eb08",
+      "bytes": 23528,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.101.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.101.woff2",
+      "sha256": "d7967fdd61f19478f98442b15042a05cb4f0533a0d9117781ff04acc1e01bcca",
+      "original_sha256": "d7967fdd61f19478f98442b15042a05cb4f0533a0d9117781ff04acc1e01bcca",
+      "bytes": 18344,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.102.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.102.woff2",
+      "sha256": "14ce1ea5169f61c4b53083b5e0029632ddbcae98a0bf935486e711cab854e04c",
+      "original_sha256": "14ce1ea5169f61c4b53083b5e0029632ddbcae98a0bf935486e711cab854e04c",
+      "bytes": 19392,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.103.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.103.woff2",
+      "sha256": "d21fffd2e28e9243349611a523e3c0c3082af04d2c6122c5b835fb68ef829713",
+      "original_sha256": "d21fffd2e28e9243349611a523e3c0c3082af04d2c6122c5b835fb68ef829713",
+      "bytes": 19688,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.104.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.104.woff2",
+      "sha256": "f5b0f55e51c9c2edbba8ee740718e4c1d1d1f822b2f1e505e3af93a9d5b326e7",
+      "original_sha256": "f5b0f55e51c9c2edbba8ee740718e4c1d1d1f822b2f1e505e3af93a9d5b326e7",
+      "bytes": 20100,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.105.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.105.woff2",
+      "sha256": "a5e97ca1a7264de69fd004cec8873d4d50010224677b6bd7119685f630414c8c",
+      "original_sha256": "a5e97ca1a7264de69fd004cec8873d4d50010224677b6bd7119685f630414c8c",
+      "bytes": 20268,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.106.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.106.woff2",
+      "sha256": "8e1762fcb4fc350a8054108664fe25eb6d5c6e657efff419485ece5739a2340d",
+      "original_sha256": "8e1762fcb4fc350a8054108664fe25eb6d5c6e657efff419485ece5739a2340d",
+      "bytes": 22376,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.107.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.107.woff2",
+      "sha256": "07af7cba386382179edd11e0ed0608fc4fbd62d3e42f3786a026aeb2479b3dc7",
+      "original_sha256": "07af7cba386382179edd11e0ed0608fc4fbd62d3e42f3786a026aeb2479b3dc7",
+      "bytes": 18496,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.108.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.108.woff2",
+      "sha256": "f475c80fe96914bb456c57d8fbfd312538e150e85c25ec2f51b0dfc9b93661f2",
+      "original_sha256": "f475c80fe96914bb456c57d8fbfd312538e150e85c25ec2f51b0dfc9b93661f2",
+      "bytes": 20280,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.109.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.109.woff2",
+      "sha256": "f159d06df7e8b6b8d174da75f7fd390d977e87a96b2137faa8ac0fb50fbeefa0",
+      "original_sha256": "f159d06df7e8b6b8d174da75f7fd390d977e87a96b2137faa8ac0fb50fbeefa0",
+      "bytes": 17780,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.110.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.110.woff2",
+      "sha256": "b6ec09a29955b40654234785c8c11760360be1a26524938d24270b1c012b8aaf",
+      "original_sha256": "b6ec09a29955b40654234785c8c11760360be1a26524938d24270b1c012b8aaf",
+      "bytes": 19272,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.111.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.111.woff2",
+      "sha256": "d2f8ed37797f47c69f2000078abea238b1269923f5778f3a820df3363b90695d",
+      "original_sha256": "d2f8ed37797f47c69f2000078abea238b1269923f5778f3a820df3363b90695d",
+      "bytes": 18960,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.112.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.112.woff2",
+      "sha256": "833eb05167419e25ab1cd0b804f31735cddd49ebb9fdbedd4ec2923852cc2b51",
+      "original_sha256": "833eb05167419e25ab1cd0b804f31735cddd49ebb9fdbedd4ec2923852cc2b51",
+      "bytes": 18760,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.113.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.113.woff2",
+      "sha256": "3ea983ae7612a8e49c22de2456bde553ef7ae29ac6d7b5728db82f0b0da27ba5",
+      "original_sha256": "3ea983ae7612a8e49c22de2456bde553ef7ae29ac6d7b5728db82f0b0da27ba5",
+      "bytes": 17992,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.114.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.114.woff2",
+      "sha256": "bb99f78705467e21850eec043b7bf48e572cc420ec06ad71b4979326eeb8b339",
+      "original_sha256": "bb99f78705467e21850eec043b7bf48e572cc420ec06ad71b4979326eeb8b339",
+      "bytes": 17128,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.115.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.115.woff2",
+      "sha256": "19dbc97118609aa5d775af549fda0cdff1acf7191e8d5a57195cdcdeceb6d32e",
+      "original_sha256": "19dbc97118609aa5d775af549fda0cdff1acf7191e8d5a57195cdcdeceb6d32e",
+      "bytes": 17544,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.116.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.116.woff2",
+      "sha256": "96eca3d5ad4b49d7f8a582c31ee58f37d1e7392c7839c57128e93b5f01b764af",
+      "original_sha256": "96eca3d5ad4b49d7f8a582c31ee58f37d1e7392c7839c57128e93b5f01b764af",
+      "bytes": 17548,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.117.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.117.woff2",
+      "sha256": "b213da214fc02fe2f0b8b3913965a721638a9ca2e100696d10107c65c4bfdd00",
+      "original_sha256": "b213da214fc02fe2f0b8b3913965a721638a9ca2e100696d10107c65c4bfdd00",
+      "bytes": 14076,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.118.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.118.woff2",
+      "sha256": "cf237fab84d68959f77a41e009b14ca3069ecd855b383a1d5989e93661670aa0",
+      "original_sha256": "cf237fab84d68959f77a41e009b14ca3069ecd855b383a1d5989e93661670aa0",
+      "bytes": 24696,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.119.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.119.woff2",
+      "sha256": "53a3ba4815e6389597c1abfa9414ac46e5c0ff2b5fb17c72da79aacfe22863bc",
+      "original_sha256": "53a3ba4815e6389597c1abfa9414ac46e5c0ff2b5fb17c72da79aacfe22863bc",
+      "bytes": 40456,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.120.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.120.woff2",
+      "sha256": "2a66ab4885c458f6b4dedf6d04ad087e5c94e2b5bff5c5851babf725c359360d",
+      "original_sha256": "2a66ab4885c458f6b4dedf6d04ad087e5c94e2b5bff5c5851babf725c359360d",
+      "bytes": 16164,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.121.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.121.woff2",
+      "sha256": "fd2d9847ab5c6fe26b9c0193c49373b0f5937b009dfbd230f4d6ca097c261e6f",
+      "original_sha256": "fd2d9847ab5c6fe26b9c0193c49373b0f5937b009dfbd230f4d6ca097c261e6f",
+      "bytes": 4232,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.122.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.122.woff2",
+      "sha256": "77fc8060f85d76003f2a010a01cfbe867bb00ce6677627a76ad3073f83b65bec",
+      "original_sha256": "77fc8060f85d76003f2a010a01cfbe867bb00ce6677627a76ad3073f83b65bec",
+      "bytes": 23520,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/fonts/biz-udmincho/biz-udmincho-700.123.woff2",
+      "original_path": "site/theme/fonts/biz-udmincho/biz-udmincho-700.123.woff2",
+      "sha256": "a713ef3df0fa19c620b96060a839dedc30926596d2c0ae28e94bb8e09b099792",
+      "original_sha256": "a713ef3df0fa19c620b96060a839dedc30926596d2c0ae28e94bb8e09b099792",
+      "bytes": 32580,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/notices/OFL-1.1.txt",
+      "original_path": "site/theme/LICENSES/OFL-1.1.txt",
+      "sha256": "56b19d86691d8a5207430ea3c9ba4074b361735925a216c02646dc15a0e65858",
+      "original_sha256": "56b19d86691d8a5207430ea3c9ba4074b361735925a216c02646dc15a0e65858",
+      "bytes": 4550,
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "theme/assets/notices/CC0-1.0.txt",
+      "original_path": "site/theme/LICENSES/CC0-1.0.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "original_sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "bytes": 7048,
+      "license": "CC0-1.0"
+    }
+  ]
+}
