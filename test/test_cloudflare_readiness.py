@@ -526,15 +526,9 @@ class DeferredHTTPResponse(MeteredHTTPResponse):
 
 
 def transfer_encoding_cases(body):
+    """Framings refused from initial headers alone, before any body byte is read."""
     chunk = format(len(body), "x").encode() + b"\r\n" + body + b"\r\n0\r\n"
-    trailers = (b"X-Synthetic-Trailer: " + b"x" * 200 + b"\r\n") * 1400
-    extension = format(len(body), "x").encode() + b";synthetic=" + b"x" * 24000
-    extension += b"\r\n" + body + b"\r\n0\r\n\r\n"
     return [
-        ("oversized-trailers", [("Transfer-Encoding", "chunked")], chunk + trailers + b"\r\n"),
-        ("oversized-chunk-extension", [("Transfer-Encoding", "chunked")], extension),
-        ("bounded-chunked", [("Transfer-Encoding", "chunked")], chunk + b"\r\n"),
-        ("mixed-case", [("tRaNsFeR-eNcOdInG", "ChUnKeD")], chunk + b"\r\n"),
         ("empty", [("Transfer-Encoding", "")], body),
         ("identity", [("Transfer-Encoding", "identity")], body),
         ("gzip", [("Transfer-Encoding", "gzip")], body),
@@ -542,6 +536,33 @@ def transfer_encoding_cases(body):
         ("comma-separated", [("Transfer-Encoding", "gzip, chunked")], chunk + b"\r\n"),
         ("with-content-length", [("Content-Length", str(len(body))), ("Transfer-Encoding", "chunked")],
          chunk + b"\r\n"),
+    ]
+
+
+def chunked_wire(body, size=None):
+    size = size or len(body)
+    parts = [body[i:i + size] for i in range(0, len(body), size)]
+    return b"".join(format(len(part), "x").encode() + b"\r\n" + part + b"\r\n" for part in parts) + b"0\r\n\r\n"
+
+
+def chunked_refusals(body):
+    """Chunked framings refused while decoding, after a bounded prefix of the body."""
+    chunk = format(len(body), "x").encode() + b"\r\n" + body + b"\r\n0\r\n"
+    trailers = (b"X-Synthetic-Trailer: " + b"x" * 200 + b"\r\n") * 1400
+    extension = format(len(body), "x").encode() + b";synthetic=" + b"x" * 24000
+    extension += b"\r\n" + body + b"\r\n0\r\n\r\n"
+    return [
+        ("oversized-trailers", chunk + trailers + b"\r\n"),
+        ("single-trailer", chunk + b"X-Synthetic: 1\r\n\r\n"),
+        ("oversized-chunk-extension", extension),
+        ("short-extension", format(len(body), "x").encode() + b";a\r\n" + body + b"\r\n0\r\n\r\n"),
+        ("non-hex-size", b"zz\r\n" + body + b"\r\n0\r\n\r\n"),
+        ("long-size", b"0" * 9 + b"1\r\nx\r\n0\r\n\r\n"),
+        ("bare-lf", format(len(body), "x").encode() + b"\n" + body + b"\n0\n\n"),
+        ("missing-data-crlf", format(len(body), "x").encode() + b"\r\n" + body + b"0\r\n\r\n"),
+        ("truncated-data", format(len(body) + 5, "x").encode() + b"\r\n" + body),
+        ("missing-last-chunk", format(len(body), "x").encode() + b"\r\n" + body + b"\r\n"),
+        ("missing-final-crlf", chunk),
     ]
 
 
@@ -599,6 +620,61 @@ class HTTPSBoundaryTests(unittest.TestCase):
                 self.assertEqual(response.read_sizes, [])
                 self.assertEqual(response.stream.consumed, response.initial_bytes)
                 self.assertEqual(len(calls), 1)
+
+    def test_real_http_bounded_chunked_json_is_decoded(self):
+        module = load_probe(self)
+        for name, pairs, size in (("single", [("Transfer-Encoding", "chunked")], None),
+                                  ("mixed-case", [("tRaNsFeR-eNcOdInG", "ChUnKeD")], None),
+                                  ("padded", [("Transfer-Encoding", " chunked ")], None),
+                                  ("multiple", [("Transfer-Encoding", "chunked")], 7),
+                                  ("upper-hex", [("Transfer-Encoding", "chunked")], 255)):
+            with self.subTest(framing=name):
+                bodies = [json.dumps(b).encode() for b in
+                          (deployments_page(), versions_page(), domains_page(), deployments_page())]
+                responses = [MeteredHTTPResponse(b, [("Content-Type", "application/json"), *pairs],
+                                                 chunked_wire(b, size).replace(b"ff\r\n", b"FF\r\n"))
+                             for b in bodies]
+                status, result, calls = self.invoke_real_http(module, responses)
+                self.assertEqual((status, result["status"]), (0, "METADATA_VERIFIED"))
+                self.assertEqual(len(calls), 4)
+                for response in responses:
+                    self.assertEqual(response.read_sizes, [])
+                    self.assertEqual(response.stream.consumed, response.wire_bytes)
+
+    def test_real_http_chunked_framing_violations_refuse_within_bounded_read(self):
+        module = load_probe(self)
+        body = json.dumps(deployments_page()).encode()
+        for name, wire_body in chunked_refusals(body):
+            with self.subTest(framing=name):
+                response = MeteredHTTPResponse(body, [("Content-Type", "application/json"),
+                                                      ("Transfer-Encoding", "chunked")], wire_body)
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["status"], result["code"]), (2, "PARTIAL", "RESPONSE_INVALID"))
+                self.assertEqual(response.read_sizes, [])
+                self.assertLessEqual(response.stream.consumed - response.initial_bytes, len(body) + 32)
+                self.assertEqual(len(calls), 1)
+                self.assertEqual(len(result["diagnostics"]), 1)
+                self.assertIn((result["diagnostics"][0]["phase"], result["diagnostics"][0]["event"]),
+                              {("framing", "length_invalid"), ("body", "length_mismatch")})
+
+    def test_real_http_chunked_limits_refuse_without_full_read(self):
+        module = load_probe(self)
+        big = b"x" * (module.MAX_RESPONSE_BYTES + 1)
+        small = b"{}"
+        for name, wire_body, code, event in (
+                ("decoded-limit", chunked_wire(big, 4096), "RESPONSE_TOO_LARGE", ("body", "body_limit")),
+                ("one-oversized-chunk", chunked_wire(big), "RESPONSE_TOO_LARGE", ("body", "body_limit")),
+                ("chunk-count", chunked_wire(small * (module.MAX_CHUNKS + 1), 1)[:-5] + b"0\r\n\r\n",
+                 "RESPONSE_INVALID", ("framing", "length_limit"))):
+            with self.subTest(limit=name):
+                response = MeteredHTTPResponse(small, [("Content-Type", "application/json"),
+                                                       ("Transfer-Encoding", "chunked")], wire_body)
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, code))
+                self.assertLess(response.stream.consumed, response.wire_bytes)
+                self.assertLessEqual(response.stream.consumed - response.initial_bytes,
+                                     module.MAX_RESPONSE_BYTES + 12 * module.MAX_CHUNKS)
+                self.assertEqual([(d["phase"], d["event"]) for d in result["diagnostics"]], [event])
 
     def test_real_http_bounded_content_length_json_remains_supported(self):
         module = load_probe(self)
@@ -905,7 +981,7 @@ class DiagnosticTests(unittest.TestCase):
         if negative:
             responses[0].close()
             responses[0] = MeteredHTTPResponse(b"{}", [("Content-Type", "application/json"),
-                                                      ("Transfer-Encoding", "chunked")])
+                                                      ("Transfer-Encoding", "gzip")])
         class TrackedOutput(module._Output):
             def __init__(self, base):
                 super().__init__(base)
@@ -1261,7 +1337,7 @@ class DiagnosticTests(unittest.TestCase):
                     if negative:
                         responses[0].close()
                         responses[0] = MeteredHTTPResponse(b"{}", [("Content-Type", "application/json"),
-                                                                  ("Transfer-Encoding", "chunked")])
+                                                                  ("Transfer-Encoding", "gzip")])
                     with fault, patch.object(module, "_Output", TrackedOutput):
                         status, result, calls = self.invoke_real_http(module, responses, diagnostics=True)
                     self.assertEqual((status, result["code"]),
@@ -1306,7 +1382,7 @@ class DiagnosticTests(unittest.TestCase):
                              ("MAX_DIAGNOSTIC_RECORD_BYTES", 1)):
             with self.subTest(budget=field), patch.object(module, field, limit, create=True):
                 response = MeteredHTTPResponse(body, [("Content-Type", "application/json"),
-                                                      ("Transfer-Encoding", "chunked")])
+                                                      ("Transfer-Encoding", "gzip")])
                 status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
                 self.assertEqual((status, result["code"]), (2, "RESPONSE_INVALID"))
                 self.assertEqual(result["diagnostics"], [])
@@ -1390,8 +1466,7 @@ class DiagnosticTests(unittest.TestCase):
     def test_transfer_classification_precedes_real_http_body_reads(self):
         module = load_probe(self)
         body = json.dumps(deployments_page()).encode()
-        classes = {"oversized-trailers": "chunked", "oversized-chunk-extension": "chunked",
-                   "bounded-chunked": "chunked", "mixed-case": "chunked", "empty": "empty",
+        classes = {"empty": "empty",
                    "identity": "other", "gzip": "other", "duplicate": "duplicate",
                    "comma-separated": "other", "with-content-length": "chunked", "canary": "other"}
         cases = transfer_encoding_cases(body) + [("canary", [("Transfer-Encoding", TOKEN)], body)]

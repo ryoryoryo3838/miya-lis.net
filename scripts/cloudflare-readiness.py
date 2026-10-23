@@ -15,6 +15,7 @@ WORKER = "miya-lis-forest"
 HOSTNAME = "miya-lis.net"
 MAX_RESPONSE_BYTES = 256 * 1024
 MAX_TOTAL_BYTES = 1024 * 1024
+MAX_CHUNKS = 4096
 MAX_PAGES = 5
 MAX_REQUESTS = 8
 TOTAL_SECONDS = 60
@@ -216,12 +217,15 @@ def _https_get(path, authorization, timeout, *, diagnostics=None):
                         raise _Failure("RESPONSE_INVALID")
                     continue  # Keep the first value for the unchanged second-stage validator, never combine.
                 headers[key.lower()] = value
-            # Chunk extensions/trailers bypass decoded-body and initial-header counters.
+            # Only a lone "chunked" coding without Content-Length is decoded, by _chunked_body below.
+            chunked = False
             if "transfer-encoding" in headers:
                 value = headers["transfer-encoding"].strip().lower()
-                framing = "chunked" if value == "chunked" else "empty" if not value else "other"
-                _observe(diagnostics, "framing", "transfer_encoding", status="200", transfer_encoding=framing)
-                raise _Failure("RESPONSE_INVALID")
+                if value != "chunked" or "content-length" in headers:
+                    framing = "chunked" if value == "chunked" else "empty" if not value else "other"
+                    _observe(diagnostics, "framing", "transfer_encoding", status="200", transfer_encoding=framing)
+                    raise _Failure("RESPONSE_INVALID")
+                chunked = True
             if headers.get("content-type", "").split(";", 1)[0].strip().lower() != "application/json":
                 _observe(diagnostics, "headers", "content_type_other" if "content-type" in headers
                          else "content_type_missing", status="200")
@@ -238,7 +242,8 @@ def _https_get(path, authorization, timeout, *, diagnostics=None):
                     _observe(diagnostics, "framing", "length_limit", status="200")
                     raise _Failure("RESPONSE_TOO_LARGE")
             try:
-                body = response.read(MAX_RESPONSE_BYTES + 1)
+                body = (_chunked_body(response.fp, diagnostics) if chunked
+                        else response.read(MAX_RESPONSE_BYTES + 1))
             except _Failure:
                 raise
             except Exception:
@@ -247,6 +252,32 @@ def _https_get(path, authorization, timeout, *, diagnostics=None):
             return response.status, headers, body
         finally:
             connection.close()
+
+
+def _chunked_body(stream, diagnostics):
+    """Decode chunked framing from the raw stream; extensions and trailers are refused, not skipped."""
+    body = b""
+    for _ in range(MAX_CHUNKS):
+        line = stream.readline(11)
+        if not re.fullmatch(rb"[0-9A-Fa-f]{1,8}\r\n", line):
+            _observe(diagnostics, "framing", "length_invalid", status="200")
+            raise _Failure("RESPONSE_INVALID")
+        size = int(line[:-2], 16)
+        if size == 0:
+            if stream.readline(3) != b"\r\n":
+                _observe(diagnostics, "framing", "length_invalid", status="200")
+                raise _Failure("RESPONSE_INVALID")
+            return body
+        if len(body) + size > MAX_RESPONSE_BYTES:
+            _observe(diagnostics, "body", "body_limit", status="200")
+            raise _Failure("RESPONSE_TOO_LARGE")
+        data = stream.read(size + 2)
+        if len(data) != size + 2 or data[-2:] != b"\r\n":
+            _observe(diagnostics, "body", "length_mismatch", status="200")
+            raise _Failure("RESPONSE_INVALID")
+        body += data[:-2]
+    _observe(diagnostics, "framing", "length_limit", status="200")
+    raise _Failure("RESPONSE_INVALID")
 
 
 def _unique_object(pairs):
