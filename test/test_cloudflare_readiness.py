@@ -1426,11 +1426,48 @@ class DiagnosticTests(unittest.TestCase):
                 observation = {"phase": phase, "event": event}
                 if event != "schema_unsupported":
                     observation["status"] = "200"
+                if name == "api":
+                    observation.update(api_envelope="success_false_errors", api_error_code="other")
                 self.assertIn(observation, result["diagnostics"])
                 self.assertEqual(response.read_sizes, [module.MAX_RESPONSE_BYTES + 1])
                 self.assertEqual(len(calls), 1)
                 for forbidden in (TOKEN, ACCOUNT, "Content-Type", "X-", '"success"', '"errors"', "NaN"):
                     self.assertNotIn(forbidden, json.dumps(result["diagnostics"]))
+
+    def test_unsuccessful_envelope_keeps_only_closed_shape_and_numeric_code(self):
+        module = load_probe(self)
+        cases = [({"success": False, "errors": [{"code": 10000, "message": TOKEN}]},
+                  {"api_envelope": "success_false_errors", "api_error_code": "10000"}),
+                 ({"success": True, "errors": [{"code": 7003}], "result": {}},
+                  {"api_envelope": "success_true_errors", "api_error_code": "7003"}),
+                 ({"success": False, "errors": []}, {"api_envelope": "success_false_empty"}),
+                 ({"errors": [], "result": {}}, {"api_envelope": "success_missing"}),
+                 ({"success": TOKEN, "result": {}}, {"api_envelope": "success_other"}),
+                 ({"success": True, "errors": {TOKEN: ACCOUNT}, "result": {}}, {"api_envelope": "errors_invalid"}),
+                 ({"success": False, "errors": [{"code": True}]},
+                  {"api_envelope": "success_false_errors", "api_error_code": "other"}),
+                 ({"success": False, "errors": [{"code": 123456789}]},
+                  {"api_envelope": "success_false_errors", "api_error_code": "other"}),
+                 ({"success": False, "errors": [{"code": "10000"}]},
+                  {"api_envelope": "success_false_errors", "api_error_code": "other"}),
+                 ({"success": False, "errors": [TOKEN]},
+                  {"api_envelope": "success_false_errors", "api_error_code": "other"})]
+        for body, classes in cases:
+            with self.subTest(body=sorted(classes.items())):
+                response = MeteredHTTPResponse(json.dumps(body).encode())
+                status, result, calls = self.invoke_real_http(module, [response], diagnostics=True)
+                self.assertEqual((status, result["code"]), (2, "API_UNSUCCESSFUL"))
+                self.assertEqual(result["diagnostics"][-1],
+                                 {"phase": "schema", "event": "api_unsuccessful", "status": "200", **classes})
+                for forbidden in (TOKEN, ACCOUNT, '"message"'):
+                    self.assertNotIn(forbidden, json.dumps(result["diagnostics"]))
+        for forged in ({"phase": "schema", "event": "api_unsuccessful", "api_error_code": TOKEN[:8]},
+                       {"phase": "schema", "event": "api_unsuccessful", "api_error_code": "0123"},
+                       {"phase": "schema", "event": "api_unsuccessful", "api_envelope": TOKEN[:8]}):
+            class Collector:
+                def __init__(self):
+                    self.records = [forged]
+            self.assertEqual(module._diagnostic_snapshot([Collector()]), [])
 
     def test_initial_http_rejections_identify_closed_header_or_framing_category(self):
         module = load_probe(self)

@@ -22,6 +22,8 @@ TOTAL_SECONDS = 60
 MAX_DIAGNOSTIC_RECORDS = 64
 MAX_DIAGNOSTIC_BYTES = 16384
 MAX_DIAGNOSTIC_RECORD_BYTES = 256
+API_ENVELOPES = frozenset({"success_false_errors", "success_false_empty", "success_true_errors",
+                           "success_missing", "success_other", "errors_invalid"})
 CODES = frozenset({"ACCOUNT_INVALID", "AUTH_INVALID", "AUTH_UNAUTHORIZED", "AUTH_FORBIDDEN",
                    "REDIRECT_REFUSED", "HTTP_REFUSED", "TRANSPORT_REFUSED", "RESPONSE_INVALID",
                    "RESPONSE_TOO_LARGE", "API_UNSUCCESSFUL", "SCHEMA_UNSUPPORTED", "METADATA_VERIFIED",
@@ -52,7 +54,8 @@ class _Diagnostics:
         self.records = []
         self.bytes = 2  # The serialized list's brackets; commas counted per append.
 
-    def record(self, phase, event, *, status=None, transfer_encoding=None):
+    def record(self, phase, event, *, status=None, transfer_encoding=None, api_envelope=None,
+               api_error_code=None):
         if len(self.records) >= MAX_DIAGNOSTIC_RECORDS:
             return
         record = {"phase": phase if type(phase) is str and phase in {
@@ -70,6 +73,12 @@ class _Diagnostics:
         if transfer_encoding is not None:
             record["transfer_encoding"] = transfer_encoding if type(transfer_encoding) is str and transfer_encoding in {
                 "none", "chunked", "other", "duplicate", "empty"} else "other"
+        if api_envelope is not None:
+            record["api_envelope"] = api_envelope if type(api_envelope) is str and api_envelope in API_ENVELOPES \
+                else "other"
+        if api_error_code is not None:
+            record["api_error_code"] = api_error_code if type(api_error_code) is str and re.fullmatch(
+                r"[1-9][0-9]{3,4}", api_error_code) else "other"
         size = len(json.dumps(record, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("ascii"))
         total = self.bytes + size + bool(self.records)
         if size > MAX_DIAGNOSTIC_RECORD_BYTES or total > MAX_DIAGNOSTIC_BYTES:
@@ -95,15 +104,19 @@ def _diagnostic_snapshot(diagnostics):
                       "result_missing", "schema_unsupported", "http_parse", "read_error",
                       "body_type", "total_body_limit", "response_shape", "other"},
             "status": {"200", "401", "403", "3xx", "other", "invalid"},
-            "transfer_encoding": {"none", "chunked", "other", "duplicate", "empty"}}
+            "transfer_encoding": {"none", "chunked", "other", "duplicate", "empty"},
+            "api_envelope": API_ENVELOPES | {"other"}}
         snapshot, total = [], 2
         for record in records[:min(64, MAX_DIAGNOSTIC_RECORDS)]:
-            if type(record) is not dict or not 2 <= len(record) <= 4:
+            if type(record) is not dict or not 2 <= len(record) <= 5:
                 continue
             clean = {}
             for key, value in record.items():
                 if (type(key) is not str or type(value) is not str or len(value) > 32
-                        or key not in allowed or value not in allowed[key]):
+                        or key not in allowed and key != "api_error_code"
+                        or key in allowed and value not in allowed[key]
+                        or key == "api_error_code" and value != "other"
+                        and not re.fullmatch(r"[1-9][0-9]{3,4}", value)):
                     break
                 clean[key] = value
             else:
@@ -293,6 +306,26 @@ def _nonfinite(_value):
     raise _Failure("RESPONSE_INVALID")
 
 
+def _envelope_classes(data):
+    """Closed shape of an unsuccessful envelope; only a public numeric error code is kept."""
+    success, errors = data.get("success", None), data.get("errors", [])
+    if "success" not in data:
+        envelope = "success_missing"
+    elif type(success) is not bool:
+        envelope = "success_other"
+    elif type(errors) is not list:
+        envelope = "errors_invalid"
+    elif success:
+        envelope = "success_true_errors"
+    else:
+        envelope = "success_false_errors" if errors else "success_false_empty"
+    classes = {"api_envelope": envelope}
+    if type(errors) is list and errors:
+        code = errors[0].get("code") if type(errors[0]) is dict else None
+        classes["api_error_code"] = str(code) if type(code) is int and 1000 <= code <= 99999 else "other"
+    return classes
+
+
 def _response(status, headers, body, *, diagnostics=None):
     _observe(diagnostics, "http", "status", status=_status_class(status))
     if type(status) is not int:
@@ -305,7 +338,7 @@ def _response(status, headers, body, *, diagnostics=None):
         raise _Failure("AUTH_FORBIDDEN")
     if status != 200:
         raise _Failure("HTTP_REFUSED")
-    phase, event = "headers", "header_shape"
+    phase, event, classes = "headers", "header_shape", {}
     try:
         lowered = {}
         for key, value in headers.items():
@@ -347,13 +380,14 @@ def _response(status, headers, body, *, diagnostics=None):
             raise _Failure("RESPONSE_INVALID")
         phase, event = "schema", "api_unsuccessful"
         if data.get("success") is not True or data.get("errors", []) != []:
+            classes = _envelope_classes(data)
             raise _Failure("API_UNSUCCESSFUL")
         event = "result_missing"
         if "result" not in data:
             raise _Failure("SCHEMA_UNSUPPORTED")
         return data
     except _Failure:
-        _observe(diagnostics, phase, event, status="200")
+        _observe(diagnostics, phase, event, status="200", **classes)
         raise
     except Exception:
         _observe(diagnostics, phase, event, status="200")
