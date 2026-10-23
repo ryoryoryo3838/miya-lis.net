@@ -84,7 +84,8 @@ def load_trusted_theme(config, site_root):
     styles = [{'source': f'theme/styles/{name}.css', 'output': f'theme/styles/{name}.css'}
               for name in ('fonts', 'miya')]
     client = {'source': '_build/default/theme/client/hero.bc.js', 'output': 'theme/client/hero.js'}
-    layout = {'home': 'theme/layout/home.html', 'navigation': 'theme/layout/navigation.html'}
+    layout = {'home': 'theme/layout/home.html', 'navigation': 'theme/layout/navigation.html',
+              'not_found': 'theme/layout/not-found.html'}
     if spec['styles'] != styles or spec['client'] != client or spec['layout'] != layout:
         raise GateError('SW_THEME')
     sources = {'config/theme.json': hashlib.sha256(config_bytes).hexdigest()}
@@ -123,6 +124,7 @@ def load_trusted_theme(config, site_root):
         assets[output] = (data, hashlib.sha256(data).hexdigest())
     home = read(layout['home']).decode('utf-8', errors='strict')
     navigation = read(layout['navigation']).decode('utf-8', errors='strict')
+    not_found = read(layout['not_found']).decode('utf-8', errors='strict')
     for source in ['theme/client/dune', 'theme/client/hero.ml']:
         read(source)
     source_only_docs = {'theme/notices/INTEGRATION.md', 'theme/notices/PROVENANCE.json'}
@@ -156,9 +158,10 @@ def load_trusted_theme(config, site_root):
                     raise GateError('SW_THEME')
     validate_fragment(home, menu=False, assets=set(assets))
     validate_fragment(navigation, menu=True, assets=set(assets))
+    validate_fragment(not_found, menu=False, assets=set(assets))
     theme_inventory(root, sources)
     return {'root': root, 'assets': assets, 'sources': sources,
-            'home': home, 'navigation': navigation}
+            'home': home, 'navigation': navigation, 'not_found': not_found}
 
 
 def verify_trusted_theme(theme):
@@ -248,6 +251,9 @@ def validate_fragment(text, *, menu, assets):
     return parser
 
 
+VOID_ELEMENTS = frozenset({'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'})
+
+
 class NativePageParser(HTMLParser):
     """Find trusted fixed-template insertion points without reserializing DOM."""
     def __init__(self, text):
@@ -256,6 +262,9 @@ class NativePageParser(HTMLParser):
         self.lines.extend(match.end() for match in re.finditer('\n', text))
         self.head_end, self.body, self.main = [], [], []
         self.ids, self.scripts, self.styles = set(), [], []
+        # Open-element stack (void elements never pushed) and the start tags of
+        # backmatter bodies: footer > section > div.mainmatter.
+        self.stack, self.backmatter = [], []
         self.feed(text)
         self.close()
 
@@ -265,6 +274,10 @@ class NativePageParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        if tag == 'div' and attrs.get('class') == 'mainmatter' and self.stack[-2:] == ['footer', 'section']:
+            self.backmatter.append((self.position(), self.get_starttag_text()))
+        if tag not in VOID_ELEMENTS:
+            self.stack.append(tag)
         if tag == 'body':
             self.body.append((self.position(), self.get_starttag_text()))
         if 'id' in attrs:
@@ -278,7 +291,17 @@ class NativePageParser(HTMLParser):
         if tag == 'link' and attrs.get('rel') == 'stylesheet':
             self.styles.append(attrs.get('href'))
 
+    def handle_startendtag(self, tag, attrs):
+        if tag not in VOID_ELEMENTS:
+            raise GateError('SW_OUTPUT')
+        HTMLParser.handle_starttag(self, tag, attrs)
+
     def handle_endtag(self, tag):
+        if tag in VOID_ELEMENTS:
+            return
+        if not self.stack or self.stack[-1] != tag:
+            raise GateError('SW_OUTPUT')
+        self.stack.pop()
         if tag == 'head':
             self.head_end.append(self.position())
 
@@ -291,7 +314,9 @@ def present_native(output, ids, home, theme, forest):
     verify_trusted_theme(theme)
     navigation = validate_fragment(theme['navigation'], menu=True, assets=set(theme['assets']))
     hero = validate_fragment(theme['home'], menu=False, assets=set(theme['assets']))
-    if not (navigation.targets | hero.targets) <= ids or navigation.ids & hero.ids:
+    missing = validate_fragment(theme['not_found'], menu=False, assets=set(theme['assets']))
+    if (not (navigation.targets | hero.targets | missing.targets) <= ids or navigation.ids & hero.ids or
+            navigation.ids & missing.ids):
         raise GateError('SW_TARGET')
     menu = ''.join('<li><a href="/' + escape(identifier(tree['id']), quote=True) + '/">' +
                    escape(tree['title'], quote=True) + '</a></li>' for tree in forest['trees'])
@@ -318,7 +343,13 @@ def present_native(output, ids, home, theme, forest):
         if body_tag != '<body>':
             raise GateError('SW_OUTPUT')
         body = '<body class="miya-native' + (' miya-home' if is_home else '') + '" data-site-page="' + escape(id, quote=True) + '" data-site-home="' + str(is_home).lower() + '">'
-        edits = [(page.main[0], page.main[0], shell),
+        # Related/backlink sections start folded; native header clicks still toggle them.
+        folded = []
+        for start, tag in page.backmatter:
+            if tag != '<div class="mainmatter">':
+                raise GateError('SW_OUTPUT')
+            folded.append((start, start + len(tag), '<div class="mainmatter collapsed">'))
+        edits = folded + [(page.main[0], page.main[0], shell),
                  (body_start, body_start + len(body_tag), body),
                  (page.head_end[0], page.head_end[0], links)]
         for start, end, replacement in sorted(edits, reverse=True):
@@ -327,6 +358,17 @@ def present_native(output, ids, home, theme, forest):
         path.write_bytes(data)
         page_hashes[route] = hashlib.sha256(data).hexdigest()
     (output / 'index.html').write_bytes(read_bounded(output / home / 'index.html', MAX_FOREST))
+    # A fixed shell for every miss (including /_unavailable/): owned navigation
+    # and styles around the trusted fragment; no native or snapshot text.
+    data = ('<!DOCTYPE html>\n<html lang="ja"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<meta name="robots" content="noindex"><title>Not found</title>'
+            '<link rel="stylesheet" href="/style.css">' + links + '</head>'
+            '<body class="miya-native" data-site-page="404" data-site-home="false">' + nav_text +
+            '<div id="main-wrapper"><div id="grid-wrapper"><article>' + theme['not_found'] +
+            '</article></div></div></body></html>\n').encode('utf-8')
+    (output / '404.html').write_bytes(data)
+    page_hashes['404.html'] = hashlib.sha256(data).hexdigest()
     for relative, (data, _) in theme['assets'].items():
         destination = output / relative
         if destination.exists():
@@ -779,14 +821,15 @@ def audit_output(output, ids, theme_hashes, *, custom_hashes=None, page_hashes=N
         site_relative(relative, 'theme/')
         if not re.fullmatch(r'[0-9a-f]{64}', digest):
             raise GateError('SW_THEME')
-    if page_hashes is not None and (set(page_hashes) != routes or
+    pages = routes | ({'404.html'} if page_hashes is not None and '404.html' in page_hashes else set())
+    if page_hashes is not None and (set(page_hashes) != pages or
             any(not re.fullmatch(r'[0-9a-f]{64}', digest) for digest in page_hashes.values())):
         raise GateError('SW_OUTPUT')
     if home_copy is not None and (home_copy not in ids or page_hashes is None):
         raise GateError('SW_OUTPUT')
     if search_hash is not None and not re.fullmatch(r'[0-9a-f]{64}', search_hash):
         raise GateError('SW_OUTPUT')
-    required = routes | {'index.html', 'forest.json'} | set(theme_hashes) | set(custom_hashes) | set(images)
+    required = pages | {'index.html', 'forest.json'} | set(theme_hashes) | set(custom_hashes) | set(images)
     allowed_dirs = {parent.as_posix() for relative in required for parent in Path(relative).parents
                     if parent.as_posix() != '.'}
     files, seen, total = 0, set(), 0
@@ -817,6 +860,9 @@ def audit_output(output, ids, theme_hashes, *, custom_hashes=None, page_hashes=N
                     raise GateError('SW_LEAK')
                 if hashlib.sha256(data).hexdigest() != custom_hashes[relative]:
                     raise GateError('SW_THEME')
+            elif relative == '404.html' and relative in pages:
+                if LEAK.search(data) or hashlib.sha256(data).hexdigest() != page_hashes[relative]:
+                    raise GateError('SW_OUTPUT')
             elif relative in routes:
                 if LEAK.search(data):
                     raise GateError('SW_LEAK')

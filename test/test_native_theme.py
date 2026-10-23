@@ -16,6 +16,7 @@ def trusted_fixture(base):
         'theme/styles/miya.css': b'.miya-native { color: black; }',
         'theme/layout/home.html': b'<section id="site-hero"><h1>Synthetic home</h1></section>',
         'theme/layout/navigation.html': b'<nav id="site-navigation"><ul>{{MENU}}</ul></nav>',
+        'theme/layout/not-found.html': b'<section id="site-missing"><h1>Synthetic missing</h1></section>',
         'theme/client/dune': b'(executable (name hero) (modes js) (libraries js_of_ocaml))\n',
         'theme/client/hero.ml': b'let () = ()\n',
         # This loader unit fixture is not compiler/native/browser output evidence.
@@ -30,7 +31,8 @@ def trusted_fixture(base):
                   styles=[dict(source=f'theme/styles/{name}.css', output=f'theme/styles/{name}.css')
                           for name in ['fonts', 'miya']],
                   client=dict(source='_build/default/theme/client/hero.bc.js', output='theme/client/hero.js'),
-                  layout=dict(home='theme/layout/home.html', navigation='theme/layout/navigation.html'),
+                  layout=dict(home='theme/layout/home.html', navigation='theme/layout/navigation.html',
+                              not_found='theme/layout/not-found.html'),
                   assets=[], notices=[])
     path = site / 'config/theme.json'
     path.parent.mkdir()
@@ -332,6 +334,45 @@ class TrustedThemeTests(unittest.TestCase):
         self.assertEqual((output / 'index.html').read_bytes(), (output / 'PUBLICA/index.html').read_bytes())
         for relative, data in preserved.items():
             self.assertEqual((output / relative).read_bytes(), data)
+        missing = (output / '404.html').read_text()
+        self.assertEqual(hashes['404.html'], hashlib.sha256(missing.encode()).hexdigest())
+        self.assertIn('id="site-missing"', missing)
+        self.assertIn('id="site-navigation"', missing)
+        self.assertNotIn('Native', missing, 'the miss page carries no native or snapshot text')
+        self.assertNotIn('id="site-hero"', missing)
+
+    def test_only_backmatter_bodies_start_folded(self):
+        page = ('<html><head></head><body><div id="main-wrapper"><div id="grid-wrapper"><article>'
+                '<section class="block"><div class="mainmatter">article</div></section>'
+                '<footer><section class="block"><header><h1>Context</h1></header><div class="mainmatter">'
+                '<img src="/x.jpg" alt=""><section class="block"><div class="mainmatter">nested</div></section>'
+                '</div></section><section class="block"><div class="mainmatter">backlinks</div></section></footer>'
+                '</article></div></div></body></html>')
+        parsed = self.safe.NativePageParser(page)
+        self.assertEqual([page[start:start + len(tag)] for start, tag in parsed.backmatter],
+                         ['<div class="mainmatter">'] * 2)
+        self.assertEqual([start for start, _ in parsed.backmatter],
+                         [page.index('<div class="mainmatter"><img'), page.index('<div class="mainmatter">backlinks')])
+        for broken in ['<html><body><div></span></body></html>', '<html><body><div/></body></html>']:
+            with self.subTest(broken=broken), self.assertRaises(self.safe.GateError):
+                self.safe.NativePageParser(broken)
+
+    def test_audit_accepts_only_the_presented_404_page(self):
+        from test_safe_web import web_fixture
+        output = self.base / 'web-404'
+        web_fixture(output)
+        page = (output / 'PUBLICA/index.html').read_bytes()
+        (output / 'index.html').write_bytes(page)
+        (output / '404.html').write_bytes(b'<!DOCTYPE html><p>missing</p>')
+        hashes = {'PUBLICA/index.html': hashlib.sha256(page).hexdigest(),
+                  '404.html': hashlib.sha256(b'<!DOCTYPE html><p>missing</p>').hexdigest()}
+        self.assertEqual(self.safe.audit_output(output, {'PUBLICA'}, {}, page_hashes=hashes, home_copy='PUBLICA')['routes'], 1)
+        (output / '404.html').write_bytes(b'<!DOCTYPE html><p>tampered</p>')
+        with self.assertRaises(self.safe.GateError):
+            self.safe.audit_output(output, {'PUBLICA'}, {}, page_hashes=hashes, home_copy='PUBLICA')
+        (output / '404.html').unlink()
+        with self.assertRaises(self.safe.GateError):
+            self.safe.audit_output(output, {'PUBLICA'}, {}, page_hashes=hashes, home_copy='PUBLICA')
 
     def test_real_pinned_native_build_adds_owned_shell_without_content_eval(self):
         import inspect
@@ -371,9 +412,15 @@ class TrustedThemeTests(unittest.TestCase):
         for id in ['PUBLICA', 'PUBLICB', 'NESTED']:
             text = (output / id / 'index.html').read_text()
             native = (plain / id / 'index.html').read_text()
-            # Byte-preserve native article/TOC/backmatter and native attributes.
+            # Byte-preserve native article/TOC/backmatter and native attributes,
+            # except that each top-level backmatter body starts folded.
+            folded = native
+            for start, tag in reversed(self.safe.NativePageParser(native).backmatter):
+                folded = folded[:start] + '<div class="mainmatter collapsed">' + folded[start + len(tag):]
             self.assertEqual(text[text.index('<div id="main-wrapper"'):],
-                             native[native.index('<div id="main-wrapper"'):])
+                             folded[folded.index('<div id="main-wrapper"'):])
+            self.assertEqual(text.count('mainmatter collapsed'),
+                             native.count('mainmatter collapsed') + len(self.safe.NativePageParser(native).backmatter))
             self.assertIn('id="main-wrapper"', text)
             self.assertIn('<article', text)
             self.assertIn('id="grid-wrapper"', text)
@@ -401,6 +448,7 @@ class TrustedThemeTests(unittest.TestCase):
         custom_hashes = {p: digest for p, (_, digest) in owned['assets'].items()}
         pages = {f'{id}/index.html': hashlib.sha256((output / id / 'index.html').read_bytes()).hexdigest()
                  for id in ['PUBLICA', 'PUBLICB', 'NESTED']}
+        pages['404.html'] = hashlib.sha256((output / '404.html').read_bytes()).hexdigest()
         inventory = {p.relative_to(output).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                      for p in output.rglob('*') if p.is_file()}
         search_hash = inventory['forest.json']

@@ -249,3 +249,51 @@ body.miya-native :is(.hero-home, .persistent-header-link, .hero-period):hover { 
 @media (prefers-reduced-motion: no-preference) {
   body.miya-native .persistent-header { transition: opacity .15s ease; }
 }
+/* Link cards: tree-md emits only the link and its literal text (no remote media). */
+body.miya-native .card-link {
+  display: block;
+  max-width: 60ex;
+  margin: 1em 0;
+  padding: .75em 1em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  font-family: var(--miya-gothic);
+}
+body.miya-native .card-link:hover,
+body.miya-native .card-link:focus-visible {
+  border-color: #777;
+  background: #f7f7f7;
+}
+body.miya-native .card-link-body {
+  display: flex;
+  flex-direction: column;
+  gap: .2em;
+}
+body.miya-native .card-link-title {
+  font-weight: 600;
+}
+body.miya-native .card-link-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: .9em;
+  color: #444;
+}
+body.miya-native .card-link-host {
+  font-size: .8em;
+  color: #666;
+}
+/* Backmatter sections start folded (renderer adds .collapsed); show that they open. */
+body.miya-native footer > section.block > header {
+  cursor: pointer;
+}
+body.miya-native footer > section.block > header h1::before {
+  content: "▾ ";
+  color: #666;
+}
+body.miya-native footer > section.block:has(> .mainmatter.collapsed) > header h1::before {
+  content: "▸ ";
+}

@@ -10,7 +10,7 @@
   },
   "layout": {
     "home": "theme/layout/home.html",
-    "navigation": "theme/layout/navigation.html"
+    "navigation": "theme/layout/navigation.html", "not_found": "theme/layout/not-found.html"
   },
   "assets": [
     {

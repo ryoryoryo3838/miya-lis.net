@@ -84,3 +84,15 @@ test-only adapter for absent/partial/unowned controls. Those boundary fixtures
 are not acceptance of the final rendered artifact. Logs/inventories stay outside
 the source distribution. These browser harnesses do not dispatch CI, export
 content, upload, commit, push or deploy.
+
+## Backmatter folding, link cards and the miss page
+
+The renderer adds `collapsed` to each top-level backmatter body
+(`footer > section > div.mainmatter`) so related/backlink sections start
+folded; the native header click handler still toggles them, and article
+mainmatter is never touched. Link cards (`card-link*` from tree-md, already
+stripped of remote media) are styled in `miya.css`. A fixed `404.html` is
+assembled from the owned navigation and `layout/not-found.html` only — no
+native or snapshot text — and audited by digest. `wrangler.jsonc` serves it
+with status 404 for every miss, including the `/_unavailable/` target of
+private placements.

@@ -16,7 +16,8 @@ class TrustedWorkflowTests(unittest.TestCase):
         self.assertEqual(set(data), {'schema', 'styles', 'client', 'layout', 'assets', 'notices'})
         self.assertEqual(data['schema'], 'safe-web-theme-v1')
         self.assertEqual(data['client'], dict(source='_build/default/theme/client/hero.bc.js', output='theme/client/hero.js'))
-        self.assertEqual(data['layout'], dict(home='theme/layout/home.html', navigation='theme/layout/navigation.html'))
+        self.assertEqual(data['layout'], dict(home='theme/layout/home.html', navigation='theme/layout/navigation.html',
+                                              not_found='theme/layout/not-found.html'))
         self.assertEqual(data['styles'], [dict(source=f'theme/styles/{n}.css', output=f'theme/styles/{n}.css')
                                           for n in ['fonts', 'miya']])
 
