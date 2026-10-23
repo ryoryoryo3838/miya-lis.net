@@ -481,19 +481,24 @@ def _pagination_refusal(field, value, expected):
 _ABSENT = object()
 
 
-def _nonpaginated(data, size):
+def _nonpaginated(data, size, *, ignored=False):
+    """ignored: the read is documented to ignore pagination, so a zero field means unpopulated."""
     if "result_info" not in data:
         return
     info = data["result_info"]
     if not isinstance(info, dict):
         raise _Failure("PAGINATION_UNVERIFIED", pagination_field="result_info", pagination_relation="type")
+    # Zero means unpopulated only when the whole record is (page 0); a populated page stays strict.
+    ignored = ignored and type(info.get("page")) is int and info["page"] == 0
+    unset = (lambda field: ignored and type(info.get(field)) is int and info[field] == 0)
     for field in ("page", "total_pages"):
-        if type(info.get(field, _ABSENT)) is not int or info[field] != 1:
+        if (type(info.get(field, _ABSENT)) is not int or info[field] != 1) and not unset(field):
             raise _pagination_refusal(field, info.get(field, _ABSENT), 1)
     for field in ("count", "total_count"):
-        if field in info and (type(info[field]) is not int or info[field] != size):
+        if field in info and (type(info[field]) is not int or info[field] != size) and not unset(field):
             raise _pagination_refusal(field, info[field], size)
-    if "per_page" in info and (type(info["per_page"]) is not int or info["per_page"] < size):
+    if ("per_page" in info and (type(info["per_page"]) is not int or info["per_page"] < size)
+            and not unset("per_page")):
         raise _pagination_refusal("per_page", info["per_page"], size)
 
 
@@ -502,7 +507,7 @@ def _eligible(data, sensitive):
     if not isinstance(result, dict) or not isinstance(result.get("items"), list):
         raise _Failure("SCHEMA_UNSUPPORTED")
     items = result["items"]
-    _nonpaginated(data, len(items))
+    _nonpaginated(data, len(items), ignored=True)  # deployable=true ignores pagination.
     if not items:
         raise _Failure("VERSIONS_UNAVAILABLE")
     if len(items) > 100:
