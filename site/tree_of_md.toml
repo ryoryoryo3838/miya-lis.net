@@ -3,7 +3,7 @@ forest = "forest.toml"
 # The output root must not overlap a source root, and must be listed in
 # forest.toml's [forest].trees.
 # trees-md/ is not tracked here: it is populated from the Markdown repository
-# (the Obsidian vault) by build.sh locally and by deploy.yml in CI. tree-md's
+# (the Obsidian vault) by build.sh locally and by deploy.yml in CI. tree_of_md's
 # source roots must live under this directory, so the notes are copied in.
 sources = ["trees-md"]
 output = "generated"
@@ -22,7 +22,7 @@ mint = "off"
 # An attachment lives in the vault beside the note that embeds it, and
 # Forester serves an asset only from a directory forest.toml names. This is
 # where a copy goes: only what a published tree embeds is copied, the copy
-# keeps the path it had in the vault, and tree-md owns it — it is replaced
+# keeps the path it had in the vault, and tree_of_md owns it — it is replaced
 # when the image changes and deleted when nothing embeds it any more. The
 # directory is not committed; every build repopulates it.
 [assets]

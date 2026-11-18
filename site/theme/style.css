@@ -948,7 +948,7 @@ article .block[data-tree="0000"]::after {
 
 /* A `cardlink` block in the vault — what Obsidian's card plugin wrote down
    after fetching a page's Open Graph metadata — compiles to an anchor whose
-   parts tree-md classes and leaves unstyled, because what a card looks like
+   parts tree_of_md classes and leaves unstyled, because what a card looks like
    is this theme's business and not the note's. */
 
 .card-link {

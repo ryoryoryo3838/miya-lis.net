@@ -32,7 +32,7 @@ jobs:
       # published page may link to a note kept anywhere in it —
       # MIYA-LIS.NET/notes embeds notes/frege — and a note that was never
       # fetched cannot be resolved. Fetching it is not publishing it: what
-      # reaches the site is settled by tree-md.toml's [publish].from, which
+      # reaches the site is settled by tree_of_md.toml's [publish].from, which
       # names MIYA-LIS.NET/** and pulls in whatever those trees reach. The rest
       # of the vault is never compiled, never emitted, and never leaves the
       # runner.
@@ -57,35 +57,35 @@ jobs:
           version: 3.22.2
           steps: install-dune install-gpatch install-depexts build-deps build
 
-      # tree-md is developed in its own public repository, so the pin needs no
+      # tree_of_md is developed in its own public repository, so the pin needs no
       # credentials. Resolving `main` to a commit here does two things: the
       # cache below can key on it, and the build stops depending on when it ran.
-      - name: Resolve the tree-md revision
-        id: tree-md
+      - name: Resolve the tree_of_md revision
+        id: tree_of_md
         run: |
-          sha=$(git ls-remote https://github.com/ryoryoryo3838/tree-md main | cut -f1)
-          test -n "$sha" || { echo "could not resolve tree-md main" >&2; exit 1; }
+          sha=$(git ls-remote https://github.com/ryoryoryo3838/tree_of_md main | cut -f1)
+          test -n "$sha" || { echo "could not resolve tree_of_md main" >&2; exit 1; }
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "tree-md is $sha"
+          echo "tree_of_md is $sha"
 
-      # Building tree-md and its dependency closure takes about three minutes,
-      # and the result only changes when tree-md does. No restore-keys: an
+      # Building tree_of_md and its dependency closure takes about three minutes,
+      # and the result only changes when tree_of_md does. No restore-keys: an
       # approximate match here would mean silently compiling with the wrong
-      # tree-md.
-      - name: Restore tree-md
-        id: tree-md-cache
+      # tree_of_md.
+      - name: Restore tree_of_md
+        id: tree_of_md-cache
         uses: actions/cache@v4
         with:
-          path: ~/.local/bin/tree-md
-          key: tree-md-${{ runner.os }}-${{ runner.arch }}-${{ steps.tree-md.outputs.sha }}
+          path: ~/.local/bin/tree_of_md_legacy
+          key: tree_of_md-${{ runner.os }}-${{ runner.arch }}-${{ steps.tree_of_md.outputs.sha }}
 
-      - name: Install tree-md
-        if: steps.tree-md-cache.outputs.cache-hit != 'true'
+      - name: Install tree_of_md
+        if: steps.tree_of_md-cache.outputs.cache-hit != 'true'
         run: |
-          opam pin add -yn tree-md "git+https://github.com/ryoryoryo3838/tree-md#${{ steps.tree-md.outputs.sha }}"
-          opam install -y tree-md
+          opam pin add -yn tree_of_md "git+https://github.com/ryoryoryo3838/tree_of_md#${{ steps.tree_of_md.outputs.sha }}"
+          opam install -y tree_of_md
           mkdir -p "$HOME/.local/bin"
-          cp "$(opam var bin)/tree-md" "$HOME/.local/bin/tree-md"
+          cp "$(opam var bin)/tree_of_md_legacy" "$HOME/.local/bin/tree_of_md_legacy"
 
       # build.sh owns the sync as well as the compile, so that CI and a local
       # build stage the vault the same way. They did not: CI had its own copy
@@ -98,7 +98,7 @@ jobs:
       - name: Compile the Markdown sources
         run: |
           FOREST_CONTENT="$GITHUB_WORKSPACE/.content" \
-          TREE_MD="$HOME/.local/bin/tree-md" \
+          TREE_OF_MD="$HOME/.local/bin/tree_of_md_legacy" \
             sh site/build.sh md
           find site/trees-md -type f | sort
 

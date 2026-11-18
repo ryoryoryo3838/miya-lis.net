@@ -1,5 +1,5 @@
 [forest]
-trees = ["contents", "generated"]  # The directories in which your trees are stored; "generated" holds the trees tree-md compiles from contents/*.tree.md
+trees = ["contents", "generated"]  # The directories in which your trees are stored; "generated" holds the trees tree_of_md compiles from contents/*.tree.md
 assets = ["assets"] # The directories in which your assets are stored
 # Every tree's canonical <fr:uri> is built from this, so it has to be the
 # address the forest is actually published at.

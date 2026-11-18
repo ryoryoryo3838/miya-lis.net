@@ -16,13 +16,13 @@ repo_dir=$(CDPATH= cd -- "$site_dir/.." && pwd)
 cd "$site_dir"
 
 # The Markdown sources live in their own repository — the Obsidian vault — so
-# that notes are edited and versioned independently of the site. tree-md rejects
+# that notes are edited and versioned independently of the site. tree_of_md rejects
 # absolute and `..` source roots, so the notes are copied into trees-md/ rather
 # than referenced in place. Set FOREST_CONTENT to point at a different checkout.
 #
 # The whole vault is synced, not the published folder alone, because a page may
 # link to a note kept anywhere in it — MIYA-LIS.NET/notes links to notes/frege.
-# What is published is settled by tree-md.toml's [publish].from rather than by
+# What is published is settled by tree_of_md.toml's [publish].from rather than by
 # what is copied: it names MIYA-LIS.NET/** and pulls in whatever those reach,
 # so nothing else in the vault reaches the site.
 sync_md() {
@@ -38,12 +38,12 @@ sync_md() {
   # Everything, not only *.tree.md. A note embeds the image kept beside it —
   # ![[CYCL-01.jpg]] finds DAILY/assets/CYCL-01.jpg — and an attachment that
   # was never copied here cannot be resolved, let alone published. Copying it
-  # is not publishing it: tree-md.toml's [assets].into is what carries the
+  # is not publishing it: tree_of_md.toml's [assets].into is what carries the
   # attachments a published tree embeds into assets/, and nothing else in the
   # vault reaches the site.
   #
   # Hidden paths are pruned: .git is the checkout's own history and .obsidian
-  # is the editor's settings. tree-md ignores both, so copying them is waste,
+  # is the editor's settings. tree_of_md ignores both, so copying them is waste,
   # and `.?*` rather than `.*` is what keeps find from pruning the directory
   # it starts in.
   (cd "$content" && find . -name '.?*' -prune -o -type f -print) |
@@ -56,22 +56,22 @@ sync_md() {
 # generated/*.tree is not committed — it is rebuilt from trees-md/ on every
 # build, here and in CI — so there is nothing to fall back on: without an
 # executable there is no forest at all, and carrying on would build a site with
-# no pages in it. TREE_MD names the one to use, and CI sets it to the binary it
+# no pages in it. TREE_OF_MD names the one to use, and CI sets it to the binary it
 # installed; failing that whatever is on PATH; failing that the working copy
 # this is developed against, so a local build picks up an uncommitted change in
-# tree-md without being told about it.
+# tree_of_md without being told about it.
 compile_md() {
-  tree_md=${TREE_MD:-$(command -v tree-md || true)}
-  if [ -z "$tree_md" ]; then
+  tree_of_md=${TREE_OF_MD:-$(command -v tree_of_md_legacy || true)}
+  if [ -z "$tree_of_md" ]; then
     dev=$HOME/Documents/OCaml/tree-md/_build/default/bin/main.exe
-    [ -x "$dev" ] && tree_md=$dev || true
+    [ -x "$dev" ] && tree_of_md=$dev || true
   fi
-  if [ -z "$tree_md" ]; then
-    echo "build.sh: no tree-md executable found; set TREE_MD" >&2
+  if [ -z "$tree_of_md" ]; then
+    echo "build.sh: no tree_of_md_legacy executable found; set TREE_OF_MD" >&2
     exit 1
   fi
   sync_md
-  "$tree_md" build --config tree-md.toml
+  "$tree_of_md" build --config tree_of_md.toml
 }
 
 build_forest() {

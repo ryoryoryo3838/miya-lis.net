@@ -4,9 +4,9 @@ This is a vendored copy of Forester's own theme, customized in place. The
 upstream repository, path and commit are recorded in [`UPSTREAM`](./UPSTREAM);
 `upstream-diff.sh` reads them.
 
-The pinned commit is the same one `tree-md`'s target profile names, so the theme
+The pinned commit is the same one `tree_of_md`'s target profile names, so the theme
 and the `.tree` source it renders agree on which Forester they are for. If one
-moves, move the other: `target` in [`../tree-md.toml`](../tree-md.toml).
+moves, move the other: `target` in [`../tree_of_md.toml`](../tree_of_md.toml).
 
 ## What is changed
 
@@ -41,4 +41,4 @@ maintaining a fork of the compiler.
 ```
 
 Re-apply the changes in the table onto the new files, then update `commit` in
-[`UPSTREAM`](./UPSTREAM) and the `target` in `../tree-md.toml`.
+[`UPSTREAM`](./UPSTREAM) and the `target` in `../tree_of_md.toml`.

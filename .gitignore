@@ -2,22 +2,22 @@ output/
 /devbox.lock
 /site/theme/hero.js
 _build/
-/generated/.tree-md.lock
-/generated/.tree-md-transaction.json
-/generated/.tree-md-stage/
+/generated/.tree_of_md.lock
+/generated/.tree_of_md-transaction.json
+/generated/.tree_of_md-stage/
 # Populated from the Markdown repository by build.sh / deploy.yml.
 /site/trees-md/
-# Copies of the attachments the published trees embed, written by tree-md from
+# Copies of the attachments the published trees embed, written by tree_of_md from
 # the vault on every build. Owned by its manifest, not by git.
 /site/assets/vault/
 # Compiled from trees-md/ on every build, locally and in CI, so it is no longer
 # committed: keeping it tracked would make every note edit produce a second,
 # hand-committed diff.
 /site/generated/
-/site/generated/.tree-md.lock
-/site/generated/.tree-md-transaction.json
-/site/generated/.tree-md-stage/
+/site/generated/.tree_of_md.lock
+/site/generated/.tree_of_md-transaction.json
+/site/generated/.tree_of_md-stage/
 /.omo/run-continuation
 /docs/superpowers/plans
-/tools/tree-md/dune.lock
+/tools/tree_of_md/dune.lock
 /.hermes/plans
