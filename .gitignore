@@ -19,5 +19,4 @@ _build/
 /site/generated/.tree_of_md-stage/
 /.omo/run-continuation
 /docs/superpowers/plans
-/tools/tree_of_md/dune.lock
 /.hermes/plans
