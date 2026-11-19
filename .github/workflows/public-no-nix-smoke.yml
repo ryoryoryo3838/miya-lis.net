@@ -1,0 +1,19 @@
+name: PUBLIC without Nix (synthetic build only)
+on:
+  push:
+    branches: [ci/public-no-nix-smoke]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build and verify synthetic PUBLIC
+        run: |
+          docker run --rm -v "$PWD:/input:ro" \
+            ocaml/opam@sha256:a8fb6f7405c28881db1f7134e4ee241dc399701be04846e86001466f8eb30c09 \
+            bash /input/scripts/public-no-nix-smoke.sh

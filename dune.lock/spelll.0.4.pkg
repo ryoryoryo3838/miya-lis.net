@@ -1,0 +1,15 @@
+(version 0.4)
+
+(build
+ (all_platforms
+  ((action (run dune build @install -p %{pkg-self:name} -j %{jobs})))))
+
+(depends
+ (all_platforms
+  (ocaml dune seq stdlib-shims)))
+
+(source
+ (fetch
+  (url https://github.com/c-cube/spelll/archive/v0.4.tar.gz)
+  (checksum
+   sha512=6a7f0e6434b952819a90c05a7f6b28e12d1cd98bbb626d1e0f098bfdf95e8d910962261f332b48b7e277b72514ca224ecea964dcdd481b91924b35b1a099e786)))

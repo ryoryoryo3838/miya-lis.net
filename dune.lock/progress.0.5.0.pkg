@@ -1,0 +1,19 @@
+(version 0.5.0)
+
+(build
+ (all_platforms
+  ((action
+    (progn
+     (when %{pkg-self:dev} (run dune subst))
+     (run dune build -p %{pkg-self:name} -j %{jobs} @install))))))
+
+(depends
+ (all_platforms
+  (dune ocaml terminal fmt logs mtime uucp uutf optint)))
+
+(source
+ (fetch
+  (url
+   https://github.com/craigfe/progress/releases/download/0.5.0/progress-0.5.0.tbz)
+  (checksum
+   sha512=45dee4fe2ae0b7fc3ca675f6e854d738873eb608ef9155ea5d7edac4639c183ae1f512847a1b43bdfc1f4c459e7d5b44d03ee809455797e680f890b33d531367)))

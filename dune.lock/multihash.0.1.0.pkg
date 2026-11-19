@@ -1,0 +1,34 @@
+(version 0.1.0)
+
+(build
+ (all_platforms
+  ((action
+    (progn
+     (when %{pkg-self:dev} (run dune subst))
+     (run
+      dune
+      build
+      -p
+      %{pkg-self:name}
+      -j
+      %{jobs}
+      --promote-install-files=false
+      @install)
+     (run
+      dune
+      install
+      -p
+      %{pkg-self:name}
+      --create-install-files
+      %{pkg-self:name}))))))
+
+(depends
+ (all_platforms
+  (ocaml dune multicodec cstruct)))
+
+(source
+ (fetch
+  (url
+   https://github.com/patricoferris/ocaml-multihash/releases/download/v0.1.0/multihash-0.1.0.tbz)
+  (checksum
+   sha512=364de8a501ae3a10cb9d12693c985546bb2a43ee8e229d12e6a120b1a666c54af976f08727f39f6bea62728a7499b302bd8d4641da92ab0eeef419e77738be1a)))
