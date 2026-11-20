@@ -1,0 +1,14 @@
+(version 5.2.0)
+
+(build
+ (all_platforms ((action (run dune build -p %{pkg-self:name} -j %{jobs})))))
+
+(depends
+ (all_platforms
+  (dune ocaml algaeff bwd)))
+
+(source
+ (fetch
+  (url https://github.com/RedPRL/yuujinchou/archive/refs/tags/5.2.0.tar.gz)
+  (checksum
+   sha512=a31c31f6a98c06844f973ecbef21e78e387b7d139bee78b9e9920ac92a90685f8282d08fc5f5a2a0adeab0d8ce7e1e4790fe0957ab04658b79e7cac82f21841a)))

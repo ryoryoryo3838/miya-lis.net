@@ -1,0 +1,27 @@
+name: Real PUBLIC without Nix (build only)
+on:
+  push:
+    branches: [ci/public-real-no-nix]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check out the approved PUBLIC snapshot
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: ryoryoryo3838/miya-lis-public
+          ref: b61b25ed47dd8dd1562e2136c939b67bac70602a
+          path: approved-content
+          token: ${{ secrets.PUBLIC_CONTENT_TOKEN }}
+          persist-credentials: false
+      - name: Build and verify PUBLIC without deploying
+        run: |
+          docker run --rm -v "$PWD:/input:ro" \
+            ocaml/opam@sha256:a8fb6f7405c28881db1f7134e4ee241dc399701be04846e86001466f8eb30c09 \
+            bash /input/scripts/public-no-nix-smoke.sh
