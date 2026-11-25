@@ -1,77 +1,69 @@
 #!/bin/sh
 # Build the site.
 #
-#   build.sh          compile the Markdown sources, then build the forest
-#   build.sh md       sync the Markdown repository into trees-md/, then compile
-#                     trees-md/*.tree.md into generated/*.tree
-#   build.sh forest   build the forest and write the site root entry
+#   build.sh snapshot DIR   check DIR against public-snapshot, then convert its
+#                           public-forest.json into trees/*.tree
+#   build.sh forest         build the forest and dress it in the site's shell
 #
-# The two stages are split so the watchers can own one each: watchexec.sh runs
-# the md stage on Markdown changes, and the trees it regenerates are part of the
-# forest, so watch.sh picks them up and runs the forest stage.
+# The site is built only from an approved public snapshot: manifest.json and
+# public-forest.json, projected from the vault's PUBLIC/ by the Forester
+# hybrid plugin, reviewed, and committed on their own to miya-lis-public. The
+# vault itself never reaches this build. public-snapshot names the approved
+# one; changing it is what approves a new snapshot.
 set -eu
 
 site_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-repo_dir=$(CDPATH= cd -- "$site_dir/.." && pwd)
 cd "$site_dir"
 
-# The Markdown sources live in their own repository — the Obsidian vault — so
-# that notes are edited and versioned independently of the site. tree_of_md rejects
-# absolute and `..` source roots, so the notes are copied into trees-md/ rather
-# than referenced in place. Set FOREST_CONTENT to point at a different checkout.
-#
-# The whole vault is synced, not the published folder alone, because a page may
-# link to a note kept anywhere in it — MIYA-LIS.NET/notes links to notes/frege.
-# What is published is settled by tree_of_md.toml's [publish].from rather than by
-# what is copied: it names MIYA-LIS.NET/** and pulls in whatever those reach,
-# so nothing else in the vault reaches the site.
-sync_md() {
-  content=${FOREST_CONTENT:-$HOME/wiki.miya-lis.net}
-  if [ ! -d "$content" ]; then
-    echo "build.sh: Markdown sources not found at $content" >&2
-    echo "build.sh: set FOREST_CONTENT to the directory holding *.tree.md" >&2
-    exit 1
-  fi
+# The manifest's own digest is the approval: it binds the exact bytes of the
+# forest. Anything else in the directory, or any byte that differs, is refused.
+check_snapshot() {
+  . "$site_dir/public-snapshot"
+  python3 - "$1" "$manifest_sha256" <<'PY'
+import hashlib
+import json
+import os
+import sys
 
-  rm -rf trees-md
-  mkdir -p trees-md
-  # Everything, not only *.tree.md. A note embeds the image kept beside it —
-  # ![[CYCL-01.jpg]] finds DAILY/assets/CYCL-01.jpg — and an attachment that
-  # was never copied here cannot be resolved, let alone published. Copying it
-  # is not publishing it: tree_of_md.toml's [assets].into is what carries the
-  # attachments a published tree embeds into assets/, and nothing else in the
-  # vault reaches the site.
-  #
-  # Hidden paths are pruned: .git is the checkout's own history and .obsidian
-  # is the editor's settings. tree_of_md ignores both, so copying them is waste,
-  # and `.?*` rather than `.*` is what keeps find from pruning the directory
-  # it starts in.
-  (cd "$content" && find . -name '.?*' -prune -o -type f -print) |
-  while IFS= read -r rel; do
-    mkdir -p "trees-md/$(dirname "$rel")"
-    cp "$content/$rel" "trees-md/$rel"
-  done
+snapshot, approved = sys.argv[1], sys.argv[2]
+
+
+def digest(name):
+    with open(os.path.join(snapshot, name), "rb") as handle:
+        return hashlib.sha256(handle.read()).hexdigest()
+
+
+def refuse(reason):
+    sys.exit("build.sh: snapshot refused: " + reason)
+
+
+names = sorted(n for n in os.listdir(snapshot) if not n.startswith("."))
+if names != ["manifest.json", "public-forest.json"]:
+    refuse("expected exactly manifest.json and public-forest.json, found %s" % names)
+for name in names:
+    if os.path.islink(os.path.join(snapshot, name)):
+        refuse("%s is a symlink" % name)
+if digest("manifest.json") != approved:
+    refuse("manifest.json is not the one public-snapshot approves")
+with open(os.path.join(snapshot, "manifest.json"), encoding="utf-8") as handle:
+    manifest = json.load(handle)
+if manifest != {"schema": "forester-public-snapshot-v1",
+                "files": {"public-forest.json": digest("public-forest.json")}}:
+    refuse("public-forest.json does not match its manifest")
+PY
 }
 
-# generated/*.tree is not committed — it is rebuilt from trees-md/ on every
-# build, here and in CI — so there is nothing to fall back on: without an
-# executable there is no forest at all, and carrying on would build a site with
-# no pages in it. TREE_OF_MD names the one to use, and CI sets it to the binary it
-# installed; failing that whatever is on PATH; failing that the working copy
-# this is developed against, so a local build picks up an uncommitted change in
-# tree_of_md without being told about it.
-compile_md() {
-  tree_of_md=${TREE_OF_MD:-$(command -v tree_of_md_legacy || true)}
+# tree_of_md's public mode validates the forest again and refuses what it does
+# not know. TREE_OF_MD names the executable; failing that, the one on PATH.
+convert_snapshot() {
+  tree_of_md=${TREE_OF_MD:-$(command -v tree_of_md || true)}
   if [ -z "$tree_of_md" ]; then
-    dev=$HOME/Documents/OCaml/tree-md/_build/default/bin/main.exe
-    [ -x "$dev" ] && tree_of_md=$dev || true
-  fi
-  if [ -z "$tree_of_md" ]; then
-    echo "build.sh: no tree_of_md_legacy executable found; set TREE_OF_MD" >&2
+    echo "build.sh: no tree_of_md executable found; set TREE_OF_MD" >&2
     exit 1
   fi
-  sync_md
-  "$tree_of_md" build --config tree_of_md.toml
+  check_snapshot "$1"
+  rm -rf trees
+  "$tree_of_md" --public-forest "$1/public-forest.json" --out-dir trees
 }
 
 # Forester is installed with opam (`opam install forester.6.0`), so it is on
@@ -90,12 +82,11 @@ build_forest() {
   python3 "$site_dir/decorate.py"
 }
 
-case "${1:-all}" in
-  all) compile_md; build_forest ;;
-  md) compile_md ;;
+case "${1:-}" in
+  snapshot) convert_snapshot "${2:?usage: build.sh snapshot DIR}" ;;
   forest) build_forest ;;
   *)
-    echo "usage: build.sh [all|md|forest]" >&2
+    echo "usage: build.sh snapshot DIR | build.sh forest" >&2
     exit 2
     ;;
 esac

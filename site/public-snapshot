@@ -1,0 +1,5 @@
+# The approved public snapshot: a commit of ryoryoryo3838/miya-lis-public
+# holding only manifest.json and public-forest.json, and the SHA-256 of that
+# manifest.json. Changing these approves a new snapshot for publication.
+revision=4b51706d9a2bf87fc7c5b854d1e2f84950a0b427
+manifest_sha256=7a9f2f4928f423130117c30ccc783df71c71d11ad6dd1da33db067c429f13785

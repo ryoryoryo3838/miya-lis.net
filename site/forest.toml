@@ -1,6 +1,7 @@
 [forest]
-trees = ["contents", "generated"]  # The directories in which your trees are stored; "generated" holds the trees tree_of_md compiles from contents/*.tree.md
-assets = ["assets"] # The directories in which your assets are stored
-# Every tree's canonical <fr:uri> is built from this, so it has to be the
+# trees/ is written by `build.sh snapshot` from the approved public snapshot.
+trees = ["trees"]
+assets = []
+# Every tree's canonical address is built from this, so it has to be the
 # address the forest is actually published at.
 url = "https://miya-lis.net/"
