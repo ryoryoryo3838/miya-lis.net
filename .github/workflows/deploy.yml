@@ -3,6 +3,9 @@ name: Deploy to Cloudflare Workers
 on:
   push:
     branches: [main, miya, hero-theme]
+  # Sent by the vault (wiki.miya-lis.net) when a note that can reach the site changes.
+  repository_dispatch:
+    types: [content-updated]
   workflow_dispatch:
 
 # One deploy at a time: each run rebuilds the whole forest to publish the same
@@ -11,9 +14,14 @@ concurrency:
   group: deploy
   cancel-in-progress: false
 
-# tree_of_md with support for the closed unavailable node (feat/public-unavailable).
+# This repository and its CI logs are public, and the vault is private: no step
+# may print note text or paths. The projector prints only a status and
+# diagnostic codes, tree_of_md only PF_OK, and Forester only sees public trees.
 env:
-  TREE_OF_MD_REVISION: 0b505e9407904e21460207d51f09dad20e47629c
+  # The Forester hybrid plugin, whose public projection settles what leaves the vault.
+  PLUGIN_REVISION: ab8e38841b16081c176d8065956183194c339c68
+  # tree_of_md with the unavailable node and the numbered/expanded/metadata flags.
+  TREE_OF_MD_REVISION: 4b16ecfc13341ca5328066fa4fe651af0b2f08d8
 
 jobs:
   deploy:
@@ -21,28 +29,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The site is built from the approved public snapshot alone, never from
-      # the vault: public-snapshot names the miya-lis-public commit, and
-      # build.sh refuses it unless its manifest has the approved digest.
-      # GITHUB_TOKEN is scoped to this repository, so reading that private
-      # repository needs PUBLIC_CONTENT_TOKEN.
-      - name: Read the approved snapshot
-        id: snapshot
-        run: |
-          . ./public-snapshot
-          echo "revision=$revision" >> "$GITHUB_OUTPUT"
-
-      - name: Check out the approved snapshot
+      # GITHUB_TOKEN is scoped to this repository, so reading the private
+      # vault needs CONTENT_TOKEN.
+      - name: Check out the vault
         uses: actions/checkout@v4
         with:
-          repository: ryoryoryo3838/miya-lis-public
-          ref: ${{ steps.snapshot.outputs.revision }}
-          token: ${{ secrets.PUBLIC_CONTENT_TOKEN }}
-          path: .snapshot
+          repository: ryoryoryo3838/wiki.miya-lis.net
+          ref: main
+          token: ${{ secrets.CONTENT_TOKEN }}
+          path: .vault
           persist-credentials: false
+
+      - name: Check out the Forester plugin
+        uses: actions/checkout@v4
+        with:
+          repository: ryoryoryo3838/obsidian-forester-theme
+          ref: ${{ env.PLUGIN_REVISION }}
+          path: .plugin
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Project the vault
+        run: |
+          npm ci --prefix .plugin/plugin --no-audit --no-fund >/dev/null
+          npm run --prefix .plugin/plugin -s build:public >/dev/null
+          PROJECTOR=.plugin/plugin/dist/project-public.mjs sh scripts/build.sh project "$GITHUB_WORKSPACE/.vault"
+
+      # The vault is pushed every few minutes, mostly with notes that never
+      # reach the site. If neither the site's code nor the projection changed
+      # since the last deploy, there is nothing to build.
+      - name: Look up the last deploy
+        id: deployed
+        uses: actions/cache/restore@v4
+        with:
+          path: .projection/deployed
+          key: deployed-${{ github.sha }}-${{ hashFiles('.projection/public-forest.json') }}
+          lookup-only: true
+
+      - name: Skip an unchanged site
+        if: steps.deployed.outputs.cache-hit == 'true'
+        run: echo "SKIP=1" >> "$GITHUB_ENV"
 
       # Forester 6.0 needs OCaml 5.4.
       - uses: ocaml/setup-ocaml@v3
+        if: env.SKIP != '1'
         with:
           ocaml-compiler: "5.4.0"
 
@@ -50,6 +83,7 @@ jobs:
       # dune >= 3.25.0, and dune 3.25 offers itself to its own solver as "3.25",
       # which opam orders before 3.25.0, so `dune pkg lock` cannot select it.
       - name: Install Forester and js_of_ocaml
+        if: env.SKIP != '1'
         run: opam install -y forester.6.0 js_of_ocaml js_of_ocaml-ppx
 
       # tree_of_md is developed in its own public repository, so the pin needs no
@@ -61,6 +95,7 @@ jobs:
       # approximate match here would mean silently converting with the wrong
       # tree_of_md.
       - name: Restore tree_of_md
+        if: env.SKIP != '1'
         id: tree_of_md-cache
         uses: actions/cache@v4
         with:
@@ -68,29 +103,31 @@ jobs:
           key: tree_of_md-${{ runner.os }}-${{ runner.arch }}-${{ env.TREE_OF_MD_REVISION }}
 
       - name: Install tree_of_md
-        if: steps.tree_of_md-cache.outputs.cache-hit != 'true'
+        if: env.SKIP != '1' && steps.tree_of_md-cache.outputs.cache-hit != 'true'
         run: |
           opam pin add -yn tree_of_md "git+https://github.com/ryoryoryo3838/tree_of_md#$TREE_OF_MD_REVISION"
           opam install -y tree_of_md
           mkdir -p "$HOME/.local/bin"
           cp "$(opam var bin)/tree_of_md" "$HOME/.local/bin/tree_of_md"
 
-      - name: Convert the snapshot
-        run: |
-          TREE_OF_MD="$HOME/.local/bin/tree_of_md" \
-            sh scripts/build.sh snapshot "$GITHUB_WORKSPACE/.snapshot"
+      - name: Convert the projection
+        if: env.SKIP != '1'
+        run: TREE_OF_MD="$HOME/.local/bin/tree_of_md" sh scripts/build.sh convert
 
       # decorate.py copies it from the theme into the site.
       - name: Build hero.js
+        if: env.SKIP != '1'
         run: |
           opam exec -- dune build lib_theme/hero.bc.js
           cp _build/default/lib_theme/hero.bc.js theme/hero.js
 
       # build.sh renders the forest and then dresses it in the site's shell.
       - name: Build forester site
+        if: env.SKIP != '1'
         run: FORESTER="$(opam var bin)/forester" sh scripts/build.sh forest
 
       - name: Check the hero route
+        if: env.SKIP != '1'
         run: sh test/hero-route.sh
 
       # The project is a Worker serving static assets, configured by
@@ -101,9 +138,21 @@ jobs:
       # with "Missing entry-point"; serving a directory with no script of its
       # own is a wrangler 4 feature.
       - name: Deploy to Cloudflare Workers
+        if: env.SKIP != '1'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: deploy
+
+      - name: Remember this deploy
+        if: env.SKIP != '1'
+        run: touch .projection/deployed
+
+      - name: Save the deploy marker
+        if: env.SKIP != '1'
+        uses: actions/cache/save@v4
+        with:
+          path: .projection/deployed
+          key: deployed-${{ github.sha }}-${{ hashFiles('.projection/public-forest.json') }}

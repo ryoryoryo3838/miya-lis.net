@@ -10,3 +10,5 @@ _build/
 /.omo/run-continuation
 /docs/superpowers/plans
 /.hermes/plans
+# Written by `build.sh project` from the vault; never committed.
+/.projection/
