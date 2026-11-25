@@ -1,5 +1,0 @@
-# Provenance of this theme, in a form upstream-diff.sh can source.
-# See UPSTREAM.md for what was changed and why it is vendored.
-repo=https://git.sr.ht/~jonsterling/ocaml-forester
-path=bin/forester/theme
-commit=30b73641cef02433ee158db6ddc77f7b49de60be

@@ -18,12 +18,13 @@ let add_class el cls =
 let remove_class el cls =
   el##.classList##remove (Js.string cls)
 
-(* The root entry (/index.html) lands on /index/index.xml#hero; internal links
-   to [index] land on /index/ without the fragment and stay on Home content.
-   The fragment stays in the URL so that a reload — including the one the watch
-   server triggers after every rebuild — keeps showing the hero. *)
+(* Only a trusted home shell can make the root entry a landing page. Direct
+   links to the configured home remain content pages unless #hero is explicit. *)
 let is_home_mode () =
+  let body = Dom_html.document##.body in
+  let path = Js.to_string Dom_html.window##.location##.pathname in
   Js.to_string Dom_html.window##.location##.hash = "#hero"
+  || (has_class body "miya-home" && (path = "/" || path = "/index.html"))
 
 let disable_hero () =
   let hero = get_element "hero" in
@@ -32,48 +33,69 @@ let disable_hero () =
   remove_class body "hero-page"
 
 (* ── Nav panel toggle ── *)
+let focus element =
+  ignore (Js.Unsafe.meth_call element "focus" [||])
+
+let nav_toggles () =
+  let selector =
+    if has_class Dom_html.document##.body "miya-native" then
+      "body > #nav-toggle-global.nav-toggle, #hero-period.nav-toggle"
+    else ".nav-toggle"
+  in
+  Dom.list_of_nodeList
+    (Dom_html.document##querySelectorAll (Js.string selector))
+
 let setup_nav () =
   let panel = get_element "nav-panel" in
   let overlay = get_element "nav-overlay" in
-  let toggles =
-    Dom.list_of_nodeList
-      (Dom_html.document##getElementsByClassName (Js.string "nav-toggle"))
-  in
-
-  let set_open open_ =
+  let toggles = nav_toggles () in
+  let opener = ref None in
+  let set_open ?(restore_focus = true) open_ =
     let update element class_name =
-      if open_ then add_class element class_name
-      else remove_class element class_name
+      if open_ then add_class element class_name else remove_class element class_name
     in
     update panel "is-open";
     update overlay "is-visible";
-    List.iter (fun toggle -> update toggle "is-open") toggles
+    List.iter (fun toggle ->
+      update toggle "is-open";
+      toggle##setAttribute (Js.string "aria-expanded") (Js.string (string_of_bool open_));
+      toggle##setAttribute (Js.string "aria-label")
+        (Js.string (if open_ then "Close navigation" else "Open navigation"))) toggles;
+    panel##setAttribute (Js.string "aria-hidden") (Js.string (string_of_bool (not open_)));
+    if open_ then begin
+      panel##removeAttribute (Js.string "hidden");
+      panel##removeAttribute (Js.string "inert");
+      let first = panel##querySelector (Js.string "button, a[href]") in
+      Js.Opt.iter first focus
+    end else begin
+      panel##setAttribute (Js.string "hidden") (Js.string "");
+      panel##setAttribute (Js.string "inert") (Js.string "");
+      if restore_focus then Option.iter focus !opener
+    end
   in
-
-  List.iter
-    (fun toggle ->
-      toggle##.onclick := Dom_html.handler (fun ev ->
-        Dom.preventDefault ev;
-        set_open (not (has_class panel "is-open"));
-        Js._false
-      ))
-    toggles;
-
-  overlay##.onclick := Dom_html.handler (fun _ev ->
-    set_open false;
-    Js._false
-  );
-
-  Dom_html.addEventListener
-    Dom_html.document (Dom.Event.make "keydown")
+  List.iter (fun toggle ->
+    toggle##.onclick := Dom_html.handler (fun ev ->
+      Dom.preventDefault ev;
+      opener := Some toggle;
+      set_open (not (has_class panel "is-open"));
+      Js._false)) toggles;
+  overlay##.onclick := Dom_html.handler (fun _ -> set_open false; Js._false);
+  Js.Opt.iter (Dom_html.document##getElementById (Js.string "nav-close"))
+    (fun close -> close##.onclick := Dom_html.handler (fun _ -> set_open false; Js._false));
+  Dom.list_of_nodeList (panel##querySelectorAll (Js.string "a[href]"))
+  |> List.iter (fun link ->
+      link##.onclick := Dom_html.handler (fun _ ->
+        set_open ~restore_focus:false false;
+        Js._true));
+  ignore (Dom_html.addEventListener Dom_html.document (Dom.Event.make "keydown")
     (Dom_html.handler (fun ev ->
-      if ev##.keyCode = 27 then begin
+      if (ev##.keyCode = 27 || Js.to_string ev##.key = "Escape")
+         && has_class panel "is-open" then begin
+        Dom.preventDefault ev;
         set_open false;
         Js._false
-      end else
-        Js._true
-    )) Js._true
-  |> ignore
+      end else Js._true)) Js._true);
+  set_open ~restore_focus:false false
 
 (* ── Period scroll pinning: stop naturally at viewport top ── *)
 let setup_period_pin () =
@@ -150,7 +172,7 @@ let setup_header_observer () =
   let hero =
     match
       Dom.list_of_nodeList
-        (Dom_html.document##getElementsByClassName (Js.string "hero-home"))
+        (Dom_html.document##querySelectorAll (Js.string ".hero-home"))
     with
     | home :: _ -> home
     | [] -> get_element "hero"
@@ -180,19 +202,42 @@ let setup_header_observer () =
   ignore (observer##observe hero)
 
 (* ── Main ── *)
+let element_exists id =
+  Js.Opt.test (Dom_html.document##getElementById (Js.string id))
+
 let init () =
-  setup_nav ();
-  let home_mode = is_home_mode () in
-  let hero_present = ref false in
-  Js.Opt.iter
-    (Dom_html.document##getElementById (Js.string "hero"))
-    (fun _ -> hero_present := true);
-  if !hero_present then begin
-    if home_mode then begin
-      setup_period_pin ();
-      setup_header_observer ()
-    end else
-      disable_hero ()
+  let body = Dom_html.document##.body in
+  (* [hero-page] is the retired owned-shell marker used by the legacy
+     compatibility fixture. Native pages require [miya-native]. *)
+  let owned = has_class body "miya-native" || has_class body "hero-page" in
+  let initialized = Js.to_bool (body##hasAttribute (Js.string "data-miya-client-ready")) in
+  let toggles = Dom.list_of_nodeList
+    (Dom_html.document##querySelectorAll (Js.string ".nav-toggle")) in
+  if owned && not initialized && element_exists "nav-panel"
+     && element_exists "nav-overlay" && toggles <> [] then begin
+    body##setAttribute (Js.string "data-miya-client-ready") (Js.string "true");
+    setup_nav ();
+    if element_exists "hero" then begin
+      let enabled = ref false in
+      let enable () =
+        if not !enabled then begin
+          enabled := true;
+          (get_element "hero")##.style##.display := Js.string "";
+          add_class body "hero-page";
+          if element_exists "hero-period" then setup_period_pin ();
+          if element_exists "persistent-header" then setup_header_observer ()
+        end
+      in
+      if is_home_mode () then enable () else disable_hero ();
+      if has_class body "miya-home" then
+        ignore (Dom_html.addEventListener Dom_html.window (Dom.Event.make "hashchange")
+          (Dom_html.handler (fun _ ->
+            if Js.to_string Dom_html.window##.location##.hash = "#hero" then begin
+              enable ();
+              ignore (Js.Unsafe.meth_call (get_element "hero") "scrollIntoView" [||])
+            end;
+            Js._true)) Js._false)
+    end
   end
 
 let () =

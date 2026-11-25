@@ -1,15 +1,12 @@
 (lang dune 3.22)
 (name miya-forest)
 
-(pin
- (url "git+https://git.sr.ht/~jonsterling/ocaml-forester#5.0")
- (package (name forester) (version "5.0")))
-
+; Installed with opam: opam install forester.6.0 js_of_ocaml js_of_ocaml-ppx
 (package
  (name miya-forest)
  (allow_empty)
  (depends
-  (ocaml (>= 5.3))
+  (ocaml (>= 5.4))
   js_of_ocaml
   js_of_ocaml-ppx
-  forester))
+  (forester (= 6.0))))

@@ -74,28 +74,20 @@ compile_md() {
   "$tree_of_md" build --config tree_of_md.toml
 }
 
+# Forester is installed with opam (`opam install forester.6.0`), so it is on
+# PATH; FORESTER names a different one.
 build_forest() {
-  # Prefer an explicit FORESTER, then the installed layout used by CI, then the
-  # executable produced by dune's package management.
-  forester=${FORESTER:-}
-  if [ -z "$forester" ]; then
-    if [ -x "$repo_dir/_build/install/default/bin/forester" ]; then
-      forester="$repo_dir/_build/install/default/bin/forester"
-    else
-      forester=$(
-        find "$repo_dir/_build/_private" -path '*/forester.*/target/bin/forester' \
-          -type f -perm -u+x 2>/dev/null | head -n 1
-      )
-    fi
-  fi
-
+  forester=${FORESTER:-$(command -v forester || true)}
   if [ -z "$forester" ] || [ ! -x "$forester" ]; then
-    echo "build.sh: no forester executable found; run 'dune build' first" >&2
+    echo "build.sh: no forester executable found; opam install forester.6.0, or set FORESTER" >&2
     exit 1
   fi
 
+  # Forester only adds to output/, so a tree that was renamed or unpublished
+  # would otherwise stay on the site.
+  rm -rf output
   "$forester" build forest.toml
-  sh "$site_dir/write-entries.sh"
+  python3 "$site_dir/decorate.py"
 }
 
 case "${1:-all}" in

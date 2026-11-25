@@ -11,8 +11,11 @@ site_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cd "$site_dir"
 
 # forest always spawns `forester` from PATH with the options given after `--`,
-# which would pick up the ambient opam CLI and skip the root entry rewrite.
-# Shim it so every rebuild runs this site's build instead.
+# which would pick up the ambient opam CLI and skip decorate.py. Shim it so
+# every rebuild runs this site's build instead. build.sh also finds forester on
+# PATH, so it is told the real one first, or it would find the shim.
+FORESTER=${FORESTER:-$(command -v forester || true)}
+export FORESTER
 shim_dir=$(mktemp -d)
 trap 'rm -rf "$shim_dir"' EXIT INT TERM
 

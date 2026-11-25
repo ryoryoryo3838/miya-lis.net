@@ -47,15 +47,16 @@ jobs:
           token: ${{ secrets.CONTENT_TOKEN }}
           path: .content
 
+      # Forester 6.0 needs OCaml 5.4.
       - uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: "5.3.0"
+          ocaml-compiler: "5.4.0"
 
-      - name: Build with dune package management
-        uses: ocaml-dune/setup-dune@v2
-        with:
-          version: 3.22.2
-          steps: install-dune install-gpatch install-depexts build-deps build
+      # With opam rather than dune package management: forester.6.0 requires
+      # dune >= 3.25.0, and dune 3.25 offers itself to its own solver as "3.25",
+      # which opam orders before 3.25.0, so `dune pkg lock` cannot select it.
+      - name: Install Forester and js_of_ocaml
+        run: opam install -y forester.6.0 js_of_ocaml js_of_ocaml-ppx
 
       # tree_of_md is developed in its own public repository, so the pin needs no
       # credentials. Resolving `main` to a commit here does two things: the
@@ -102,19 +103,15 @@ jobs:
             sh site/build.sh md
           find site/trees-md -type f | sort
 
-      # hero.bc.js is compiled by setup-dune's 'build' step above (dune build)
+      # decorate.py copies it from the theme into the site.
       - name: Build hero.js
         run: |
+          opam exec -- dune build lib_theme/hero.bc.js
           cp _build/default/lib_theme/hero.bc.js site/theme/hero.js
-          cp _build/default/lib_theme/hero.bc.js assets/hero.js
 
-      # build.sh already locates the forester executable — it handles both the
-      # installed layout and the one dune's package management produces — and
-      # writes the hero entry afterwards. CI had reimplemented that with a
-      # single hardcoded relative path, which resolved under site/ and was not
-      # there.
+      # build.sh renders the forest and then dresses it in the site's shell.
       - name: Build forester site
-        run: sh site/build.sh forest
+        run: FORESTER="$(opam var bin)/forester" sh site/build.sh forest
 
       - name: Check the hero route
         run: sh ../test/hero-route.sh

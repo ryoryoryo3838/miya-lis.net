@@ -8,8 +8,8 @@
     // The forest is a real multi-page tree: every route is a directory with an
     // index.html, and the default html_handling already maps /aboutme to
     // /aboutme/index.html. Serving the root entry for anything missing would
-    // answer 200 with the hero page for every dead link, and there is no
-    // 404.html to point at, so misses stay misses.
-    "not_found_handling": "none"
+    // answer 200 with the hero page for every dead link. decorate.py writes a
+    // 404.html, so a miss answers it with status 404.
+    "not_found_handling": "404-page"
   }
 }
