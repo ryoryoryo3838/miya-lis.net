@@ -52,14 +52,26 @@ THEME_HEAD = (
 MAIN_WRAPPER = re.compile(r'<div\s+id="main-wrapper"')
 
 
+# surrogateescape: Forester 6.0 cuts its og:description at a byte count, which
+# can split a Japanese character. That tag is replaced below; the rest of the
+# page is written back byte for byte.
 def read(path):
-    with open(path, encoding="utf-8") as handle:
+    with open(path, encoding="utf-8", errors="surrogateescape") as handle:
         return handle.read()
 
 
 def write(path, text):
-    with open(path, "w", encoding="utf-8") as handle:
+    with open(path, "w", encoding="utf-8", errors="surrogateescape") as handle:
         handle.write(text)
+
+
+# What Forester writes into the head and share_head() writes again, with the
+# site's own card, description and canonical address.
+FORESTER_SHARE = re.compile(
+    r'<meta\s+property="og:[^"]*"\s+content="[^"]*">'
+    r'|<meta\s+name="description"\s+content="[^"]*">'
+    r'|<link\s+rel="(?:icon|apple-touch-icon|canonical)"[^>]*>'
+)
 
 
 def copy_theme():
@@ -190,12 +202,14 @@ def share_head(page, canonical, title, share_title, og_type):
 def dress(page, *, canonical, title, share_title, og_type, shell, home):
     head = share_head(page, canonical, title, share_title, og_type) + THEME_HEAD
     body = '<body class="miya-native%s">' % (" miya-home" if home else "")
+    end = page.find("</head>")
+    page = FORESTER_SHARE.sub("", page[:end]) + page[end:]
     page, titles = re.subn(r"<title>.*?</title>", "", page, count=1, flags=re.S)
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
     page, mains = MAIN_WRAPPER.subn(lambda m: shell + m.group(0), page, count=1)
-    page = page.replace("<html>", '<html lang="ja">', 1)
-    if (titles, heads, bodies, mains) != (1, 1, 1, 1):
+    page, langs = re.subn(r'<html(?:\s+lang="[^"]*")?>', '<html lang="ja">', page, count=1)
+    if (titles, heads, bodies, mains, langs) != (1, 1, 1, 1, 1):
         raise SystemExit("decorate.py: unexpected page structure for %s" % canonical)
     return page
 

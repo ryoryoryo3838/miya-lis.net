@@ -24,6 +24,16 @@ grep -Fq 'id="nav-panel"' output/aboutme/index.html
 absent -F 'id="hero"' output/aboutme/index.html
 grep -Fq 'property="og:title" content="私について"' output/aboutme/index.html
 
+# One share card per page, the site's own, and every page valid UTF-8.
+test "$(grep -o 'property="og:title"' output/aboutme/index.html | wc -l)" -eq 1
+grep -Fq 'property="og:image" content="https://miya-lis.net/og.png"' output/aboutme/index.html
+grep -Fq '<html lang="ja">' output/aboutme/index.html
+find output -name index.html -exec python3 -c '
+import sys
+for path in sys.argv[1:]:
+    open(path, encoding="utf-8").read()
+' {} +
+
 test -s output/hero.js
 grep -Fq '"#hero"' output/hero.js
 test -s output/404.html
