@@ -12,13 +12,14 @@
 # one; changing it is what approves a new snapshot.
 set -eu
 
-site_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-cd "$site_dir"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# The forest is the repository root, laid out as `forester init` makes one.
+cd "$script_dir/.."
 
 # The manifest's own digest is the approval: it binds the exact bytes of the
 # forest. Anything else in the directory, or any byte that differs, is refused.
 check_snapshot() {
-  . "$site_dir/public-snapshot"
+  . ./public-snapshot
   python3 - "$1" "$manifest_sha256" <<'PY'
 import hashlib
 import json
@@ -79,7 +80,7 @@ build_forest() {
   # would otherwise stay on the site.
   rm -rf output
   "$forester" build forest.toml
-  python3 "$site_dir/decorate.py"
+  python3 "$script_dir/decorate.py"
 }
 
 case "${1:-}" in

@@ -22,14 +22,14 @@ jobs:
       - uses: actions/checkout@v4
 
       # The site is built from the approved public snapshot alone, never from
-      # the vault: site/public-snapshot names the miya-lis-public commit, and
+      # the vault: public-snapshot names the miya-lis-public commit, and
       # build.sh refuses it unless its manifest has the approved digest.
       # GITHUB_TOKEN is scoped to this repository, so reading that private
       # repository needs PUBLIC_CONTENT_TOKEN.
       - name: Read the approved snapshot
         id: snapshot
         run: |
-          . site/public-snapshot
+          . ./public-snapshot
           echo "revision=$revision" >> "$GITHUB_OUTPUT"
 
       - name: Check out the approved snapshot
@@ -78,21 +78,20 @@ jobs:
       - name: Convert the snapshot
         run: |
           TREE_OF_MD="$HOME/.local/bin/tree_of_md" \
-            sh site/build.sh snapshot "$GITHUB_WORKSPACE/.snapshot"
+            sh scripts/build.sh snapshot "$GITHUB_WORKSPACE/.snapshot"
 
       # decorate.py copies it from the theme into the site.
       - name: Build hero.js
         run: |
           opam exec -- dune build lib_theme/hero.bc.js
-          cp _build/default/lib_theme/hero.bc.js site/theme/hero.js
+          cp _build/default/lib_theme/hero.bc.js theme/hero.js
 
       # build.sh renders the forest and then dresses it in the site's shell.
       - name: Build forester site
-        run: FORESTER="$(opam var bin)/forester" sh site/build.sh forest
+        run: FORESTER="$(opam var bin)/forester" sh scripts/build.sh forest
 
       - name: Check the hero route
-        run: sh ../test/hero-route.sh
-        working-directory: site
+        run: sh test/hero-route.sh
 
       # The project is a Worker serving static assets, configured by
       # wrangler.jsonc at the repository root; `pages deploy` targets a

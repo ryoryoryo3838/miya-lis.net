@@ -1,12 +1,12 @@
 output/
 /devbox.lock
-/site/theme/hero.js
+/theme/hero.js
 _build/
 /generated/.tree_of_md.lock
 /generated/.tree_of_md-transaction.json
 /generated/.tree_of_md-stage/
 # Converted from the approved public snapshot by `build.sh snapshot`.
-/site/trees/
+/trees/
 /.omo/run-continuation
 /docs/superpowers/plans
 /.hermes/plans

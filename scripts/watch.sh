@@ -2,13 +2,12 @@
 # Serve the forest on http://localhost:8080 and rebuild it whenever a tree
 # changes.
 #
-# Compiling Markdown is watchexec.sh's job. forest only watches *.tree files,
-# so the trees watchexec.sh writes into generated/ are what triggers a rebuild
-# here.
+# forest only watches *.tree files, so `build.sh snapshot DIR` rewriting
+# trees/ is what triggers a rebuild here.
 set -eu
 
-site_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-cd "$site_dir"
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+cd "$script_dir/.."
 
 # forest always spawns `forester` from PATH with the options given after `--`,
 # which would pick up the ambient opam CLI and skip decorate.py. Shim it so
@@ -21,7 +20,7 @@ trap 'rm -rf "$shim_dir"' EXIT INT TERM
 
 cat > "$shim_dir/forester" <<EOF
 #!/bin/sh
-exec sh "$site_dir/build.sh" forest
+exec sh "$script_dir/build.sh" forest
 EOF
 chmod +x "$shim_dir/forester"
 

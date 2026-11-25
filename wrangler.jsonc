@@ -4,7 +4,7 @@
   "name": "miya-lis-forest",
   "compatibility_date": "2026-08-09",
   "assets": {
-    "directory": "./site/output",
+    "directory": "./output",
     // The forest is a real multi-page tree: every route is a directory with an
     // index.html, and the default html_handling already maps /aboutme to
     // /aboutme/index.html. Serving the root entry for anything missing would

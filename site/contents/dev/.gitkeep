@@ -1,5 +1,0 @@
-# forest.toml lists this directory as a tree root, and both tree-md and
-# forester fail if a listed root is missing. It holds handwritten .tree files;
-# there are none today — every tree is compiled from Markdown into generated/ —
-# and git does not track an empty directory, so without this file the directory
-# would not survive a clone and CI would fail where a working copy did not.

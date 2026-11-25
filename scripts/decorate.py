@@ -27,7 +27,8 @@ import sys
 from datetime import datetime
 from html.parser import HTMLParser
 
-site_dir = os.path.dirname(os.path.abspath(__file__))
+# The forest root: scripts/ sits beside forest.toml, trees/ and output/.
+site_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 output = os.path.join(site_dir, "output")
 theme = os.path.join(site_dir, "theme")
 layout = os.path.join(theme, "layout")
