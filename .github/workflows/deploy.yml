@@ -16,7 +16,8 @@ concurrency:
 
 # This repository and its CI logs are public, and the vault is private: no step
 # may print note text or paths. The projector prints only a status and
-# diagnostic codes, tree_of_md only PF_OK, and Forester only sees public trees.
+# diagnostic codes, tree_of_md only PF_OK, Forester only sees public trees,
+# and the vault clone prints nothing at all.
 env:
   # The Forester hybrid plugin, whose public projection settles what leaves the vault.
   PLUGIN_REVISION: ab8e38841b16081c176d8065956183194c339c68
@@ -30,15 +31,20 @@ jobs:
       - uses: actions/checkout@v4
 
       # GITHUB_TOKEN is scoped to this repository, so reading the private
-      # vault needs CONTENT_TOKEN.
+      # vault needs CONTENT_TOKEN. Not actions/checkout: git's own messages name
+      # vault paths (a stale submodule entry once printed one into these public
+      # logs), so the clone is silent, never touches submodules, and reports
+      # only that it failed. The token is removed from the clone's config.
       - name: Check out the vault
-        uses: actions/checkout@v4
-        with:
-          repository: ryoryoryo3838/wiki.miya-lis.net
-          ref: main
-          token: ${{ secrets.CONTENT_TOKEN }}
-          path: .vault
-          persist-credentials: false
+        env:
+          TOKEN: ${{ secrets.CONTENT_TOKEN }}
+        run: |
+          if ! git clone -q --depth 1 --no-recurse-submodules \
+              "https://x-access-token:${TOKEN}@github.com/ryoryoryo3838/wiki.miya-lis.net.git" .vault >/dev/null 2>&1; then
+            echo "Could not check out the vault." >&2
+            exit 1
+          fi
+          git -C .vault remote set-url origin https://github.com/ryoryoryo3838/wiki.miya-lis.net.git
 
       - name: Check out the Forester plugin
         uses: actions/checkout@v4
