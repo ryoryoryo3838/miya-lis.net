@@ -6,13 +6,16 @@ Forester 6 renders every tree straight to HTML with its own stylesheet and
 scripts. This adds what the site has on top, without touching what Forester
 wrote between the tags:
 
-- the theme's static files (icons, the web manifest, the card, fonts, miya.css
-  and hero.js), copied over Forester's own favicons;
+- the theme's static files (icons, the web manifest, the card, fonts,
+  tokens.css and miya.css), copied over Forester's own favicons;
 - in every page's head, the share metadata a crawler reads (it reads the head
-  only), the site name in the title, and the theme's stylesheets and script;
-- the navigation panel before #main-wrapper, and on the Home tree the hero
-  too, so Forester's htmx swaps of #main-wrapper leave them in place;
-- the site root as a copy of the Home tree, which hero.js shows as the hero;
+  only), the site name in the title, and the theme's stylesheets;
+- the site navigation (the Seimiya design system's SiteNav) as the first child
+  of #main-wrapper, with this page marked current, so a Forester htmx swap of
+  #main-wrapper brings the right one along;
+- the words Forester writes in English where the reader sees them: dates on
+  the meta line, the backmatter headings and the table of contents;
+- the site root as a copy of the Home tree;
 - a 404 page for wrangler's not_found_handling.
 
 The navigation lists the links in the navigation tree's body, as the old XSLT
@@ -44,10 +47,14 @@ CARD = site_url.rstrip("/") + "/og.png"
 CARD_W, CARD_H = "1200", "630"
 
 # After Forester's style.css, so the theme's rules win where they overlap.
+# IBM Plex Sans JP is the design system's Japanese face; its Latin face,
+# Monaspace Neon, ships with the theme.
 THEME_HEAD = (
-    '<link rel="stylesheet" href="/fonts-biz-udmincho.css">'
+    '<link rel="preconnect" href="https://fonts.googleapis.com">'
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@300;400;700&amp;display=swap">'
+    '<link rel="stylesheet" href="/tokens.css">'
     '<link rel="stylesheet" href="/miya.css">'
-    '<script defer src="/hero.js"></script>'
 )
 
 MAIN_WRAPPER = re.compile(r'<div\s+id="main-wrapper"')
@@ -134,17 +141,51 @@ class MenuParser(HTMLParser):
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 
 
-def menu():
+def menu_links():
     path = os.path.join(output, NAVIGATION, "index.html")
     if not os.path.isfile(path):
         print("decorate.py: no %s tree; the menu is empty" % NAVIGATION, file=sys.stderr)
-        return ""
+        return []
     parser = MenuParser()
     parser.feed(read(path))
-    return "".join(
-        '<a href="%s">%s</a>' % (html.escape(href, quote=True), html.escape(text))
-        for href, text in parser.links
+    return parser.links
+
+
+def navigation(template, links, entry, page_title):
+    """The SiteNav for one page: its link marked current (the first, when two
+    links lead to the same tree), and its name on the narrow-screen toggle."""
+    current = next((i for i, (href, _) in enumerate(links) if href.strip("/") == entry), None)
+    items = "".join(
+        '<li><a class="sm-sitenav-link%s" href="%s"%s><span class="sm-sitenav-bullet" aria-hidden="true">■</span>'
+        '<span class="sm-sitenav-label">%s</span></a></li>' % (
+            " is-current" if i == current else "",
+            html.escape(href, quote=True),
+            ' aria-current="page"' if i == current else "",
+            html.escape(text),
+        )
+        for i, (href, text) in enumerate(links)
     )
+    name = links[current][1] if current is not None else page_title
+    return template.replace("{{MENU}}", items).replace("{{CURRENT}}", html.escape(name))
+
+
+MONTHS = ["January", "February", "March", "April", "May", "June", "July",
+          "August", "September", "October", "November", "December"]
+FORESTER_DATE = re.compile(r'(class="meta-item">)(%s) (\d{1,2}), (\d{4})<' % "|".join(MONTHS))
+# The backmatter headings and the table of contents, as Forester writes them.
+FORESTER_WORDS = {
+    "Context": "文脈", "Backlinks": "バックリンク", "Related": "関連",
+    "References": "参考文献", "Contributions": "寄稿",
+}
+FORESTER_HEADING = re.compile(r'(<span\s+class="taxon"></span>)(%s)( </h1>)' % "|".join(FORESTER_WORDS))
+
+
+def japanese(page):
+    """The design system's words for what Forester writes in English."""
+    page = FORESTER_DATE.sub(
+        lambda m: "%s%s年%d月%d日<" % (m.group(1), m.group(4), MONTHS.index(m.group(2)) + 1, int(m.group(3))), page)
+    page = FORESTER_HEADING.sub(lambda m: m.group(1) + FORESTER_WORDS[m.group(2)] + m.group(3), page)
+    return page.replace("<h1>Table of Contents</h1>", "<h1>目次</h1>", 1)
 
 
 def meta(kind, key, value):
@@ -208,7 +249,8 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, titles = re.subn(r"<title>.*?</title>", "", page, count=1, flags=re.S)
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
-    page, mains = MAIN_WRAPPER.subn(lambda m: shell + m.group(0), page, count=1)
+    page, mains = re.subn(r'<div\s+id="main-wrapper">', lambda m: m.group(0) + shell, page, count=1)
+    page = japanese(page)
     page, langs = re.subn(r'<html(?:\s+lang="[^"]*")?>', '<html lang="ja">', page, count=1)
     if (titles, heads, bodies, mains, langs) != (1, 1, 1, 1, 1):
         raise SystemExit("decorate.py: unexpected page structure for %s" % canonical)
@@ -217,8 +259,8 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
 
 def main():
     copy_theme()
-    navigation = read(os.path.join(layout, "navigation.html")).replace("{{MENU}}", menu())
-    hero = read(os.path.join(layout, "home.html"))
+    template = read(os.path.join(layout, "navigation.html"))
+    links = menu_links()
 
     written = 0
     home_page = None
@@ -246,7 +288,7 @@ def main():
             title="%s — %s" % (tree_title, SITE_NAME),
             share_title=tree_title,
             og_type="article",
-            shell=navigation + (hero if is_home else ""),
+            shell=navigation(template, links, entry, tree_title),
             home=is_home,
         ))
         written += 1
@@ -254,15 +296,13 @@ def main():
     if home_page is None:
         raise SystemExit("decorate.py: no %s tree; site root not written" % HOME)
 
-    # hero.js shows the hero only at the site root, so an internal link to
-    # /index/ keeps landing on Home content.
     write(os.path.join(output, "index.html"), dress(
         home_page,
         canonical=site_url,
         title=SITE_NAME,
         share_title=SITE_NAME,
         og_type="website",
-        shell=navigation + hero,
+        shell=navigation(template, links, HOME, SITE_NAME),
         home=True,
     ))
 
@@ -272,9 +312,9 @@ def main():
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
         '<meta name="robots" content="noindex"><title>Not found — %s</title>'
         '<link rel="stylesheet" href="/style.css">%s</head>'
-        '<body class="miya-native">%s<div id="main-wrapper"><div id="grid-wrapper">'
+        '<body class="miya-native"><div id="main-wrapper">%s<div id="grid-wrapper">'
         "<article>%s</article></div></div></body></html>\n"
-    ) % (SITE_NAME, THEME_HEAD, navigation, missing))
+    ) % (SITE_NAME, THEME_HEAD, navigation(template, links, None, "404"), missing))
 
     print("decorate.py: %d trees, the site root and 404.html" % written)
 

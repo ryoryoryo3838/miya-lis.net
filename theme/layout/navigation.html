@@ -1,7 +1,9 @@
-<!-- SPDX-License-Identifier: CC0-1.0; only MENU is filled by the trusted renderer. -->
-<button id="nav-toggle-global" class="nav-toggle nav-toggle--global" type="button" aria-label="Open navigation" aria-controls="nav-panel" aria-expanded="false"><span aria-hidden="true">.</span></button>
-<div id="nav-overlay" class="nav-overlay" aria-hidden="true"></div>
-<nav id="nav-panel" class="nav-panel" aria-label="Site navigation" hidden inert>
-  <button id="nav-close" class="nav-close" type="button" aria-label="Close navigation">×</button>
-  <div class="nav-links">{{MENU}}</div>
+<!-- SPDX-License-Identifier: CC0-1.0; MENU and CURRENT are filled by the trusted renderer. -->
+<nav class="sm-sitenav" aria-label="サイト">
+  <a class="sm-sitenav-name" href="/">MIYA-LIS.NET</a>
+  <ul class="sm-sitenav-list sm-sitenav-wide">{{MENU}}</ul>
+  <details class="sm-sitenav-fold">
+    <summary class="sm-sitenav-toggle"><span class="sm-sitenav-bullet" aria-hidden="true">■</span> {{CURRENT}}</summary>
+    <div class="sm-sitenav-menu"><ul class="sm-sitenav-list">{{MENU}}</ul></div>
+  </details>
 </nav>

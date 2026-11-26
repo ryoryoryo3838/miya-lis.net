@@ -1,6 +1,5 @@
 output/
 /devbox.lock
-/theme/hero.js
 _build/
 /generated/.tree_of_md.lock
 /generated/.tree_of_md-transaction.json

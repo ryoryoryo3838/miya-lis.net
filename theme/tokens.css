@@ -1,0 +1,294 @@
+/* Seimiya Design System — generated from tokens.json */
+:root, [data-theme="light"] {
+  --surface: #ffffff; /* 地。ページ・スライド・アプリの背景はすべてこれ（Forester と同じ白）。帯や面で区切らない。 */
+  --surface-code: #f3f7f5; /* コード、数式、表の見出し行の面（Forester の淡い青緑のコード背景を緑寄りにしたもの）。 */
+  --hover: #f2f6f4; /* ツリー（Note）やリスト行にポインタが乗ったときの淡い面（Forester の淡い青のホバーを緑に置き換えたもの）。 */
+  --line: #dddddd; /* 区切りの罫線（1px）、プレビューの枠。 */
+  --line-strong: #8a8a8a; /* 入力欄・副ボタンの枠線（surface 上で 3:1 以上）。 */
+  --ink: #111111; /* 本文・見出し・リンクの文字。リンクも色を付けず ink のまま、下線で示す。surface・surface-code・orange-soft・green-soft 上で 14:1 以上。 */
+  --ink-taxon: #444444; /* ツリーの種類名（定義・命題など）。太字で。surface 上で 9:1 以上。 */
+  --ink-muted: #666666; /* 番号 [0065]、ロゴ、目次、キャプション、入力の補足。surface・surface-code 上で 4.5:1 以上。 */
+  --green: #2b7a64; /* 主色。知識情報・図書館学類の公式色 Knowledge Green（#007E63）の彩度を一段落とした色。リンク下線、主ボタンの塗り、選択中、成功。文字として surface・green-soft・surface-container 上で 4.5:1 以上。 */
+  --green-soft: #e7f7f1; /* リンクにポインタが乗ったときの背景、green の文字やタグの背後。 */
+  --on-green: #ffffff; /* green の塗りの上の文字（主ボタンのラベル）。 */
+  --orange: #f1a74f; /* アクセント色の塗り。公式色 Tachibana Orange（#F39800）を一段淡く・落ち着かせた色。図の注目系列、現在ページの ■ と下線、計測中の点、カバー。surface 上では 2:1 しかないので、文字や「色だけで伝える印」には使わず、太字や語と組にする。文字は orange-strong。 */
+  --orange-strong: #975d04; /* オレンジの文字（強調語、注意ラベル、計測中）とフォーカスリング。Tachibana Orange と同じ色相の暗い段。surface・orange-soft 上で 4.5:1 以上。 */
+  --orange-soft: #fff0e0; /* 強調ブロック（Forester の黄色いハイライトに相当）と mark の背景。 */
+  --on-orange: #111111; /* orange の塗りの上の文字。白は使わない（コントラスト不足）。 */
+  --danger: #a8283a; /* エラー・破壊的操作の文字と枠。必ず「エラー」などの語を添える。surface 上で 4.5:1 以上。 */
+  --link: var(--ink); /* リンク文字。ink の別名（Forester と同じく色で目立たせない）。 */
+  --link-underline: var(--green); /* リンクの下線色。内部リンクは点線、外部リンクは実線。 */
+  --data-1: var(--green); /* グラフ系列1（主系列・提案手法）。 */
+  --data-2: var(--orange); /* グラフ系列2（注目したい対照）。green と明度差が小さいので凡例か直接ラベルを必ず付ける。 */
+  --data-3: #4f6d8a; /* グラフ系列3（その他の比較対象）。 */
+  --data-4: #878b82; /* グラフ系列4（ベースライン・参考値）。 */
+  --shadow-float: 0 2px 8px #00000014; /* リンクプレビュー、メニューなど浮かぶものだけ（Forester のリンクプレビューと同じ）。Web では line の 1px 枠と組にする。 */
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #975d04; /* キーボードフォーカス。地色 2px の隙間＋orange-strong 2px（surface 上で 4.5:1 以上）。 */
+}
+[data-theme="dark"] {
+  --surface: #121412;
+  --surface-code: #1a201c;
+  --hover: #1a1f1b;
+  --line: #2e332e;
+  --line-strong: #6e746c;
+  --ink: #e6e6e2;
+  --ink-taxon: #bfc3bb;
+  --ink-muted: #a6aba3;
+  --green: #72c4a9;
+  --green-soft: #162b24;
+  --on-green: #121412;
+  --orange: #f5ad5a;
+  --orange-strong: #f6be82;
+  --orange-soft: #392715;
+  --on-orange: #121412;
+  --danger: #f0828f;
+  --link: var(--ink);
+  --link-underline: var(--green);
+  --data-1: var(--green);
+  --data-2: var(--orange);
+  --data-3: #8fb0cf;
+  --data-4: #6f746b;
+  --shadow-float: 0 2px 8px #00000099;
+  --focus-ring: 0 0 0 2px #121412, 0 0 0 4px #f6be82;
+}
+:root {
+  --space-1: 4px; /* アイコンとラベルの間。 */
+  --space-2: 8px; /* ボタン・タグの内側、ラベルと値の間。 */
+  --space-3: 12px; /* 関連する行どうし、リスト項目の間。 */
+  --space-4: 16px; /* ノート・コールアウトの内側、段落間。 */
+  --space-6: 24px; /* 見出しの上、要素群の間。 */
+  --space-8: 32px; /* 節と節の間（Web）。 */
+  --space-12: 48px; /* 大きな節の区切り。 */
+  --space-16: 64px; /* スライドの内側余白（1920 幅で 64px 以上）。 */
+  --radius-none: 0px; /* 図、表、スライド。 */
+  --radius-sm: 5px; /* ツリーのホバー面、強調ブロック、コード、ボタン、入力欄、タグ、リンクのホバー面。アプリの一覧の行のホバー面、強調ブロック（計測中）にも。 */
+  --radius-full: 9999px; /* 状態ドット（計測中の点など数 px の点）のみ。ピル形のボタンやナビには使わない。 */
+  --measure: 90ex; /* 本文カラムの最大幅（Forester と同じ 90ex）。左揃えで、中央寄せにしない。 */
+  --wide-width: 1080px; /* 表や図を本文より広げるときの最大幅。 */
+  --touch-target: 44px; /* アプリ・狭い画面で押せるものの最小の高さ（見た目が文字だけでも確保する）。 */
+  --sidenav-width: 200px; /* SiteNav（サイト・アプリ共通の左の縦ナビ）の幅。 */
+  --font-sans: "Moralerspace Neon", "Monaspace Neon", "IBM Plex Sans JP", "Hiragino Sans", system-ui, sans-serif;
+  --font-serif: "Monaspace Xenon", "BIZ UDPMincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-mono: "Moralerspace Neon", "Monaspace Neon", "IBM Plex Sans JP", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans-emoji-mono: "Moralerspace Neon", "Monaspace Neon", "IBM Plex Sans JP", "Noto Emoji", "Hiragino Sans", system-ui, sans-serif;
+  --font-sans-emoji-color: "Moralerspace Neon", "Monaspace Neon", "IBM Plex Sans JP", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Hiragino Sans", system-ui, sans-serif;
+  --text-page-title: 700 24px/30px var(--font-sans); /* ページの題（Forester の 1.5em）。1ページに1つ。 */
+  --text-tree-title: 700 17px/24px var(--font-sans); /* ツリー（Note）の見出し（Forester の 13pt）。入れ子のツリーは body と同じ 16px・700。 */
+  --text-footer-heading: 700 19px/24px var(--font-sans); /* ページ末尾の「文脈」「バックリンク」「関連」の見出し（Forester の 14pt）。 */
+  --text-body: 400 16px/27px var(--font-sans); /* 本文。Forester は行送り 1.55 だが、和文の読みやすさのため 1.7 にする。1行は measure まで。 */
+  --text-meta: 400 16px/24px var(--font-sans); /* ツリー見出し直下の日付・著者の行（「 · 」区切り、ink）。Forester と同じく本文と同じ大きさ。 */
+  --text-small: 400 14px/22px var(--font-sans); /* UI の補助文、表の本文、キャプション。 */
+  --text-address: 300 16px/24px var(--font-sans); /* ツリーの番号。角括弧付き、ink-muted、細字、点線下線で見出しの直後に置く（Forester は #808080 だが 4.5:1 に届かないため ink-muted）。 */
+  --text-logo: 700 24px/30px var(--font-sans); /* サイト左上の名前（Forester のロゴ）。ink-muted。 */
+  --text-slide-title: 700 56px/72px var(--font-sans); /* スライドの題（左上揃え）。 */
+  --text-slide-body: 400 36px/60px var(--font-sans); /* スライド本文と箇条書き。 */
+  --text-slide-meta: 400 24px/36px var(--font-sans); /* スライドの節名・出典・ページ番号。 */
+  --text-poster-title: 700 112px/132px var(--font-sans); /* ポスターの題。 */
+  --text-slide-title-serif: 700 56px/76px var(--font-serif); /* スライドの題を明朝にするとき（ゴシックの slide-title と同じ大きさ）。発表ごとにどちらかに統一する。 */
+  --text-chapter-serif: 700 96px/120px var(--font-serif); /* 章扉の大きな文字。 */
+  --text-poster-title-serif: 700 112px/136px var(--font-serif); /* ポスターの題を明朝にするとき。 */
+  --text-quote-serif: 400 36px/60px var(--font-serif); /* スライドに大きく置く引用文。後ろに Cite を付ける。 */
+  --text-item-time: 700 15px/22px var(--font-sans); /* 一覧の左端の時刻（ItemRow）。tabular-nums。「時刻なし」「今週」は 400・ink-muted。 */
+  --text-item-title: 400 16px/24px var(--font-sans); /* 一覧の項目名。後ろにアドレスを Web と同じ細字・点線下線で。 */
+  --text-item-sub: 400 14px/20px var(--font-sans); /* 項目の補足行（ink-muted、注意は orange-strong）。 */
+  --text-group-title: 700 15px/22px var(--font-sans); /* 一覧の見出し（RowGroup）。頭に ■、後ろに件数。 */
+  --text-timer: 700 52px/52px var(--font-sans); /* 計測中のタイマー（モバイル 52px、デスクトップの強調ブロックは 64px）。 */
+  --text-timer-focus: 700 240px/240px var(--font-sans); /* 集中モードのタイマー（幅に応じて 120〜240px）。画面にこれだけを大きく出す。 */
+  --text-code: 400 14px/22px var(--font-mono); /* コードブロック（surface-code、radius-sm）とインラインコード。 */
+}
+.page-title {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.tree-title {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.footer-heading {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 27px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.meta {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.small {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.address {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 300;
+  letter-spacing: 0;
+}
+.logo {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.slide-title {
+  font-family: var(--font-sans);
+  font-size: 56px;
+  line-height: 72px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.slide-body {
+  font-family: var(--font-sans);
+  font-size: 36px;
+  line-height: 60px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.slide-meta {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.poster-title {
+  font-family: var(--font-sans);
+  font-size: 112px;
+  line-height: 132px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.slide-title-serif {
+  font-family: var(--font-serif);
+  font-size: 56px;
+  line-height: 76px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.chapter-serif {
+  font-family: var(--font-serif);
+  font-size: 96px;
+  line-height: 120px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.poster-title-serif {
+  font-family: var(--font-serif);
+  font-size: 112px;
+  line-height: 136px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.quote-serif {
+  font-family: var(--font-serif);
+  font-size: 36px;
+  line-height: 60px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.item-time {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.item-title {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.item-sub {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.group-title {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.timer {
+  font-family: var(--font-sans);
+  font-size: 52px;
+  line-height: 52px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.timer-focus {
+  font-family: var(--font-sans);
+  font-size: 240px;
+  line-height: 240px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+@font-face {
+  font-family: "Monaspace Neon";
+  src: url("fonts/MonaspaceNeon-300.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Monaspace Neon";
+  src: url("fonts/MonaspaceNeon-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Monaspace Neon";
+  src: url("fonts/MonaspaceNeon-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Monaspace Xenon";
+  src: url("fonts/MonaspaceXenon-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Monaspace Xenon";
+  src: url("fonts/MonaspaceXenon-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

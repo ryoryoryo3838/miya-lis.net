@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches: [main, miya, hero-theme]
+    branches: [main, miya]
   # Sent by the vault (wiki.miya-lis.net) when a note that can reach the site changes.
   repository_dispatch:
     types: [content-updated]
@@ -88,9 +88,9 @@ jobs:
       # With opam rather than dune package management: forester.6.0 requires
       # dune >= 3.25.0, and dune 3.25 offers itself to its own solver as "3.25",
       # which opam orders before 3.25.0, so `dune pkg lock` cannot select it.
-      - name: Install Forester and js_of_ocaml
+      - name: Install Forester
         if: env.SKIP != '1'
-        run: opam install -y forester.6.0 js_of_ocaml js_of_ocaml-ppx
+        run: opam install -y forester.6.0
 
       # tree_of_md is developed in its own public repository, so the pin needs no
       # credentials. It is pinned to a commit, not a branch: its public mode is
@@ -120,21 +120,10 @@ jobs:
         if: env.SKIP != '1'
         run: TREE_OF_MD="$HOME/.local/bin/tree_of_md" sh scripts/build.sh convert
 
-      # decorate.py copies it from the theme into the site.
-      - name: Build hero.js
-        if: env.SKIP != '1'
-        run: |
-          opam exec -- dune build lib_theme/hero.bc.js
-          cp _build/default/lib_theme/hero.bc.js theme/hero.js
-
       # build.sh renders the forest and then dresses it in the site's shell.
       - name: Build forester site
         if: env.SKIP != '1'
         run: FORESTER="$(opam var bin)/forester" sh scripts/build.sh forest
-
-      - name: Check the hero route
-        if: env.SKIP != '1'
-        run: sh test/hero-route.sh
 
       # The project is a Worker serving static assets, configured by
       # wrangler.jsonc at the repository root; `pages deploy` targets a
