@@ -157,9 +157,10 @@ footer > section > header > h1 { font: var(--text-footer-heading); }
 
   .side-switch { display: block; position: fixed; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
   .side-tab { display: block; position: fixed; z-index: 20; right: 0; top: 50%; transform: translateY(-50%);
-    writing-mode: vertical-rl; min-width: var(--touch-target); box-sizing: border-box;
-    padding: var(--space-4) var(--space-2); padding-right: calc(var(--space-2) + env(safe-area-inset-right, 0px));
-    font-size: 14px; color: var(--ink-muted); background: var(--surface);
+    /* Narrow, so it covers as little of the text as it can; tall enough to hit. */
+    writing-mode: vertical-rl; box-sizing: border-box;
+    padding: var(--space-4) 4px; padding-right: calc(4px + env(safe-area-inset-right, 0px));
+    font-size: 13px; line-height: 1; color: var(--ink-muted); background: var(--surface);
     border: 1px solid var(--line); border-right: 0; border-radius: var(--radius-sm) 0 0 var(--radius-sm);
     box-shadow: var(--shadow-float); cursor: pointer; }
   .side-tab:hover { color: var(--ink); background: var(--hover); }
