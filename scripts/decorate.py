@@ -210,7 +210,8 @@ def side_view(page, nav_part, title):
     bracketed vertical links on its edge, in sight beside the page, scroll the
     view sideways to each part; wider, it slides in over the page when one of
     its parts is the URL's target. Below 1000px the navigation is not in it
-    but above the page (nav_top), and [Navigation] scrolls up to it. Copies,
+    but above the page (nav_top), and [Navigation], beside the site name,
+    scrolls up to it. Copies,
     so the wide layout keeps Forester's own; their ids are dropped so each
     anchor stays unique. Returns the view, the navigation above the page, and
     the link that goes beside the site name on wide screens."""
@@ -224,9 +225,9 @@ def side_view(page, nav_part, title):
         name = re.sub(r"<[^>]+>", "", heading.group(1)).strip() if heading else ""
         if name in BACKMATTER:
             parts.append((name.lower(), name, ID.sub("", section), " side-part--narrow"))
-    links = lambda cls: "".join('<a class="%s side-tab--%s" href="#%s">[%s]</a>'
-                                % (cls, key, "nav-top" if key == "nav" else "side-" + key, name)
-                                for key, name, _, _ in parts)
+    # [Navigation] is not among them: it stands beside the site name.
+    links = lambda cls: "".join('<a class="%s side-tab--%s" href="#side-%s">[%s]</a>' % (cls, key, key, name)
+                                for key, name, _, _ in parts if key != "nav")
     back = html.escape(title)
     view = (
         '<aside class="side-view" aria-label="Navigation and contents">'
@@ -237,7 +238,11 @@ def side_view(page, nav_part, title):
          "".join('<section class="side-part%s" id="side-%s">%s</section>' % (cls, key, body)
                  for key, _, body, cls in parts))
     nav_top = '<nav class="nav-top" id="nav-top" aria-label="Navigation">%s</nav>' % nav_part
-    return view, nav_top, '<div class="side-tabs"><a class="side-tab side-tab--nav" href="#side-nav">[Navigation]</a></div>'
+    # [Navigation] beside the site name: up to the navigation above the page
+    # below 1000px, the side view wider.
+    return view, nav_top, ('<div class="side-tabs">'
+                           '<a class="side-tab side-tab--nav side-tab--narrow" href="#nav-top">[Navigation]</a>'
+                           '<a class="side-tab side-tab--nav side-tab--wide" href="#side-nav">[Navigation]</a></div>')
 
 
 LOGO = re.compile(r'<div\s+class="logo">.*?</div>', re.S)
