@@ -140,21 +140,25 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
   .page-view { flex: 0 0 calc(100% - 18px - env(safe-area-inset-right, 0px)); min-width: 0; box-sizing: border-box;
     overflow-y: auto; scroll-snap-align: start; padding: 1em 0 2em .5em; }
   #grid-wrapper > article > footer, .side-tab--wide, .side-back--wide { display: none; }
-  .side-tab--narrow { display: inline; }
+  /* Small enough to share the site name's line on a phone. */
+  .side-tab--narrow { display: inline; font-size: 14px; }
+  #home-link { column-gap: .5em; }
   .side-view { position: static; transform: none; visibility: visible; transition: none; box-shadow: none; border-left: 0;
     flex: 0 0 auto; width: auto; display: flex; height: 100%; overflow: visible; }
-  .side-strip { display: flex; flex-direction: column; gap: .5em; flex: 0 0 18px; padding-top: 1em; overflow: hidden; }
+  .side-strip { display: flex; flex-direction: column; gap: .5em; flex: 0 0 18px; padding-top: 3.5em; overflow: hidden; }
   .side-strip .side-tab { writing-mode: vertical-rl; padding: 4px 1px; line-height: 1; font-size: 13px; }
-  /* Which way each goes: » over the tabs, to the side view on the right;
-     « over [Back to page], to the page on the left. Upright, so the
-     marks keep pointing across while the words run down. */
-  .side-strip .side-tab::before, .side-back--narrow::before { text-orientation: upright; margin-bottom: .4em; }
-  .side-strip .side-tab::before { content: "»"; }
+  /* Which way each goes: » over [Table of Contents], to the side view on
+     the right; « over [Back to page], to the page on the left; « turned up
+     beside [Navigation], to the navigation above. Upright, so the marks keep
+     pointing across while the words run down. */
+  .side-strip .side-tab--toc::before, .side-back--narrow::before { text-orientation: upright; margin-bottom: .4em; }
+  .side-strip .side-tab--toc::before { content: "»"; }
   .side-back--narrow::before { content: "«"; }
+  .side-tab--narrow::before { content: "«"; display: inline-block; transform: rotate(90deg); margin-right: .4em; }
   /* The side view's body is a whole screen wide, so going there takes the
      tabs out of sight; [Back to page] stands on its left edge instead. */
   .side-body { width: 100vw; display: flex; scroll-snap-align: start; }
-  .side-back--narrow { display: block; flex: 0 0 18px; writing-mode: vertical-rl; padding: 1em 1px 0; line-height: 1;
+  .side-back--narrow { display: block; flex: 0 0 18px; writing-mode: vertical-rl; padding: 3.5em 1px 0; line-height: 1;
     font-size: 13px; border-right: 1px solid var(--line); border-radius: 0; }
   .side-parts { flex: 1; min-width: 0; overflow-y: auto; padding-left: .5em; }
   .side-part--narrow { display: block; }
