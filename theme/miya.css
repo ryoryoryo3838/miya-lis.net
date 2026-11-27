@@ -7,11 +7,11 @@
    colours, and adds the side panels.
 
    The page is Forester's own: the tree, and the table of contents to its
-   right; "« MIYA-LIS.NET" stands where Forester puts "« Home". Bracketed
-   tabs open side panels: [Navigation], in a row after the site name on wide
-   screens; below 1000px, where Forester drops the table of contents, they
-   stand vertically at the top of the right edge with [Table of Contents]
-   [Context] [Backlinks]. */
+   right; "« MIYA-LIS.NET" stands where Forester puts "« Home". The site
+   navigation is in a side view: on wide screens [Navigation], after the site
+   name, slides it in; below 1000px, where Forester drops the table of
+   contents, the side view stands to the right of the page with the contents
+   and the backmatter too, and the view scrolls sideways to it. */
 
 /* Monaspace Neon (SIL OFL 1.1, theme/LICENSES/OFL-1.1.txt) is the Latin face;
    IBM Plex Sans JP comes from Google Fonts. */
@@ -78,52 +78,37 @@ a.slug:hover, a.bullet:hover, .link:hover, .link a:hover, a.orcid:hover, a.doi:h
 /* ── Table of contents ────────────────────────────────────────────────────── */
 
 nav#toc, nav#toc a { color: var(--ink-muted); }
-nav#toc a.bullet, .side-panel a.bullet { color: var(--orange); opacity: 1; }
+nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 
-/* ── Side panels ──────────────────────────────────────────────────────────── */
+/* ── Side view ────────────────────────────────────────────────────────────── */
 
-/* decorate.py puts the navigation, and copies of the table of contents and of
-   each part of the backmatter, into .side-panel elements, each opened by its
-   own checkbox (so they work without script; side.js only closes them after a
-   link is followed). The tabs are bracketed like a Forester address. */
-.side-switch { position: fixed; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-/* Wide screens: the tabs follow the site name on its line, in a row. */
+/* decorate.py puts the site navigation, and copies of the table of contents
+   and of each part of the backmatter, into one column, .side-view, after the
+   page. Links to its parts (#side-nav, #side-toc, …) are bracketed like a
+   Forester address. No script: anchors and :target do the work. */
+
+/* Wide screens: [Navigation] follows the site name; the side view slides in
+   over the page when one of its parts is the target, and "« title" (a link to
+   no part) closes it. Only the navigation shows there: the page has the rest. */
 #home-link { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1em; }
-.side-tabs { display: flex; flex-wrap: wrap; gap: .6em; }
-.side-tab { padding: 2px 4px; font-weight: 200; color: var(--ink-muted); border-radius: var(--radius-sm); cursor: pointer; }
+.side-tab { padding: 2px 4px; font-weight: 200; color: var(--ink-muted); border-radius: var(--radius-sm); text-decoration: none; }
 .side-tab:hover { color: var(--ink); background: var(--green-soft); }
-body:has(.side-switch:checked) .side-tabs { display: none; }
-.side-tab:not(.side-tab--nav), .side-scrim { display: none; }
-.side-scrim { position: fixed; inset: 0; z-index: 29; background: #0000002e; }
-.side-panel { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0;
+.side-strip, .side-back--narrow, .side-part--narrow { display: none; }
+.side-view { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0;
   width: min(85vw, 340px); box-sizing: border-box; overflow-y: auto;
-  padding: 1em calc(.5em + env(safe-area-inset-right, 0px)) 2em 1em;
   background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-float);
   transform: translateX(100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
-#side-nav:checked ~ .side-scrim--nav,
-#side-toc:checked ~ .side-scrim--toc,
-#side-context:checked ~ .side-scrim--context,
-#side-backlinks:checked ~ .side-scrim--backlinks,
-#side-related:checked ~ .side-scrim--related,
-#side-references:checked ~ .side-scrim--references,
-#side-contributions:checked ~ .side-scrim--contributions { display: block; }
-#side-nav:checked ~ #panel-nav,
-#side-toc:checked ~ #panel-toc,
-#side-context:checked ~ #panel-context,
-#side-backlinks:checked ~ #panel-backlinks,
-#side-related:checked ~ #panel-related,
-#side-references:checked ~ #panel-references,
-#side-contributions:checked ~ #panel-contributions { transform: none; visibility: visible; }
-body:has(#side-nav:focus-visible) .side-tab--nav,
-body:has(#side-toc:focus-visible) .side-tab--toc,
-body:has(#side-context:focus-visible) .side-tab--context,
-body:has(#side-backlinks:focus-visible) .side-tab--backlinks,
-body:has(#side-related:focus-visible) .side-tab--related,
-body:has(#side-references:focus-visible) .side-tab--references,
-body:has(#side-contributions:focus-visible) .side-tab--contributions { box-shadow: var(--focus-ring); }
-.side-panel ul { list-style: none; }
-.side-panel > .block > ul { padding-left: 0; }
-.side-panel h1 { margin-top: 0; }
+.side-view:has(:target) { transform: none; visibility: visible; }
+.side-body { padding: 1em calc(.5em + env(safe-area-inset-right, 0px)) 2em 1em; }
+.side-back { display: block; margin-bottom: 1em; color: var(--ink-muted); text-decoration: none; }
+.side-back:hover { color: var(--ink); background: none; }
+.side-part + .side-part { margin-top: 1.5em; }
+.side-part ul { list-style: none; }
+.side-part > .block > ul { padding-left: 0; }
+.side-part h1 { margin-top: 0; }
+/* Forester sets its table of contents heading at 16pt; the parts follow it. */
+.side-part > .block > h1 { font-size: 16pt; }
+.side-part { scroll-margin-top: 1em; }
 
 .side-menu-link { display: flex; align-items: baseline; gap: .5em; padding: .4em .3em; border-radius: var(--radius-sm); color: var(--ink-muted); text-decoration: none; }
 .side-menu-link:hover { background: var(--hover); color: var(--ink); }
@@ -132,27 +117,38 @@ body:has(#side-contributions:focus-visible) .side-tab--contributions { box-shado
 .side-menu-link.is-current .side-menu-bullet { color: var(--orange); }
 
 @media (prefers-reduced-motion: reduce) {
-  .side-panel { transition: none; }
+  .side-view { transition: none; }
 }
 
 /* ── Narrow screens ───────────────────────────────────────────────────────── */
 
+/* Below 1000px the page and the side view stand side by side in one view
+   that scrolls sideways. The side view's edge, its column of bracketed
+   vertical links, stays in sight to the right of the page; a link scrolls the
+   view to its part, and "« title" or a swipe brings the page back. */
 @media (max-width: 1000px) {
-  /* The column of tabs takes the right margin, so the tabs never cover text. */
-  body.miya-native { margin-right: 1.6em; }
-  #grid-wrapper > article > footer { display: none; }
-  .side-tab:not(.side-tab--nav) { display: block; }
-  /* Narrow screens: the tabs stand vertically at the top of the right edge. */
-  .side-tabs { position: fixed; z-index: 20; top: calc(1em + env(safe-area-inset-top, 0px));
-    right: env(safe-area-inset-right, 0px); flex-direction: column; flex-wrap: nowrap; gap: .5em; }
-  .side-tab { writing-mode: vertical-rl; padding: 4px 2px; line-height: 1; }
+  html, body.miya-native { height: 100%; overflow: hidden; }
+  body.miya-native { margin: 0; }
+  #main-wrapper { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+  #main-wrapper::-webkit-scrollbar { display: none; }
+  .page-view { flex: 0 0 calc(100% - 18px - env(safe-area-inset-right, 0px)); min-width: 0; box-sizing: border-box;
+    overflow-y: auto; scroll-snap-align: start; padding: 1em 0 2em .5em; }
+  #grid-wrapper > article > footer, .side-tabs, .side-back--wide { display: none; }
+  .side-view { position: static; transform: none; visibility: visible; transition: none; box-shadow: none; border-left: 0;
+    flex: 0 0 auto; width: auto; display: flex; height: 100%; overflow: visible; scroll-snap-align: end; }
+  .side-strip { display: flex; flex-direction: column; gap: .5em; flex: 0 0 18px; padding-top: 1em; overflow: hidden; }
+  .side-strip .side-tab { writing-mode: vertical-rl; padding: 4px 1px; line-height: 1; font-size: 13px; }
+  .side-body { width: min(85vw, 340px); overflow-y: auto; border-left: 1px solid var(--line);
+    padding-right: calc(.5em + env(safe-area-inset-right, 0px)); }
+  .side-back--narrow, .side-part--narrow { display: block; }
 }
 
 @media (max-width: 839px) {
   /* Narrow columns cannot spare a 40px list indent per level. */
-  article :is(ul, ol), .side-panel :is(ul, ol) { padding-left: 1.3em; }
+  article :is(ul, ol), .side-part :is(ul, ol) { padding-left: 1.3em; }
   article :is(ul, ol) :is(ul, ol) { padding-left: 1.1em; }
-  .side-panel > .block > ul { padding-left: 0; }
+  .side-part > .block > ul { padding-left: 0; }
 }
 
 /* ── A tree's own picture ─────────────────────────────────────────────────── */

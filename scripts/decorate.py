@@ -203,38 +203,39 @@ def top_sections(html_text):
 BACKMATTER = ("Context", "Backlinks", "Related", "References", "Contributions")
 
 
-def side_shell(page, nav_panel):
-    """Bracketed vertical tabs at the top of the right edge, [Navigation]
-    always and, for narrow screens, [Table of Contents] [Context]
-    [Backlinks] …, each opening a side panel with that part alone. The table
-    of contents and the backmatter are copies, so the wide layout keeps
-    Forester's own; their ids are dropped so each anchor stays unique.
-    Checkboxes open the panels, so they work without script; the checkboxes
-    come first, so CSS can reach the panel of each. Returns the inputs and
-    panels, and the tabs, which go beside the site name in Forester's header
-    (in a row on wide screens, fixed at the right edge on narrow ones)."""
-    panels = [("nav", "Navigation", nav_panel)]
+def side_view(page, nav_part, title):
+    """The side view: the site navigation and, for narrow screens, copies of
+    the table of contents and of each part of the backmatter, one after the
+    other in one column. Below 1000px it stands to the right of the page and
+    bracketed vertical links on its edge, in sight beside the page, scroll the
+    view sideways to each part; wider, it slides in over the page when one of
+    its parts is the URL's target. Copies, so the wide layout keeps Forester's
+    own; their ids are dropped so each anchor stays unique. Returns the view
+    and the links that go beside the site name on wide screens."""
+    parts = [("nav", "Navigation", nav_part, "")]
     toc = TOC.search(page)
     if toc:
-        panels.append(("toc", "Table of Contents",
-                       '<aside class="side-panel" aria-label="Table of Contents">%s</aside>' % ID.sub("", toc.group(1))))
+        parts.append(("toc", "Table of Contents", ID.sub("", toc.group(1)), " side-part--narrow"))
     footer = FOOTER.search(page)
     for section in top_sections(footer.group(1)) if footer else []:
         heading = re.search(r"<h1>(.*?)</h1>", section, re.S)
         name = re.sub(r"<[^>]+>", "", heading.group(1)).strip() if heading else ""
         if name in BACKMATTER:
-            panels.append((name.lower(), name,
-                           '<aside class="side-panel" aria-label="%s">%s</aside>' % (name, ID.sub("", section))))
-    inputs = "".join('<input type="checkbox" id="side-%s" class="side-switch">' % key for key, _, _ in panels)
-    tabs = "".join('<label for="side-%s" class="side-tab side-tab--%s">[%s]</label>' % (key, key, name)
-                   for key, name, _ in panels)
-    rest = "".join('<label for="side-%s" class="side-scrim side-scrim--%s" aria-hidden="true"></label>%s'
-                   % (key, key, re.sub(r'<(nav|aside) ', r'<\1 id="panel-%s" ' % key, body, count=1))
-                   for key, _, body in panels)
-    return inputs + rest, '<div class="side-tabs">' + tabs + "</div>"
+            parts.append((name.lower(), name, ID.sub("", section), " side-part--narrow"))
+    links = lambda cls: "".join('<a class="%s side-tab--%s" href="#side-%s">[%s]</a>' % (cls, key, key, name)
+                                for key, name, _, _ in parts)
+    back = html.escape(title)
+    view = (
+        '<aside class="side-view" aria-label="Navigation and contents">'
+        '<nav class="side-strip" aria-label="Jump to">%s</nav><div class="side-body">'
+        '<a class="side-back side-back--narrow" href="#page-view">« %s</a>'
+        '<a class="side-back side-back--wide" href="#page">« %s</a>%s</div></aside>'
+    ) % (links("side-tab"), back, back,
+         "".join('<section class="side-part%s" id="side-%s">%s</section>' % (cls, key, body)
+                 for key, _, body, cls in parts))
+    return view, '<div class="side-tabs"><a class="side-tab side-tab--nav" href="#side-nav">[Navigation]</a></div>'
 
 
-# Forester's "« Home" link becomes the site name.
 LOGO = re.compile(r'<div\s+class="logo">.*?</div>', re.S)
 HOME_LINK = re.compile(r'(<a\s[^>]*title="home"[^>]*>)« Home(</a>)')
 
@@ -300,11 +301,14 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, titles = re.subn(r"<title>.*?</title>", "", page, count=1, flags=re.S)
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
-    shell, tabs = side_shell(page, shell)
+    view, tabs = side_view(page, shell, share_title)
     page = HOME_LINK.sub(lambda m: m.group(1) + "« " + SITE_NAME + m.group(2), page, count=1)
     page, logos = LOGO.subn(lambda m: m.group(0) + tabs, page, count=1)
-    if logos != 1:
-        raise SystemExit("decorate.py: no Forester home link in %s" % canonical)
+    # The page and the side view side by side: the page in its own column.
+    page, closes = re.subn(r"</main>(?![\s\S]*</main>)", lambda _: "</main></div>" + view, page, count=1)
+    if (logos, closes) != (1, 1):
+        raise SystemExit("decorate.py: no Forester home link or grid in %s" % canonical)
+    shell = '<div class="page-view" id="page-view">'
     page, mains = re.subn(r'<div\s+id="main-wrapper">', lambda m: m.group(0) + shell, page, count=1)
     page = japanese(page)
     page, langs = re.subn(r'<html(?:\s+lang="[^"]*")?>', '<html lang="ja">', page, count=1)
@@ -368,9 +372,10 @@ def main():
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
         '<meta name="robots" content="noindex"><title>Not found — %s</title>'
         '<link rel="stylesheet" href="/style.css">%s</head>'
-        '<body class="miya-native"><div id="main-wrapper">%s<div id="grid-wrapper">'
-        "<article>%s</article></div></div></body></html>\n"
-    ) % (SITE_NAME, THEME_HEAD, "".join(side_shell("", navigation(template, links, None))), missing))
+        '<body class="miya-native"><div id="main-wrapper"><div class="page-view" id="page-view">'
+        '<header class="header"><nav id="home-link" class="nav"><div class="logo"><a href="/">« %s</a></div></nav></header>'
+        '<main id="grid-wrapper"><article>%s</article></main></div>%s</div></body></html>\n'
+    ) % (SITE_NAME, THEME_HEAD, SITE_NAME, missing, side_view("", navigation(template, links, None), "Not found")[0]))
 
     print("decorate.py: %d trees, the site root and 404.html" % written)
 
