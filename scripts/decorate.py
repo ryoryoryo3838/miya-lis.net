@@ -210,7 +210,9 @@ def side_shell(page, nav_panel):
     of contents and the backmatter are copies, so the wide layout keeps
     Forester's own; their ids are dropped so each anchor stays unique.
     Checkboxes open the panels, so they work without script; the checkboxes
-    come first, so CSS can reach the tab and panel of each."""
+    come first, so CSS can reach the panel of each. Returns the inputs and
+    panels, and the tabs, which go beside the site name in Forester's header
+    (in a row on wide screens, fixed at the right edge on narrow ones)."""
     panels = [("nav", "Navigation", nav_panel)]
     toc = TOC.search(page)
     if toc:
@@ -229,10 +231,11 @@ def side_shell(page, nav_panel):
     rest = "".join('<label for="side-%s" class="side-scrim side-scrim--%s" aria-hidden="true"></label>%s'
                    % (key, key, re.sub(r'<(nav|aside) ', r'<\1 id="panel-%s" ' % key, body, count=1))
                    for key, _, body in panels)
-    return inputs + '<div class="side-tabs">' + tabs + "</div>" + rest
+    return inputs + rest, '<div class="side-tabs">' + tabs + "</div>"
 
 
 # Forester's "« Home" link becomes the site name.
+LOGO = re.compile(r'<div\s+class="logo">.*?</div>', re.S)
 HOME_LINK = re.compile(r'(<a\s[^>]*title="home"[^>]*>)« Home(</a>)')
 
 
@@ -297,8 +300,11 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, titles = re.subn(r"<title>.*?</title>", "", page, count=1, flags=re.S)
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
-    shell = side_shell(page, shell)
+    shell, tabs = side_shell(page, shell)
     page = HOME_LINK.sub(lambda m: m.group(1) + "« " + SITE_NAME + m.group(2), page, count=1)
+    page, logos = LOGO.subn(lambda m: m.group(0) + tabs, page, count=1)
+    if logos != 1:
+        raise SystemExit("decorate.py: no Forester home link in %s" % canonical)
     page, mains = re.subn(r'<div\s+id="main-wrapper">', lambda m: m.group(0) + shell, page, count=1)
     page = japanese(page)
     page, langs = re.subn(r'<html(?:\s+lang="[^"]*")?>', '<html lang="ja">', page, count=1)
@@ -364,7 +370,7 @@ def main():
         '<link rel="stylesheet" href="/style.css">%s</head>'
         '<body class="miya-native"><div id="main-wrapper">%s<div id="grid-wrapper">'
         "<article>%s</article></div></div></body></html>\n"
-    ) % (SITE_NAME, THEME_HEAD, side_shell("", navigation(template, links, None)), missing))
+    ) % (SITE_NAME, THEME_HEAD, "".join(side_shell("", navigation(template, links, None))), missing))
 
     print("decorate.py: %d trees, the site root and 404.html" % written)
 

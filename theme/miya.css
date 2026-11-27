@@ -8,9 +8,10 @@
 
    The page is Forester's own: the tree, and the table of contents to its
    right; "« MIYA-LIS.NET" stands where Forester puts "« Home". Bracketed
-   vertical tabs at the top of the right edge open side panels: [Navigation]
-   always, and below 1000px, where Forester drops the table of contents,
-   [Table of Contents] [Context] [Backlinks] too. */
+   tabs open side panels: [Navigation], in a row after the site name on wide
+   screens; below 1000px, where Forester drops the table of contents, they
+   stand vertically at the top of the right edge with [Table of Contents]
+   [Context] [Backlinks]. */
 
 /* Monaspace Neon (SIL OFL 1.1, theme/LICENSES/OFL-1.1.txt) is the Latin face;
    IBM Plex Sans JP comes from Google Fonts. */
@@ -86,10 +87,10 @@ nav#toc a.bullet, .side-panel a.bullet { color: var(--orange); opacity: 1; }
    own checkbox (so they work without script; side.js only closes them after a
    link is followed). The tabs are bracketed like a Forester address. */
 .side-switch { position: fixed; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-.side-tabs { position: fixed; z-index: 20; top: calc(1em + env(safe-area-inset-top, 0px));
-  right: env(safe-area-inset-right, 0px); display: flex; flex-direction: column; gap: .5em; }
-.side-tab { writing-mode: vertical-rl; padding: 4px 2px; line-height: 1; font-weight: 200;
-  color: var(--ink-muted); border-radius: var(--radius-sm); cursor: pointer; }
+/* Wide screens: the tabs follow the site name on its line, in a row. */
+#home-link { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1em; }
+.side-tabs { display: flex; flex-wrap: wrap; gap: .6em; }
+.side-tab { padding: 2px 4px; font-weight: 200; color: var(--ink-muted); border-radius: var(--radius-sm); cursor: pointer; }
 .side-tab:hover { color: var(--ink); background: var(--green-soft); }
 body:has(.side-switch:checked) .side-tabs { display: none; }
 .side-tab:not(.side-tab--nav), .side-scrim { display: none; }
@@ -113,13 +114,13 @@ body:has(.side-switch:checked) .side-tabs { display: none; }
 #side-related:checked ~ #panel-related,
 #side-references:checked ~ #panel-references,
 #side-contributions:checked ~ #panel-contributions { transform: none; visibility: visible; }
-#side-nav:focus-visible ~ .side-tabs .side-tab--nav,
-#side-toc:focus-visible ~ .side-tabs .side-tab--toc,
-#side-context:focus-visible ~ .side-tabs .side-tab--context,
-#side-backlinks:focus-visible ~ .side-tabs .side-tab--backlinks,
-#side-related:focus-visible ~ .side-tabs .side-tab--related,
-#side-references:focus-visible ~ .side-tabs .side-tab--references,
-#side-contributions:focus-visible ~ .side-tabs .side-tab--contributions { box-shadow: var(--focus-ring); }
+body:has(#side-nav:focus-visible) .side-tab--nav,
+body:has(#side-toc:focus-visible) .side-tab--toc,
+body:has(#side-context:focus-visible) .side-tab--context,
+body:has(#side-backlinks:focus-visible) .side-tab--backlinks,
+body:has(#side-related:focus-visible) .side-tab--related,
+body:has(#side-references:focus-visible) .side-tab--references,
+body:has(#side-contributions:focus-visible) .side-tab--contributions { box-shadow: var(--focus-ring); }
 .side-panel ul { list-style: none; }
 .side-panel > .block > ul { padding-left: 0; }
 .side-panel h1 { margin-top: 0; }
@@ -141,6 +142,10 @@ body:has(.side-switch:checked) .side-tabs { display: none; }
   body.miya-native { margin-right: 1.6em; }
   #grid-wrapper > article > footer { display: none; }
   .side-tab:not(.side-tab--nav) { display: block; }
+  /* Narrow screens: the tabs stand vertically at the top of the right edge. */
+  .side-tabs { position: fixed; z-index: 20; top: calc(1em + env(safe-area-inset-top, 0px));
+    right: env(safe-area-inset-right, 0px); flex-direction: column; flex-wrap: nowrap; gap: .5em; }
+  .side-tab { writing-mode: vertical-rl; padding: 4px 2px; line-height: 1; }
 }
 
 @media (max-width: 839px) {
