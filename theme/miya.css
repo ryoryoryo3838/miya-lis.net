@@ -2,16 +2,15 @@
 
 /* The site's own rules, linked after Forester's native style.css and the
    Seimiya design system's tokens.css by decorate.py. Forester's stylesheet is
-   used as shipped; everything here puts it in the design system's terms: one
-   face, white ground, titles told apart by weight, links by underline, and
-   orange only where the reader should look (the ■ of the current page and the
-   table of contents).
+   used as shipped, sizes and spacing included (12pt, line height 1.55, its
+   margins and indents); this file gives it the design system's faces and
+   colours, and adds the side panels.
 
    The page is Forester's own: the tree, and the table of contents to its
-   right; the site name stands where Forester puts "« Home". The site
-   navigation is a side panel opened from a vertical tab at the right edge;
-   below 1000px the table of contents and the backmatter are another, opened
-   from a second tab under it. */
+   right; "« MIYA-LIS.NET" stands where Forester puts "« Home". Bracketed
+   vertical tabs at the top of the right edge open side panels: [Navigation]
+   always, and below 1000px, where Forester drops the table of contents,
+   [Table of Contents] [Context] [Backlinks] too. */
 
 /* Monaspace Neon (SIL OFL 1.1, theme/LICENSES/OFL-1.1.txt) is the Latin face;
    IBM Plex Sans JP comes from Google Fonts. */
@@ -26,63 +25,31 @@
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 
 body.miya-native {
-  margin: 0;
   background: var(--surface);
   color: var(--ink);
-  font: var(--text-body);
+  font-family: var(--font-sans);
   /* Monaspace's texture healing is a contextual alternate. */
   font-variant-ligatures: contextual;
   hyphens: manual;
 }
 
-:lang(ja) {
-  word-break: auto-phrase;
-}
+/* Long URLs and titles wrap inside the column rather than widen the page. */
+#grid-wrapper > article { min-width: 0; overflow-wrap: anywhere; }
 
-#main-wrapper { padding: 0 var(--space-6); }
-#main-wrapper > header { padding-top: var(--space-6); margin: 0 0 var(--space-2); }
-
-#grid-wrapper {
-  display: grid;
-  grid-template-columns: minmax(0, var(--measure)) minmax(0, 16rem);
-  column-gap: var(--space-8);
-  align-items: start;
-  padding-bottom: var(--space-16);
-}
-
-/* Forester's margin-right: auto would size the article to its content in the
-   narrow-screen column; it fills its column instead. */
-#grid-wrapper > article { grid-column: 1; max-width: var(--measure); min-width: 0; margin-right: 0; overflow-wrap: anywhere; }
-#grid-wrapper > nav#toc { grid-column: 2; position: sticky; top: var(--space-6); margin: 0; }
+/* Forester's "« Home" link carries the site name, on every page (Forester
+   hides it on the home tree). */
+#home-link.hidden { display: block; }
+.logo a { color: var(--ink-muted); }
+.logo a:hover { color: var(--ink); background: none; }
 
 /* ── Trees ────────────────────────────────────────────────────────────────── */
 
-/* Forester's "« Home" link, now the site name, on every page (Forester hides
-   it on the home tree). */
-#home-link.hidden { display: block; }
-#main-wrapper > header .logo a { font: var(--text-logo); color: var(--ink-muted); text-decoration: none; }
-#main-wrapper > header .logo a:hover { color: var(--ink); background: none; }
-
-h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.4; }
-header h1 { font: var(--text-tree-title); }
-article > section > header > h1 { font: var(--text-page-title); }
-section section .block > header > h1,
-section .block[data-taxon] > header > h1 { font-size: 16px; }
-
-/* The page's own taxon sits above its title, in ink-muted; nested ones lead
-   their title in ink-taxon. */
-span.taxon { color: var(--ink-taxon); font-weight: 700; }
-article > section > header > h1 > .taxon { font-size: 15px; color: var(--ink-muted); padding-bottom: var(--space-1); }
-
-.slug, .doi, .orcid { color: var(--ink-muted); font-weight: 300; }
-a.slug { font-size: 16px; text-decoration-color: var(--ink-muted); }
-
-.metadata { font: var(--text-meta); }
+span.taxon { color: var(--ink-taxon); }
+article > section > header > h1 > .taxon { color: var(--ink-muted); }
+.slug, .doi, .orcid { color: var(--ink-muted); }
 address { font-style: normal; }
 
-.block { padding: 0 10px 2px 5px; border-radius: var(--radius-sm); }
 .block:hover { background-color: var(--hover); }
-section.block > .mainmatter:not(.collapsed) { margin-bottom: 1em; }
 /* A closed tree says there is more behind its title. */
 section.block:has(> .mainmatter.collapsed) > header > h1::after { content: " …"; color: var(--ink-muted); font-weight: 400; }
 
@@ -92,12 +59,8 @@ mark { background-color: var(--orange-soft); color: inherit; }
 
 /* No italics: Japanese has none. */
 blockquote, figcaption { font-style: normal; }
-blockquote { border-inline-start: 2px solid var(--line); margin-inline-start: 0; padding-inline-start: var(--space-4); color: var(--ink-taxon); }
 
-pre, code { background-color: var(--surface-code); border-radius: var(--radius-sm); font-family: var(--font-mono); }
-pre { font-size: 14px; line-height: 22px; }
-
-hr { background-color: var(--line); height: 1px; }
+pre, code { background-color: var(--surface-code); font-family: var(--font-mono); }
 
 /* ── Links ────────────────────────────────────────────────────────────────── */
 
@@ -109,58 +72,59 @@ a.slug:hover, a.bullet:hover, .link:hover, .link a:hover, a.orcid:hover, a.doi:h
 
 :focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
 
-.link-preview { background-color: var(--surface); border-color: var(--line); border-radius: var(--radius-sm); box-shadow: var(--shadow-float); font: var(--text-body); color: var(--ink); }
+.link-preview { background-color: var(--surface); border-color: var(--line); box-shadow: var(--shadow-float); color: var(--ink); }
 
 /* ── Table of contents ────────────────────────────────────────────────────── */
 
 nav#toc, nav#toc a { color: var(--ink-muted); }
-nav#toc h1 { font: var(--text-footer-heading); color: var(--ink); margin: 0 0 var(--space-2); }
-nav#toc ul { padding-left: 0; margin: 0; }
-nav#toc li > ul { padding-left: 1em; }
-nav#toc a.bullet { color: var(--orange); opacity: 1; margin: 0 .4em 0 0; padding: 0; font-size: .7em; vertical-align: .1em; }
-nav#toc .taxon { color: var(--ink-muted); }
-
-/* ── Backmatter ───────────────────────────────────────────────────────────── */
-
-footer > section > header > h1 { font: var(--text-footer-heading); }
+nav#toc a.bullet, .side-panel a.bullet { color: var(--orange); opacity: 1; }
 
 /* ── Side panels ──────────────────────────────────────────────────────────── */
 
-/* decorate.py puts the navigation, and a copy of the table of contents and the
-   backmatter, into .side-panel elements. Checkboxes open them, so they work
-   without script; side.js only closes them after a link is followed. The
-   tabs are framed and bracketed like a Forester address: [Navigation]. */
+/* decorate.py puts the navigation, and copies of the table of contents and of
+   each part of the backmatter, into .side-panel elements, each opened by its
+   own checkbox (so they work without script; side.js only closes them after a
+   link is followed). The tabs are bracketed like a Forester address. */
 .side-switch { position: fixed; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-.side-tabs { position: fixed; z-index: 20; top: 50%; transform: translateY(-50%);
-  right: calc(var(--space-1) + env(safe-area-inset-right, 0px));
-  display: flex; flex-direction: column; gap: var(--space-2); }
-.side-tab { display: block; writing-mode: vertical-rl; box-sizing: border-box;
-  /* Narrow, so it covers as little of the text as it can; tall enough to hit. */
-  padding: var(--space-3) 3px; font-size: 13px; line-height: 1; font-weight: 300;
-  color: var(--ink-muted); background: var(--surface); border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm); cursor: pointer; }
-.side-tab:hover { color: var(--ink); background: var(--hover); }
-#nav-open:focus-visible ~ .side-tabs [for="nav-open"],
-#side-open:focus-visible ~ .side-tabs [for="side-open"] { box-shadow: var(--focus-ring); }
-.side-tab--toc, .side-scrim, .side-panel--toc { display: none; }
+.side-tabs { position: fixed; z-index: 20; top: calc(1em + env(safe-area-inset-top, 0px));
+  right: env(safe-area-inset-right, 0px); display: flex; flex-direction: column; gap: .5em; }
+.side-tab { writing-mode: vertical-rl; padding: 4px 2px; line-height: 1; font-weight: 200;
+  color: var(--ink-muted); border-radius: var(--radius-sm); cursor: pointer; }
+.side-tab:hover { color: var(--ink); background: var(--green-soft); }
+body:has(.side-switch:checked) .side-tabs { display: none; }
+.side-tab:not(.side-tab--nav), .side-scrim { display: none; }
 .side-scrim { position: fixed; inset: 0; z-index: 29; background: #0000002e; }
 .side-panel { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0;
   width: min(85vw, 340px); box-sizing: border-box; overflow-y: auto;
-  padding: var(--space-6) calc(var(--space-4) + env(safe-area-inset-right, 0px)) var(--space-8) var(--space-4);
+  padding: 1em calc(.5em + env(safe-area-inset-right, 0px)) 2em 1em;
   background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-float);
   transform: translateX(100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
-.side-switch:checked ~ .side-tabs { display: none; }
-#nav-open:checked ~ .side-scrim--nav, #side-open:checked ~ .side-scrim--toc { display: block; }
-#nav-open:checked ~ #nav-panel, #side-open:checked ~ #side-panel { transform: none; visibility: visible; }
-.side-panel > .block > h1 { font: var(--text-footer-heading); margin: 0 0 var(--space-2); }
-.side-panel > .block > ul { padding-left: 0; margin: 0; list-style: none; }
-.side-panel li > ul { padding-left: 1em; list-style: none; }
-.side-panel a.bullet { color: var(--orange); font-size: .7em; margin-right: .4em; vertical-align: .1em; text-decoration: none; }
-.side-panel > section { margin-top: var(--space-6); }
-.side-panel > section > header > h1 { font: var(--text-footer-heading); }
+#side-nav:checked ~ .side-scrim--nav,
+#side-toc:checked ~ .side-scrim--toc,
+#side-context:checked ~ .side-scrim--context,
+#side-backlinks:checked ~ .side-scrim--backlinks,
+#side-related:checked ~ .side-scrim--related,
+#side-references:checked ~ .side-scrim--references,
+#side-contributions:checked ~ .side-scrim--contributions { display: block; }
+#side-nav:checked ~ #panel-nav,
+#side-toc:checked ~ #panel-toc,
+#side-context:checked ~ #panel-context,
+#side-backlinks:checked ~ #panel-backlinks,
+#side-related:checked ~ #panel-related,
+#side-references:checked ~ #panel-references,
+#side-contributions:checked ~ #panel-contributions { transform: none; visibility: visible; }
+#side-nav:focus-visible ~ .side-tabs .side-tab--nav,
+#side-toc:focus-visible ~ .side-tabs .side-tab--toc,
+#side-context:focus-visible ~ .side-tabs .side-tab--context,
+#side-backlinks:focus-visible ~ .side-tabs .side-tab--backlinks,
+#side-related:focus-visible ~ .side-tabs .side-tab--related,
+#side-references:focus-visible ~ .side-tabs .side-tab--references,
+#side-contributions:focus-visible ~ .side-tabs .side-tab--contributions { box-shadow: var(--focus-ring); }
+.side-panel ul { list-style: none; }
+.side-panel > .block > ul { padding-left: 0; }
+.side-panel h1 { margin-top: 0; }
 
-.side-menu-link { display: flex; align-items: baseline; gap: var(--space-2); min-height: var(--touch-target); box-sizing: border-box;
-  padding: 10px var(--space-2); border-radius: var(--radius-sm); color: var(--ink-muted); text-decoration: none; }
+.side-menu-link { display: flex; align-items: baseline; gap: .5em; padding: .4em .3em; border-radius: var(--radius-sm); color: var(--ink-muted); text-decoration: none; }
 .side-menu-link:hover { background: var(--hover); color: var(--ink); }
 .side-menu-bullet { font-size: .7em; color: var(--line-strong); flex: none; }
 .side-menu-link.is-current { color: var(--ink); font-weight: 700; }
@@ -173,19 +137,17 @@ footer > section > header > h1 { font: var(--text-footer-heading); }
 /* ── Narrow screens ───────────────────────────────────────────────────────── */
 
 @media (max-width: 1000px) {
-  body.miya-native { margin: 0; }
-  #grid-wrapper { display: block; }
-  #grid-wrapper > nav#toc, #grid-wrapper > article > footer { display: none; }
-  .side-tab--toc, .side-panel--toc { display: block; }
+  /* The column of tabs takes the right margin, so the tabs never cover text. */
+  body.miya-native { margin-right: 1.6em; }
+  #grid-wrapper > article > footer { display: none; }
+  .side-tab:not(.side-tab--nav) { display: block; }
 }
 
 @media (max-width: 839px) {
-  #main-wrapper { padding: 0 var(--space-4); }
-  #main-wrapper > header { padding-top: var(--space-4); }
-  article > section > header > h1 { font-size: 22px; line-height: 28px; }
   /* Narrow columns cannot spare a 40px list indent per level. */
   article :is(ul, ol), .side-panel :is(ul, ol) { padding-left: 1.3em; }
   article :is(ul, ol) :is(ul, ol) { padding-left: 1.1em; }
+  .side-panel > .block > ul { padding-left: 0; }
 }
 
 /* ── A tree's own picture ─────────────────────────────────────────────────── */

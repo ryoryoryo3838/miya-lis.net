@@ -10,11 +10,12 @@ wrote between the tags:
   tokens.css and miya.css), copied over Forester's own favicons;
 - in every page's head, the share metadata a crawler reads (it reads the head
   only), the site name in the title, and the theme's stylesheets;
-- the site name in place of Forester's "« Home", shown on every page;
-- the site navigation and, on narrow screens, the table of contents and the
-  backmatter, each in a side panel opened from a vertical tab at the right
-  edge, as the first children of #main-wrapper, so a Forester htmx swap of
-  #main-wrapper brings this page's along;
+- "« MIYA-LIS.NET" in place of Forester's "« Home", shown on every page;
+- the site navigation and, on narrow screens, the table of contents and each
+  part of the backmatter, each in a side panel opened from a bracketed
+  vertical tab at the top of the right edge, as the first children of
+  #main-wrapper, so a Forester htmx swap of #main-wrapper brings this page's
+  along;
 - dates on the meta line in Japanese (2026年8月2日);
 - the site root as a copy of the Home tree;
 - a 404 page for wrangler's not_found_handling.
@@ -183,27 +184,52 @@ FOOTER = re.compile(r'<footer>(.*?)</footer>', re.S)
 ID = re.compile(r'\sid="[^"]*"')
 
 
+def top_sections(html_text):
+    """The top-level <section>s of a fragment, in order."""
+    parts, depth, start = [], 0, None
+    for m in re.finditer(r"<section\b|</section>", html_text):
+        if m.group(0) == "</section>":
+            depth -= 1
+            if depth == 0:
+                parts.append(html_text[start:m.end()])
+        else:
+            if depth == 0:
+                start = m.start()
+            depth += 1
+    return parts
+
+
+# Forester's backmatter headings, and the side panel each becomes.
+BACKMATTER = ("Context", "Backlinks", "Related", "References", "Contributions")
+
+
 def side_shell(page, nav_panel):
-    """Vertical tabs at the right edge and the panels they open: the site
-    navigation always, and on narrow screens a copy of the table of contents
-    and the backmatter. Copies, so the wide layout keeps Forester's own; the
-    ids are dropped so each anchor stays unique. Checkboxes open the panels,
-    so they work without script; each checkbox comes before what it opens."""
-    parts = [m.group(1) for m in (TOC.search(page), FOOTER.search(page)) if m]
-    toc = bool(parts)
-    return "".join([
-        '<input type="checkbox" id="nav-open" class="side-switch" aria-controls="nav-panel">',
-        '<input type="checkbox" id="side-open" class="side-switch" aria-controls="side-panel">' if toc else "",
-        '<div class="side-tabs">',
-        '<label for="nav-open" class="side-tab">[Navigation]</label>',
-        '<label for="side-open" class="side-tab side-tab--toc">[Table of Contents]</label>' if toc else "",
-        '</div>',
-        '<label for="nav-open" class="side-scrim side-scrim--nav" aria-hidden="true"></label>',
-        '<label for="side-open" class="side-scrim side-scrim--toc" aria-hidden="true"></label>' if toc else "",
-        nav_panel,
-        '<aside id="side-panel" class="side-panel side-panel--toc" aria-label="Table of Contents">%s</aside>'
-        % ID.sub("", "".join(parts)) if toc else "",
-    ])
+    """Bracketed vertical tabs at the top of the right edge, [Navigation]
+    always and, for narrow screens, [Table of Contents] [Context]
+    [Backlinks] …, each opening a side panel with that part alone. The table
+    of contents and the backmatter are copies, so the wide layout keeps
+    Forester's own; their ids are dropped so each anchor stays unique.
+    Checkboxes open the panels, so they work without script; the checkboxes
+    come first, so CSS can reach the tab and panel of each."""
+    panels = [("nav", "Navigation", nav_panel)]
+    toc = TOC.search(page)
+    if toc:
+        panels.append(("toc", "Table of Contents",
+                       '<aside class="side-panel" aria-label="Table of Contents">%s</aside>' % ID.sub("", toc.group(1))))
+    footer = FOOTER.search(page)
+    for section in top_sections(footer.group(1)) if footer else []:
+        heading = re.search(r"<h1>(.*?)</h1>", section, re.S)
+        name = re.sub(r"<[^>]+>", "", heading.group(1)).strip() if heading else ""
+        if name in BACKMATTER:
+            panels.append((name.lower(), name,
+                           '<aside class="side-panel" aria-label="%s">%s</aside>' % (name, ID.sub("", section))))
+    inputs = "".join('<input type="checkbox" id="side-%s" class="side-switch">' % key for key, _, _ in panels)
+    tabs = "".join('<label for="side-%s" class="side-tab side-tab--%s">[%s]</label>' % (key, key, name)
+                   for key, name, _ in panels)
+    rest = "".join('<label for="side-%s" class="side-scrim side-scrim--%s" aria-hidden="true"></label>%s'
+                   % (key, key, re.sub(r'<(nav|aside) ', r'<\1 id="panel-%s" ' % key, body, count=1))
+                   for key, _, body in panels)
+    return inputs + '<div class="side-tabs">' + tabs + "</div>" + rest
 
 
 # Forester's "« Home" link becomes the site name.
@@ -272,7 +298,7 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
     shell = side_shell(page, shell)
-    page = HOME_LINK.sub(lambda m: m.group(1) + SITE_NAME + m.group(2), page, count=1)
+    page = HOME_LINK.sub(lambda m: m.group(1) + "« " + SITE_NAME + m.group(2), page, count=1)
     page, mains = re.subn(r'<div\s+id="main-wrapper">', lambda m: m.group(0) + shell, page, count=1)
     page = japanese(page)
     page, langs = re.subn(r'<html(?:\s+lang="[^"]*")?>', '<html lang="ja">', page, count=1)
