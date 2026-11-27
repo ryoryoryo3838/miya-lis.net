@@ -145,6 +145,12 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
     flex: 0 0 auto; width: auto; display: flex; height: 100%; overflow: visible; }
   .side-strip { display: flex; flex-direction: column; gap: .5em; flex: 0 0 18px; padding-top: 1em; overflow: hidden; }
   .side-strip .side-tab { writing-mode: vertical-rl; padding: 4px 1px; line-height: 1; font-size: 13px; }
+  /* Which way each goes: » over the tabs, to the side view on the right;
+     « over [Back to page], to the page on the left. Upright, so the
+     marks keep pointing across while the words run down. */
+  .side-strip .side-tab::before, .side-back--narrow::before { text-orientation: upright; margin-bottom: .4em; }
+  .side-strip .side-tab::before { content: "»"; }
+  .side-back--narrow::before { content: "«"; }
   /* The side view's body is a whole screen wide, so going there takes the
      tabs out of sight; [Back to page] stands on its left edge instead. */
   .side-body { width: 100vw; display: flex; scroll-snap-align: start; }
