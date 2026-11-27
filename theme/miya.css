@@ -99,7 +99,10 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
   background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-float);
   transform: translateX(100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
 .side-view:has(:target) { transform: none; visibility: visible; }
-.side-body { padding: 1em calc(.5em + env(safe-area-inset-right, 0px)) 2em 1em; }
+.side-parts { padding: 1em calc(.5em + env(safe-area-inset-right, 0px)) 2em 1em; }
+/* The navigation reads across, as a line of links. */
+.side-menu { display: flex; flex-wrap: wrap; gap: 0 1em; padding-left: 0; margin: 0; list-style: none; }
+.side-menu-link { padding: .2em .3em; }
 .side-back { display: block; margin-bottom: 1em; color: var(--ink-muted); text-decoration: none; }
 .side-back:hover { color: var(--ink); background: none; }
 .side-part + .side-part { margin-top: 1.5em; }
@@ -110,7 +113,7 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 .side-part > .block > h1 { font-size: 16pt; }
 .side-part { scroll-margin-top: 1em; }
 
-.side-menu-link { display: flex; align-items: baseline; gap: .5em; padding: .4em .3em; border-radius: var(--radius-sm); color: var(--ink-muted); text-decoration: none; }
+.side-menu-link { display: flex; align-items: baseline; gap: .4em; border-radius: var(--radius-sm); color: var(--ink-muted); text-decoration: none; }
 .side-menu-link:hover { background: var(--hover); color: var(--ink); }
 .side-menu-bullet { font-size: .7em; color: var(--line-strong); flex: none; }
 .side-menu-link.is-current { color: var(--ink); font-weight: 700; }
@@ -125,7 +128,8 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 /* Below 1000px the page and the side view stand side by side in one view
    that scrolls sideways. The side view's edge, its column of bracketed
    vertical links, stays in sight to the right of the page; a link scrolls the
-   view to its part, and "« title" or a swipe brings the page back. The site
+   view to its part, a whole screen over, and [Back to page] or a swipe brings
+   the page back. The site
    navigation is above the page instead: [Navigation] scrolls up to it. */
 @media (max-width: 1000px) {
   html, body.miya-native { height: 100%; overflow: hidden; }
@@ -137,17 +141,21 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
     overflow-y: auto; scroll-snap-align: start; padding: 1em 0 2em .5em; }
   #grid-wrapper > article > footer, .side-tabs, .side-back--wide { display: none; }
   .side-view { position: static; transform: none; visibility: visible; transition: none; box-shadow: none; border-left: 0;
-    flex: 0 0 auto; width: auto; display: flex; height: 100%; overflow: visible; scroll-snap-align: end; }
+    flex: 0 0 auto; width: auto; display: flex; height: 100%; overflow: visible; }
   .side-strip { display: flex; flex-direction: column; gap: .5em; flex: 0 0 18px; padding-top: 1em; overflow: hidden; }
   .side-strip .side-tab { writing-mode: vertical-rl; padding: 4px 1px; line-height: 1; font-size: 13px; }
-  .side-body { width: min(85vw, 340px); overflow-y: auto; border-left: 1px solid var(--line);
-    padding-right: calc(.5em + env(safe-area-inset-right, 0px)); }
-  .side-back--narrow, .side-part--narrow { display: block; }
+  /* The side view's body is a whole screen wide, so going there takes the
+     tabs out of sight; [Back to page] stands on its left edge instead. */
+  .side-body { width: 100vw; display: flex; scroll-snap-align: start; }
+  .side-back--narrow { display: block; flex: 0 0 18px; writing-mode: vertical-rl; padding: 1em 1px 0; line-height: 1;
+    font-size: 13px; border-right: 1px solid var(--line); border-radius: 0; }
+  .side-parts { flex: 1; min-width: 0; overflow-y: auto; padding-left: .5em; }
+  .side-part--narrow { display: block; }
   /* The navigation stands above the page; side.js opens the page scrolled
      past it, and [Navigation] scrolls back up to it. */
   .side-part--wide { display: none; }
   .nav-top { display: block; padding: 0 .5em 1em 0; margin-bottom: 1em; border-bottom: 1px solid var(--line); }
-  .nav-top ul { list-style: none; padding-left: 0; }
+  .nav-top ul { list-style: none; padding-left: 0; margin: 0; }
   /* At least a screen below it, so a short page can still open scrolled past it. */
   .page-view > #grid-wrapper { min-height: 100%; }
   .nav-top > .block > h1 { font-size: 16pt; margin-top: 0; }

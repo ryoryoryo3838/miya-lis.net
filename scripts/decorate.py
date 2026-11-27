@@ -231,9 +231,9 @@ def side_view(page, nav_part, title):
     view = (
         '<aside class="side-view" aria-label="Navigation and contents">'
         '<nav class="side-strip" aria-label="Jump to">%s</nav><div class="side-body">'
-        '<a class="side-back side-back--narrow" href="#page-view">« %s</a>'
-        '<a class="side-back side-back--wide" href="#page">« %s</a>%s</div></aside>'
-    ) % (links("side-tab"), back, back,
+        '<a class="side-tab side-back--narrow" href="#page-view">[Back to page]</a>'
+        '<div class="side-parts"><a class="side-back side-back--wide" href="#page">« %s</a>%s</div></div></aside>'
+    ) % (links("side-tab"), back,
          "".join('<section class="side-part%s" id="side-%s">%s</section>' % (cls, key, body)
                  for key, _, body, cls in parts))
     nav_top = '<nav class="nav-top" id="nav-top" aria-label="Navigation">%s</nav>' % nav_part
