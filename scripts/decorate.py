@@ -203,19 +203,16 @@ def top_sections(html_text):
 BACKMATTER = ("Context", "Backlinks", "Related", "References", "Contributions")
 
 
-def side_view(page, nav_part, title):
-    """The side view: the site navigation and, for narrow screens, copies of
-    the table of contents and of each part of the backmatter, one after the
-    other in one column. Below 1000px it stands to the right of the page and
-    bracketed vertical links on its edge, in sight beside the page, scroll the
-    view sideways to each part; wider, it slides in over the page when one of
-    its parts is the URL's target. Below 1000px the navigation is not in it
-    but above the page (nav_top), and [Navigation], beside the site name,
-    scrolls up to it. Copies,
+def side_view(page, nav_part):
+    """The navigation above the page, and, for narrow screens, the side view:
+    copies of the table of contents and of each part of the backmatter, one
+    after the other in a column to the right of the page, reached by
+    bracketed vertical links on its edge, in sight beside the page. Copies,
     so the wide layout keeps Forester's own; their ids are dropped so each
-    anchor stays unique. Returns the view, the navigation above the page, and
-    the link that goes beside the site name on wide screens."""
-    parts = [("nav", "Navigation", nav_part, " side-part--wide")]
+    anchor stays unique. Returns the side view, the navigation above the
+    page, and [Navigation], which goes beside the site name and scrolls up
+    to it."""
+    parts = []
     toc = TOC.search(page)
     if toc:
         parts.append(("toc", "Table of Contents", ID.sub("", toc.group(1)), " side-part--narrow"))
@@ -225,24 +222,20 @@ def side_view(page, nav_part, title):
         name = re.sub(r"<[^>]+>", "", heading.group(1)).strip() if heading else ""
         if name in BACKMATTER:
             parts.append((name.lower(), name, ID.sub("", section), " side-part--narrow"))
-    # [Navigation] is not among them: it stands beside the site name.
     links = lambda cls: "".join('<a class="%s side-tab--%s" href="#side-%s">[%s]</a>' % (cls, key, key, name)
-                                for key, name, _, _ in parts if key != "nav")
-    back = html.escape(title)
+                                for key, name, _, _ in parts)
     view = (
         '<aside class="side-view" aria-label="Navigation and contents">'
         '<nav class="side-strip" aria-label="Jump to">%s</nav><div class="side-body">'
         '<a class="side-tab side-back--narrow" href="#page-view">[Back to page]</a>'
-        '<div class="side-parts"><a class="side-back side-back--wide" href="#page">« %s</a>%s</div></div></aside>'
-    ) % (links("side-tab"), back,
+        '<div class="side-parts">%s</div></div></aside>'
+    ) % (links("side-tab"),
          "".join('<section class="side-part%s" id="side-%s">%s</section>' % (cls, key, body)
                  for key, _, body, cls in parts))
     nav_top = '<nav class="nav-top" id="nav-top" aria-label="Navigation">%s</nav>' % nav_part
-    # [Navigation] beside the site name: up to the navigation above the page
-    # below 1000px, the side view wider.
+    # [Navigation] beside the site name scrolls up to the navigation above the page.
     return view, nav_top, ('<div class="side-tabs">'
-                           '<a class="side-tab side-tab--nav side-tab--narrow" href="#nav-top">[Navigation]</a>'
-                           '<a class="side-tab side-tab--nav side-tab--wide" href="#side-nav">[Navigation]</a></div>')
+                           '<a class="side-tab side-tab--nav" href="#nav-top">[Navigation]</a></div>')
 
 
 LOGO = re.compile(r'<div\s+class="logo">.*?</div>', re.S)
@@ -310,7 +303,7 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, titles = re.subn(r"<title>.*?</title>", "", page, count=1, flags=re.S)
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
-    view, nav_top, tabs = side_view(page, shell, share_title)
+    view, nav_top, tabs = side_view(page, shell)
     page = HOME_LINK.sub(lambda m: m.group(1) + "« " + SITE_NAME + m.group(2), page, count=1)
     page, logos = LOGO.subn(lambda m: m.group(0) + tabs, page, count=1)
     # The page and the side view side by side: the page in its own column.
@@ -385,7 +378,7 @@ def main():
         '%s<header class="header"><nav id="home-link" class="nav"><div class="logo"><a href="/">« %s</a></div></nav></header>'
         '<main id="grid-wrapper"><article>%s</article></main></div>%s</div></body></html>\n'
     ) % ((SITE_NAME, THEME_HEAD) + (lambda v: (v[1], SITE_NAME, missing, v[0]))(
-        side_view("", navigation(template, links, None), "Not found"))))
+        side_view("", navigation(template, links, None)))))
 
     print("decorate.py: %d trees, the site root and 404.html" % written)
 

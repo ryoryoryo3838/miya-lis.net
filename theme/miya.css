@@ -4,14 +4,14 @@
    Seimiya design system's tokens.css by decorate.py. Forester's stylesheet is
    used as shipped, sizes and spacing included (12pt, line height 1.55, its
    margins and indents); this file gives it the design system's faces and
-   colours, and adds the side panels.
+   colours, and adds the navigation above the page and the side view.
 
    The page is Forester's own: the tree, and the table of contents to its
-   right; "« MIYA-LIS.NET" stands where Forester puts "« Home". The site
-   navigation is in a side view: on wide screens [Navigation], after the site
-   name, slides it in; below 1000px, where Forester drops the table of
-   contents, the side view stands to the right of the page with the contents
-   and the backmatter too, and the view scrolls sideways to it. */
+   right; "« MIYA-LIS.NET" stands where Forester puts "« Home", with
+   [Navigation] beside it, which scrolls up to the navigation above the page.
+   Below 1000px, where Forester drops the table of contents, the contents and
+   the backmatter stand to the right of the page, and the view scrolls
+   sideways to them. */
 
 /* Monaspace Neon (SIL OFL 1.1, theme/LICENSES/OFL-1.1.txt) is the Latin face;
    IBM Plex Sans JP comes from Google Fonts. */
@@ -80,31 +80,38 @@ a.slug:hover, a.bullet:hover, .link:hover, .link a:hover, a.orcid:hover, a.doi:h
 nav#toc, nav#toc a { color: var(--ink-muted); }
 nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 
-/* ── Side view ────────────────────────────────────────────────────────────── */
+/* ── Navigation ───────────────────────────────────────────────────────────── */
 
-/* decorate.py puts the site navigation, and copies of the table of contents
-   and of each part of the backmatter, into one column, .side-view, after the
-   page. Links to its parts (#side-nav, #side-toc, …) are bracketed like a
-   Forester address. No script: anchors and :target do the work. */
-
-/* Wide screens: [Navigation] follows the site name; the side view slides in
-   over the page when one of its parts is the target, and "« title" (a link to
-   no part) closes it. Only the navigation shows there: the page has the rest. */
+/* decorate.py puts the site navigation above the page (#nav-top) and
+   [Navigation] beside the site name. The page opens scrolled past the
+   navigation (side.js), scrolling up stops once where it is just hidden, and
+   [Navigation] scrolls up to it. The scrolling glides, unless motion is
+   reduced; side.js makes the stop at the site-name line. */
 #home-link { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1em; }
 .side-tab { padding: 2px 4px; font-weight: 200; color: var(--ink-muted); border-radius: var(--radius-sm); text-decoration: none; }
 .side-tab:hover { color: var(--ink); background: var(--green-soft); }
-.side-strip, .side-back--narrow, .side-part--narrow, .nav-top, .side-tab--narrow { display: none; }
-.side-view { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0;
-  width: min(85vw, 340px); box-sizing: border-box; overflow-y: auto;
-  background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-float);
-  transform: translateX(100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
-.side-view:has(:target) { transform: none; visibility: visible; }
-.side-parts { padding: 1em calc(.5em + env(safe-area-inset-right, 0px)) 2em 1em; }
+.side-tab--nav::before { content: "«"; display: inline-block; transform: rotate(90deg); margin-right: .4em; }
+.nav-top { padding: 0 .5em 1em 0; margin-bottom: 1em; border-bottom: 1px solid var(--line); }
+.nav-top > .block > h1 { font-size: 16pt; margin-top: 0; }
+/* At least a screen below it, so a short page can still open scrolled past it. */
+.page-view > #grid-wrapper { min-height: 100vh; }
+html { scroll-behavior: smooth; }
 /* The navigation reads across, as a line of links. */
 .side-menu { display: flex; flex-wrap: wrap; gap: 0 1em; padding-left: 0; margin: 0; list-style: none; }
-.side-menu-link { padding: .2em .3em; }
-.side-back { display: block; margin-bottom: 1em; color: var(--ink-muted); text-decoration: none; }
-.side-back:hover { color: var(--ink); background: none; }
+.side-menu-link { display: flex; align-items: baseline; gap: .4em; padding: .2em .3em; border-radius: var(--radius-sm); color: var(--ink-muted); text-decoration: none; }
+.side-menu-link:hover { background: var(--hover); color: var(--ink); }
+.side-menu-bullet { font-size: .7em; color: var(--line-strong); flex: none; }
+.side-menu-link.is-current { color: var(--ink); font-weight: 700; }
+.side-menu-link.is-current .side-menu-bullet { color: var(--orange); }
+
+/* ── Side view (narrow screens) ───────────────────────────────────────────── */
+
+/* Below 1000px decorate.py's side view, copies of the table of contents and
+   of each part of the backmatter, stands to the right of the page in one view
+   that scrolls sideways. Its edge, a column of bracketed vertical links, stays
+   in sight beside the page; a link glides the view to its part, a whole
+   screen over, and [Back to page] or a swipe brings the page back. */
+.side-view { display: none; }
 .side-part + .side-part { margin-top: 1.5em; }
 .side-part ul { list-style: none; }
 .side-part > .block > ul { padding-left: 0; }
@@ -113,65 +120,40 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 .side-part > .block > h1 { font-size: 16pt; }
 .side-part { scroll-margin-top: 1em; }
 
-.side-menu-link { display: flex; align-items: baseline; gap: .4em; border-radius: var(--radius-sm); color: var(--ink-muted); text-decoration: none; }
-.side-menu-link:hover { background: var(--hover); color: var(--ink); }
-.side-menu-bullet { font-size: .7em; color: var(--line-strong); flex: none; }
-.side-menu-link.is-current { color: var(--ink); font-weight: 700; }
-.side-menu-link.is-current .side-menu-bullet { color: var(--orange); }
-
-@media (prefers-reduced-motion: reduce) {
-  .side-view { transition: none; }
-}
-
-/* ── Narrow screens ───────────────────────────────────────────────────────── */
-
-/* Below 1000px the page and the side view stand side by side in one view
-   that scrolls sideways. The side view's edge, its column of bracketed
-   vertical links, stays in sight to the right of the page; a link scrolls the
-   view to its part, a whole screen over, and [Back to page] or a swipe brings
-   the page back. The site
-   navigation is above the page instead: [Navigation] scrolls up to it. */
 @media (max-width: 1000px) {
   html, body.miya-native { height: 100%; overflow: hidden; }
   body.miya-native { margin: 0; }
-  #main-wrapper { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden;
+  #main-wrapper { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth;
     scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
   #main-wrapper::-webkit-scrollbar { display: none; }
   .page-view { flex: 0 0 calc(100% - 18px - env(safe-area-inset-right, 0px)); min-width: 0; box-sizing: border-box;
-    overflow-y: auto; scroll-snap-align: start; padding: 1em 0 2em .5em; }
-  #grid-wrapper > article > footer, .side-tab--wide, .side-back--wide { display: none; }
-  /* Small enough to share the site name's line on a phone. */
-  .side-tab--narrow { display: inline; font-size: 14px; }
+    overflow-y: auto; scroll-snap-align: start; padding: 1em 0 2em .5em; scroll-behavior: smooth; }
+  .page-view > #grid-wrapper { min-height: 100%; }
+  #grid-wrapper > article > footer { display: none; }
+  /* Small enough to share the site name's line on a phone, at its right end. */
+  .side-tab--nav { font-size: 14px; }
   #home-link { column-gap: .5em; }
-  /* At the right end of the line, apart from the site name. */
   #home-link .side-tabs { margin-left: auto; }
-  .side-view { position: static; transform: none; visibility: visible; transition: none; box-shadow: none; border-left: 0;
-    flex: 0 0 auto; width: auto; display: flex; height: 100%; overflow: visible; }
+  .side-view { flex: 0 0 auto; display: flex; height: 100%; }
   .side-strip { display: flex; flex-direction: column; gap: .5em; flex: 0 0 18px; padding-top: 3.5em; overflow: hidden; }
   .side-strip .side-tab { writing-mode: vertical-rl; padding: 4px 1px; line-height: 1; font-size: 13px; }
   /* Which way each goes: » over [Table of Contents], to the side view on
-     the right; « over [Back to page], to the page on the left; « turned up
-     beside [Navigation], to the navigation above. Upright, so the marks keep
-     pointing across while the words run down. */
+     the right; « over [Back to page], to the page on the left. Upright, so
+     the marks keep pointing across while the words run down. */
   .side-strip .side-tab--toc::before, .side-back--narrow::before { text-orientation: upright; margin-bottom: .4em; }
   .side-strip .side-tab--toc::before { content: "»"; }
   .side-back--narrow::before { content: "«"; }
-  .side-tab--narrow::before { content: "«"; display: inline-block; transform: rotate(90deg); margin-right: .4em; }
   /* The side view's body is a whole screen wide, so going there takes the
      tabs out of sight; [Back to page] stands on its left edge instead. */
   .side-body { width: 100vw; display: flex; scroll-snap-align: start; }
   .side-back--narrow { display: block; flex: 0 0 18px; writing-mode: vertical-rl; padding: 3.5em 1px 0; line-height: 1;
     font-size: 13px; border-right: 1px solid var(--line); border-radius: 0; }
-  .side-parts { flex: 1; min-width: 0; overflow-y: auto; padding-left: .5em; }
-  .side-part--narrow { display: block; }
-  /* The navigation stands above the page; side.js opens the page scrolled
-     past it, and [Navigation] scrolls back up to it. */
-  .side-part--wide { display: none; }
-  .nav-top { display: block; padding: 0 .5em 1em 0; margin-bottom: 1em; border-bottom: 1px solid var(--line); }
-  .nav-top ul { list-style: none; padding-left: 0; margin: 0; }
-  /* At least a screen below it, so a short page can still open scrolled past it. */
-  .page-view > #grid-wrapper { min-height: 100%; }
-  .nav-top > .block > h1 { font-size: 16pt; margin-top: 0; }
+  .side-parts { flex: 1; min-width: 0; overflow-y: auto; scroll-behavior: smooth;
+    padding: 1em calc(.5em + env(safe-area-inset-right, 0px)) 2em .5em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html, #main-wrapper, .page-view, .side-parts { scroll-behavior: auto !important; }
 }
 
 @media (max-width: 839px) {
