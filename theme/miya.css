@@ -93,7 +93,7 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 #home-link { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1em; }
 .side-tab { padding: 2px 4px; font-weight: 200; color: var(--ink-muted); border-radius: var(--radius-sm); text-decoration: none; }
 .side-tab:hover { color: var(--ink); background: var(--green-soft); }
-.side-strip, .side-back--narrow, .side-part--narrow { display: none; }
+.side-strip, .side-back--narrow, .side-part--narrow, .nav-top { display: none; }
 .side-view { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0;
   width: min(85vw, 340px); box-sizing: border-box; overflow-y: auto;
   background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-float);
@@ -125,7 +125,8 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 /* Below 1000px the page and the side view stand side by side in one view
    that scrolls sideways. The side view's edge, its column of bracketed
    vertical links, stays in sight to the right of the page; a link scrolls the
-   view to its part, and "« title" or a swipe brings the page back. */
+   view to its part, and "« title" or a swipe brings the page back. The site
+   navigation is above the page instead: [Navigation] scrolls up to it. */
 @media (max-width: 1000px) {
   html, body.miya-native { height: 100%; overflow: hidden; }
   body.miya-native { margin: 0; }
@@ -142,6 +143,14 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
   .side-body { width: min(85vw, 340px); overflow-y: auto; border-left: 1px solid var(--line);
     padding-right: calc(.5em + env(safe-area-inset-right, 0px)); }
   .side-back--narrow, .side-part--narrow { display: block; }
+  /* The navigation stands above the page; side.js opens the page scrolled
+     past it, and [Navigation] scrolls back up to it. */
+  .side-part--wide { display: none; }
+  .nav-top { display: block; padding: 0 .5em 1em 0; margin-bottom: 1em; border-bottom: 1px solid var(--line); }
+  .nav-top ul { list-style: none; padding-left: 0; }
+  /* At least a screen below it, so a short page can still open scrolled past it. */
+  .page-view > #grid-wrapper { min-height: 100%; }
+  .nav-top > .block > h1 { font-size: 16pt; margin-top: 0; }
 }
 
 @media (max-width: 839px) {
