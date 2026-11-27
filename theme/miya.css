@@ -143,6 +143,8 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
   /* Small enough to share the site name's line on a phone. */
   .side-tab--narrow { display: inline; font-size: 14px; }
   #home-link { column-gap: .5em; }
+  /* At the right end of the line, apart from the site name. */
+  #home-link .side-tabs { margin-left: auto; }
   .side-view { position: static; transform: none; visibility: visible; transition: none; box-shadow: none; border-left: 0;
     flex: 0 0 auto; width: auto; display: flex; height: 100%; overflow: visible; }
   .side-strip { display: flex; flex-direction: column; gap: .5em; flex: 0 0 18px; padding-top: 3.5em; overflow: hidden; }
