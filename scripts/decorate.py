@@ -304,6 +304,10 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
     view, nav_top, tabs = side_view(page, shell)
+    # Wide screens: [Back to top] at the foot of the table of contents column
+    # (added after the side view copies it), back to the site-name line.
+    page = TOC.sub(lambda m: m.group(0)[:-len("</nav>")]
+                   + '<a class="side-tab back-to-top" href="#home-link">[Back to top]</a></nav>', page, count=1)
     page = HOME_LINK.sub(lambda m: m.group(1) + "« " + SITE_NAME + m.group(2), page, count=1)
     page, logos = LOGO.subn(lambda m: m.group(0) + tabs, page, count=1)
     # The page and the side view side by side: the page in its own column.

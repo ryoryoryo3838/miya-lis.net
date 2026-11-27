@@ -39,7 +39,7 @@ body.miya-native {
 
 /* Forester's "« Home" link carries the site name, on every page (Forester
    hides it on the home tree). */
-#home-link.hidden { display: block; }
+#home-link.hidden { display: flex; }
 .logo a { color: var(--ink-muted); }
 .logo a:hover { color: var(--ink); background: none; }
 
@@ -93,6 +93,11 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 .side-tab--nav::before { content: "«"; display: inline-block; transform: rotate(90deg); margin-right: .4em; }
 .nav-top { padding: 0 .5em 1em 0; margin-bottom: 1em; border-bottom: 1px solid var(--line); }
 .nav-top > .block > h1 { font-size: 16pt; margin-top: 0; }
+/* [Back to top], at the foot of the table of contents column: to the site-name line. */
+nav#toc .back-to-top { display: inline-block; margin-top: 1em; }
+/* The column stays in sight as the page scrolls, so [Back to top] is always at hand. */
+#grid-wrapper > nav#toc { position: sticky; top: 1em; align-self: start; max-height: calc(100vh - 2em); overflow-y: auto; }
+nav#toc .back-to-top::before { content: "«"; display: inline-block; transform: rotate(90deg); margin-right: .4em; }
 /* At least a screen below it, so a short page can still open scrolled past it. */
 .page-view > #grid-wrapper { min-height: 100vh; }
 html { scroll-behavior: smooth; }
