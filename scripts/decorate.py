@@ -10,13 +10,12 @@ wrote between the tags:
   tokens.css and miya.css), copied over Forester's own favicons;
 - in every page's head, the share metadata a crawler reads (it reads the head
   only), the site name in the title, and the theme's stylesheets;
-- the site navigation (the Seimiya design system's SiteNav) as the first child
-  of #main-wrapper, with this page marked current, so a Forester htmx swap of
-  #main-wrapper brings the right one along;
+- the site name in place of Forester's "« Home", shown on every page;
+- the site navigation and, on narrow screens, the table of contents and the
+  backmatter, each in a side panel opened from a vertical tab at the right
+  edge, as the first children of #main-wrapper, so a Forester htmx swap of
+  #main-wrapper brings this page's along;
 - dates on the meta line in Japanese (2026年8月2日);
-- on narrow screens, a side panel holding a copy of the table of contents and
-  the backmatter, opened from a tab at the right edge, so neither takes room
-  above or below the tree;
 - the site root as a copy of the Home tree;
 - a 404 page for wrangler's not_found_handling.
 
@@ -154,13 +153,12 @@ def menu_links():
     return parser.links
 
 
-def navigation(template, links, entry, page_title):
-    """The SiteNav for one page: its link marked current (the first, when two
-    links lead to the same tree), and its name on the narrow-screen toggle."""
+def navigation(template, links, entry):
+    """The navigation panel for one page, its link marked current (the first,
+    when two links lead to the same tree)."""
     current = next((i for i, (href, _) in enumerate(links) if href.strip("/") == entry), None)
     items = "".join(
-        '<li><a class="sm-sitenav-link%s" href="%s"%s><span class="sm-sitenav-bullet" aria-hidden="true">■</span>'
-        '<span class="sm-sitenav-label">%s</span></a></li>' % (
+        '<li><a class="side-menu-link%s" href="%s"%s><span class="side-menu-bullet" aria-hidden="true">■</span>%s</a></li>' % (
             " is-current" if i == current else "",
             html.escape(href, quote=True),
             ' aria-current="page"' if i == current else "",
@@ -168,8 +166,7 @@ def navigation(template, links, entry, page_title):
         )
         for i, (href, text) in enumerate(links)
     )
-    name = links[current][1] if current is not None else page_title
-    return template.replace("{{MENU}}", items).replace("{{CURRENT}}", html.escape(name))
+    return template.replace("{{MENU}}", items)
 
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July",
@@ -186,19 +183,31 @@ FOOTER = re.compile(r'<footer>(.*?)</footer>', re.S)
 ID = re.compile(r'\sid="[^"]*"')
 
 
-def side_panel(page):
-    """A copy of the table of contents and the backmatter for the narrow-screen
-    side panel. Copies, so the wide layout keeps Forester's own; the ids are
-    dropped so each anchor stays unique."""
+def side_shell(page, nav_panel):
+    """Vertical tabs at the right edge and the panels they open: the site
+    navigation always, and on narrow screens a copy of the table of contents
+    and the backmatter. Copies, so the wide layout keeps Forester's own; the
+    ids are dropped so each anchor stays unique. Checkboxes open the panels,
+    so they work without script; each checkbox comes before what it opens."""
     parts = [m.group(1) for m in (TOC.search(page), FOOTER.search(page)) if m]
-    if not parts:
-        return ""
-    return (
-        '<input type="checkbox" id="side-open" class="side-switch" aria-controls="side-panel">'
-        '<label for="side-open" class="side-tab">Table of Contents</label>'
-        '<label for="side-open" class="side-scrim" aria-hidden="true"></label>'
-        '<aside id="side-panel" class="side-panel" aria-label="Table of Contents">%s</aside>'
-    ) % ID.sub("", "".join(parts))
+    toc = bool(parts)
+    return "".join([
+        '<input type="checkbox" id="nav-open" class="side-switch" aria-controls="nav-panel">',
+        '<input type="checkbox" id="side-open" class="side-switch" aria-controls="side-panel">' if toc else "",
+        '<div class="side-tabs">',
+        '<label for="nav-open" class="side-tab">[Navigation]</label>',
+        '<label for="side-open" class="side-tab side-tab--toc">[Table of Contents]</label>' if toc else "",
+        '</div>',
+        '<label for="nav-open" class="side-scrim side-scrim--nav" aria-hidden="true"></label>',
+        '<label for="side-open" class="side-scrim side-scrim--toc" aria-hidden="true"></label>' if toc else "",
+        nav_panel,
+        '<aside id="side-panel" class="side-panel side-panel--toc" aria-label="Table of Contents">%s</aside>'
+        % ID.sub("", "".join(parts)) if toc else "",
+    ])
+
+
+# Forester's "« Home" link becomes the site name.
+HOME_LINK = re.compile(r'(<a\s[^>]*title="home"[^>]*>)« Home(</a>)')
 
 
 def meta(kind, key, value):
@@ -262,7 +271,8 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, titles = re.subn(r"<title>.*?</title>", "", page, count=1, flags=re.S)
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
-    shell += side_panel(page)
+    shell = side_shell(page, shell)
+    page = HOME_LINK.sub(lambda m: m.group(1) + SITE_NAME + m.group(2), page, count=1)
     page, mains = re.subn(r'<div\s+id="main-wrapper">', lambda m: m.group(0) + shell, page, count=1)
     page = japanese(page)
     page, langs = re.subn(r'<html(?:\s+lang="[^"]*")?>', '<html lang="ja">', page, count=1)
@@ -302,7 +312,7 @@ def main():
             title="%s — %s" % (tree_title, SITE_NAME),
             share_title=tree_title,
             og_type="article",
-            shell=navigation(template, links, entry, tree_title),
+            shell=navigation(template, links, entry),
             home=is_home,
         ))
         written += 1
@@ -316,7 +326,7 @@ def main():
         title=SITE_NAME,
         share_title=SITE_NAME,
         og_type="website",
-        shell=navigation(template, links, HOME, SITE_NAME),
+        shell=navigation(template, links, HOME),
         home=True,
     ))
 
@@ -328,7 +338,7 @@ def main():
         '<link rel="stylesheet" href="/style.css">%s</head>'
         '<body class="miya-native"><div id="main-wrapper">%s<div id="grid-wrapper">'
         "<article>%s</article></div></div></body></html>\n"
-    ) % (SITE_NAME, THEME_HEAD, navigation(template, links, None, "404"), missing))
+    ) % (SITE_NAME, THEME_HEAD, side_shell("", navigation(template, links, None)), missing))
 
     print("decorate.py: %d trees, the site root and 404.html" % written)
 
