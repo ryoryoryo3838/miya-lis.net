@@ -13,8 +13,10 @@ wrote between the tags:
 - the site navigation (the Seimiya design system's SiteNav) as the first child
   of #main-wrapper, with this page marked current, so a Forester htmx swap of
   #main-wrapper brings the right one along;
-- the words Forester writes in English where the reader sees them: dates on
-  the meta line, the backmatter headings and the table of contents;
+- dates on the meta line in Japanese (2026年8月2日);
+- on narrow screens, a side panel holding a copy of the table of contents and
+  the backmatter, opened from a tab at the right edge, so neither takes room
+  above or below the tree;
 - the site root as a copy of the Home tree;
 - a 404 page for wrangler's not_found_handling.
 
@@ -55,6 +57,7 @@ THEME_HEAD = (
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@300;400;700&amp;display=swap">'
     '<link rel="stylesheet" href="/tokens.css">'
     '<link rel="stylesheet" href="/miya.css">'
+    '<script defer src="/side.js"></script>'
 )
 
 MAIN_WRAPPER = re.compile(r'<div\s+id="main-wrapper"')
@@ -172,20 +175,30 @@ def navigation(template, links, entry, page_title):
 MONTHS = ["January", "February", "March", "April", "May", "June", "July",
           "August", "September", "October", "November", "December"]
 FORESTER_DATE = re.compile(r'(class="meta-item">)(%s) (\d{1,2}), (\d{4})<' % "|".join(MONTHS))
-# The backmatter headings and the table of contents, as Forester writes them.
-FORESTER_WORDS = {
-    "Context": "文脈", "Backlinks": "バックリンク", "Related": "関連",
-    "References": "参考文献", "Contributions": "寄稿",
-}
-FORESTER_HEADING = re.compile(r'(<span\s+class="taxon"></span>)(%s)( </h1>)' % "|".join(FORESTER_WORDS))
-
-
 def japanese(page):
-    """The design system's words for what Forester writes in English."""
-    page = FORESTER_DATE.sub(
+    """Meta-line dates as the design system writes them."""
+    return FORESTER_DATE.sub(
         lambda m: "%s%s年%d月%d日<" % (m.group(1), m.group(4), MONTHS.index(m.group(2)) + 1, int(m.group(3))), page)
-    page = FORESTER_HEADING.sub(lambda m: m.group(1) + FORESTER_WORDS[m.group(2)] + m.group(3), page)
-    return page.replace("<h1>Table of Contents</h1>", "<h1>目次</h1>", 1)
+
+
+TOC = re.compile(r'<nav\s+id="toc">(.*?)</nav>', re.S)
+FOOTER = re.compile(r'<footer>(.*?)</footer>', re.S)
+ID = re.compile(r'\sid="[^"]*"')
+
+
+def side_panel(page):
+    """A copy of the table of contents and the backmatter for the narrow-screen
+    side panel. Copies, so the wide layout keeps Forester's own; the ids are
+    dropped so each anchor stays unique."""
+    parts = [m.group(1) for m in (TOC.search(page), FOOTER.search(page)) if m]
+    if not parts:
+        return ""
+    return (
+        '<input type="checkbox" id="side-open" class="side-switch" aria-controls="side-panel">'
+        '<label for="side-open" class="side-tab">Table of Contents</label>'
+        '<label for="side-open" class="side-scrim" aria-hidden="true"></label>'
+        '<aside id="side-panel" class="side-panel" aria-label="Table of Contents">%s</aside>'
+    ) % ID.sub("", "".join(parts))
 
 
 def meta(kind, key, value):
@@ -249,6 +262,7 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, titles = re.subn(r"<title>.*?</title>", "", page, count=1, flags=re.S)
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
+    shell += side_panel(page)
     page, mains = re.subn(r'<div\s+id="main-wrapper">', lambda m: m.group(0) + shell, page, count=1)
     page = japanese(page)
     page, langs = re.subn(r'<html(?:\s+lang="[^"]*")?>', '<html lang="ja">', page, count=1)

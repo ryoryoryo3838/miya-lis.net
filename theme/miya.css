@@ -8,8 +8,9 @@
    table of contents).
 
    The page is three columns, "SiteNav | text | contents", as in the design
-   system. Below 1000px the contents move in front of the text; below 840px
-   the SiteNav folds into "■ current page" beside the site name. */
+   system. Below 1000px the table of contents and the backmatter move into a
+   side panel opened from a tab at the right edge; below 840px the SiteNav
+   folds into "■ current page" beside the site name. */
 
 /* Monaspace Neon (SIL OFL 1.1, theme/LICENSES/OFL-1.1.txt) is the Latin face;
    IBM Plex Sans JP comes from Google Fonts. */
@@ -138,16 +139,50 @@ nav#toc .taxon { color: var(--ink-muted); }
 
 /* ── Backmatter ───────────────────────────────────────────────────────────── */
 
-footer { margin-top: var(--space-8); padding-top: var(--space-4); border-top: 1px solid var(--line); }
 footer > section > header > h1 { font: var(--text-footer-heading); }
 
 /* ── Narrow screens ───────────────────────────────────────────────────────── */
 
+/* ── Side panel (narrow screens) ──────────────────────────────────────────── */
+
+/* decorate.py copies the table of contents and the backmatter into
+   .side-panel; a checkbox opens it, so it works without the script, which only
+   closes it after a link is followed. */
+.side-switch, .side-tab, .side-scrim, .side-panel { display: none; }
+
 @media (max-width: 1000px) {
   body.miya-native { margin: 0; }
-  #grid-wrapper { display: flex; flex-direction: column; }
-  /* Forester hides the contents here; the design system puts them first. */
-  #grid-wrapper > nav#toc { display: block; position: static; order: -1; margin-bottom: var(--space-6); }
+  #grid-wrapper { display: block; }
+  #grid-wrapper > nav#toc, #grid-wrapper > article > footer { display: none; }
+
+  .side-switch { display: block; position: fixed; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .side-tab { display: block; position: fixed; z-index: 20; right: 0; top: 50%; transform: translateY(-50%);
+    writing-mode: vertical-rl; min-width: var(--touch-target); box-sizing: border-box;
+    padding: var(--space-4) var(--space-2); padding-right: calc(var(--space-2) + env(safe-area-inset-right, 0px));
+    font-size: 14px; color: var(--ink-muted); background: var(--surface);
+    border: 1px solid var(--line); border-right: 0; border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    box-shadow: var(--shadow-float); cursor: pointer; }
+  .side-tab:hover { color: var(--ink); background: var(--hover); }
+  .side-switch:focus-visible ~ .side-tab { box-shadow: var(--focus-ring); }
+  .side-scrim { position: fixed; inset: 0; z-index: 29; background: #0000002e; }
+  .side-panel { display: block; position: fixed; z-index: 30; top: 0; right: 0; bottom: 0;
+    width: min(85vw, 340px); box-sizing: border-box; overflow-y: auto;
+    padding: var(--space-6) calc(var(--space-4) + env(safe-area-inset-right, 0px)) var(--space-8) var(--space-4);
+    background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-float);
+    transform: translateX(100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
+  .side-switch:checked ~ .side-scrim { display: block; }
+  .side-switch:checked ~ .side-panel { transform: none; visibility: visible; }
+  .side-switch:checked ~ .side-tab { display: none; }
+  .side-panel > .block > h1 { font: var(--text-footer-heading); margin: 0 0 var(--space-2); }
+  .side-panel > .block > ul { padding-left: 0; list-style: none; }
+  .side-panel li > ul { padding-left: 1em; list-style: none; }
+  .side-panel a.bullet { color: var(--orange); font-size: .7em; margin-right: .4em; vertical-align: .1em; text-decoration: none; }
+  .side-panel > section { margin-top: var(--space-6); }
+  .side-panel > section > header > h1 { font: var(--text-footer-heading); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-panel { transition: none; }
 }
 
 @media (max-width: 839px) {
@@ -164,6 +199,9 @@ footer > section > header > h1 { font: var(--text-footer-heading); }
   .sm-sitenav-menu { position: absolute; right: 0; top: 100%; z-index: 10; min-width: 200px; padding: var(--space-2); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); box-shadow: var(--shadow-float); }
   .sm-sitenav-menu .sm-sitenav-link { padding: 10px var(--space-2); }
   article > section > header > h1 { font-size: 22px; line-height: 28px; }
+  /* Narrow columns cannot spare a 40px list indent per level. */
+  article :is(ul, ol), .side-panel :is(ul, ol) { padding-left: 1.3em; }
+  article :is(ul, ol) :is(ul, ol) { padding-left: 1.1em; }
 }
 
 /* ── A tree's own picture ─────────────────────────────────────────────────── */
