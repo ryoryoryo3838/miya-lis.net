@@ -93,10 +93,11 @@ nav#toc a.bullet, .side-part a.bullet { color: var(--orange); opacity: 1; }
 .side-tab--nav::before { content: "«"; display: inline-block; transform: rotate(90deg); margin-right: .4em; }
 .nav-top { padding: 0 .5em 1em 0; margin-bottom: 1em; border-bottom: 1px solid var(--line); }
 .nav-top > .block > h1 { font-size: 16pt; margin-top: 0; }
-/* [Back to top], at the foot of the table of contents column: to the site-name line. */
-nav#toc .back-to-top { display: inline-block; margin-top: 1em; }
-/* The column stays in sight as the page scrolls, so [Back to top] is always at hand. */
-#grid-wrapper > nav#toc { position: sticky; top: 1em; align-self: start; max-height: calc(100vh - 2em); overflow-y: auto; }
+/* [Back to top], back to the site-name line: at the foot of the window, on
+   the right, once the page is scrolled (side.js sets .is-scrolled). */
+.back-to-top { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s; }
+.is-scrolled .back-to-top { opacity: 1; visibility: visible; }
+nav#toc .back-to-top { position: fixed; right: 2em; bottom: 1.5em; background: var(--surface); }
 nav#toc .back-to-top::before { content: "«"; display: inline-block; transform: rotate(90deg); margin-right: .4em; }
 /* At least a screen below it, so a short page can still open scrolled past it. */
 .page-view > #grid-wrapper { min-height: 100vh; }
@@ -148,6 +149,9 @@ html { scroll-behavior: smooth; }
   .side-strip .side-tab--toc::before, .side-back--narrow::before { text-orientation: upright; margin-bottom: .4em; }
   .side-strip .side-tab--toc::before { content: "»"; }
   .side-back--narrow::before { content: "«"; }
+  /* [Back to top] closes the column of tabs; set down the line, « points up. */
+  .side-strip .back-to-top { margin-top: .5em; }
+  .side-strip .back-to-top::before { content: "«"; margin-bottom: .4em; }
   /* The side view's body is a whole screen wide, so going there takes the
      tabs out of sight; [Back to page] stands on its left edge instead. */
   .side-body { width: 100vw; display: flex; scroll-snap-align: start; }

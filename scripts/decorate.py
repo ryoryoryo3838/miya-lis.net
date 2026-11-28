@@ -226,7 +226,8 @@ def side_view(page, nav_part):
                                 for key, name, _, _ in parts)
     view = (
         '<aside class="side-view" aria-label="Navigation and contents">'
-        '<nav class="side-strip" aria-label="Jump to">%s</nav><div class="side-body">'
+        '<nav class="side-strip" aria-label="Jump to">%s'
+        '<a class="side-tab back-to-top" href="#home-link">[Back to top]</a></nav><div class="side-body">'
         '<a class="side-tab side-back--narrow" href="#page-view">[Back to page]</a>'
         '<div class="side-parts">%s</div></div></aside>'
     ) % (links("side-tab"),
@@ -304,8 +305,9 @@ def dress(page, *, canonical, title, share_title, og_type, shell, home):
     page, heads = re.subn(r"</head>", lambda _: head + "</head>", page, count=1)
     page, bodies = re.subn(r"<body>", lambda _: body, page, count=1)
     view, nav_top, tabs = side_view(page, shell)
-    # Wide screens: [Back to top] at the foot of the table of contents column
-    # (added after the side view copies it), back to the site-name line.
+    # Wide screens: [Back to top], back to the site-name line; it shows at the
+    # foot of the window once the page is scrolled (added after the side view
+    # copies the table of contents).
     page = TOC.sub(lambda m: m.group(0)[:-len("</nav>")]
                    + '<a class="side-tab back-to-top" href="#home-link">[Back to top]</a></nav>', page, count=1)
     page = HOME_LINK.sub(lambda m: m.group(1) + "« " + SITE_NAME + m.group(2), page, count=1)
